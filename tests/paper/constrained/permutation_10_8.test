@@ -1,0 +1,7 @@
+universe([1,10]).
+dom1([3,10]).
+dom2([5,10]).
+structure(s,sequence,true,universe).
+size(s,8).
+pos(s,4,dom2).
+pos(s,6,dom1).

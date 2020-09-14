@@ -1,0 +1,6 @@
+universe([1,15]).
+dom1([4,15]).
+dom2([10,11]).
+structure(s,sequence,true,universe).
+size(s,4).
+pos(s,3,not(dom2)).

@@ -1,0 +1,7 @@
+universe([1,20]).
+dom1([4,16]).
+dom2([16,20]).
+structure(s,subset,false,universe).
+size(s,8).
+count(s,inter(not(dom2),not(dom1))>1).
+count(s,union(dom1,not(dom2))==6).

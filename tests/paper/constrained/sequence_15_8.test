@@ -1,0 +1,10 @@
+universe([1,15]).
+dom1([10,15]).
+dom2([11,14]).
+structure(s,sequence,false,universe).
+size(s,8).
+pos(s,7,not(dom2)).
+pos(s,8,not(dom2)).
+count(s,dom2=<7).
+count(s,inter(dom1,not(dom2))=<3).
+count(s,dom2==2).
