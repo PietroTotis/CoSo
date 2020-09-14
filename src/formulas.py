@@ -1,8 +1,8 @@
 import portion
 import operator
 
-from .structure import Domain
-from .problog.logic import Term
+from structure import Domain
+from problog.logic import Term
 
 
 class CountingFormula(object):

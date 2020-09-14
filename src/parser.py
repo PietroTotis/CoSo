@@ -2,13 +2,13 @@ import argparse
 import portion
 import operator, functools
 
-from .problog.parser import PrologParser
-from .problog.parser import ParseError
-from .problog.program import PrologFile
-from .problog.logic import Clause, term2list
+from problog.parser import PrologParser
+from problog.parser import ParseError
+from problog.program import PrologFile
+from problog.logic import Clause, term2list
 
-from .problem import *
-from .formulas import *
+from problem import *
+from formulas import *
 
 reserved = ["count", "query", "size", "pos", "in", "part"]
 

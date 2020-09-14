@@ -1,7 +1,7 @@
 
-from .structure import *
-from .solver import Solver
-from .formulas import *
+from structure import *
+from solver import Solver
+from formulas import *
  
 
 class Problem(object):

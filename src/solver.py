@@ -2,10 +2,10 @@ import portion
 import math 
 import itertools 
 
-from .problog.logic import Constant
+from problog.logic import Constant
 
-from .formulas import *
-from .structure import Domain
+from formulas import *
+from structure import Domain
 
 
 class Unsatisfiable(Exception):

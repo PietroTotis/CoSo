@@ -8,8 +8,8 @@ import signal
 import random
 import itertools
 from pathlib import Path
-from comblift.parser import Parser
-from comblift.formulas import PosFormula, InFormula
+from parser import Parser
+from formulas import PosFormula, InFormula
 
 ops = [">","<","<=",">=","\=","=="]
 
@@ -198,9 +198,9 @@ def problem2problog(problem):
         problog+="query(subsets).\n"
     return problog
 
-def compare2aproblog(problem):
+def compare2aproblog(problem ,name):
     aproblog = problem2problog(problem)
-    probname = args.program[:-3] + "_prob.pl"
+    probname = name[:-3] + "_prob.pl"
     probpath = os.path.abspath(probname)
     probfile = open(probname, "w")
     probfile.write(aproblog)
@@ -212,7 +212,7 @@ def compare2aproblog(problem):
     print(f"Solver: {count} in {finish-start:.2f}s")
     print("Running aProbLog...")
     p = subprocess.Popen(
-		["pyenv/bin/python3.8", "aproblog/problog-cli.py","-t 240", probname], 
+		["pyenv/bin/python3.8", "problog","-t 240", probname], 
 		stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     finish = time.time()
     try:
@@ -246,10 +246,9 @@ def count_sols(filename):
     f.close()
     return n
 
-def compare2minizinc(problem):
+def compare2minizinc(problem, name):
     minizinc = problem2minizinc(problem)
-    mininame = args.program[:-5] + "_mini.mzn"
-    minipath = os.path.abspath(mininame)
+    mininame = name[:-5] + "_mini.mzn"
     minifile = open(mininame, "w")
     minifile.write(minizinc)
     minifile.close()
@@ -258,9 +257,6 @@ def compare2minizinc(problem):
     count = problem.solve(log=False)
     finish = time.time()
     print(f"Solver: {count} in {finish-start:.2f}s")
-    # print(f"Running minizinc on {mininame}...")
-    # out = "tests/sol.out"
-    # miniproc = subprocess.Popen(f"mzn-gecode {mininame} -a -o {out}", shell=True, text=True)
     print("Running Minizinc...")
     start = time.time()
     timeout = 240000
@@ -347,9 +343,9 @@ def test_folder(folder, aproblog, minizinc):
         parser = Parser(os.path.join(folder,filename))
         problem = parser.parsed
         if minizinc:
-            compare2minizinc(problem)
+            compare2minizinc(problem, os.path.join(folder,filename))
         if aproblog:
-            compare2aproblog(problem)
+            compare2aproblog(problem,  os.path.join(folder,filename))
         if not minizinc and not aproblog:
             sol = problem.solve(log=False)
             print(f"Count: {sol}") 
@@ -357,6 +353,7 @@ def test_folder(folder, aproblog, minizinc):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', help='Run solver on file')
+    parser.add_argument('-m', default="minizinc", help='Minizinc directory')    
     parser.add_argument('--test-folder', help='Run tool comparison on files in folder')
     parser.add_argument('--compare', nargs='+', help="Compare with 'aproblog', 'minizinc'")
     args = parser.parse_args()
@@ -365,9 +362,9 @@ if __name__ == '__main__':
         problem = parser.parsed
         if args.compare:
             if 'aproblog' in args.compare:
-                compare2aproblog(problem)
+                compare2aproblog(problem, args.f)
             if 'minizinc' in args.compare:
-                compare2minizinc(problem)
+                compare2minizinc(problem, args.f)
         else:
             sol = problem.solve(log=False)
             print(f"Count: {sol}")
