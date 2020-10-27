@@ -63,9 +63,7 @@ class Parser(object):
             q = stmt.args[0]
             self.parsed.add_query(q)
         elif stmt.functor == "size":
-            name = stmt.args[0]
-            size = stmt.args[1]
-            self.parsed.add_size(name, size.compute_value())
+            self.parsed.add_size(stmt)
         elif stmt.functor in ["pos", "in", "part"]:
             self.parsed.add_choice_formula(stmt, None)
         else:

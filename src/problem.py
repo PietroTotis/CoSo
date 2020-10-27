@@ -46,13 +46,7 @@ class Problem(object):
                 self.universe = dom.name
 
     def add_counting_formula(self, cof):
-        struct_name = cof.args[0]
-        cf = cof.args[1]
-        op = cf.functor[1:-1]
-        problog_df = cf.args[0]
-        df = self.compute_dom(problog_df)
-        val = cf.args[1].compute_value()
-        cformula = CountingFormula(df, op, val)
+        cformula = self.build_cof(cof)
         self.count_formulas.append(cformula)
 
     def add_entity(self, e):
@@ -66,41 +60,79 @@ class Problem(object):
     def add_query(self, q):
         self.queries.append(q)
 
-    def add_size(self, name, s):
+    def add_size(self, sf):
+        name = sf.args[0]
+        op = sf.args[1]
+        formula = sf.args[2]
+        s = self.build_size(name,op,formula)
         self.structure.size = s
 
     def add_structure(self, struct):
         self.structure = struct
 
-    def compute_dom(self, formula):
+    def build_cof(self, cof):
+        struct_name = cof.args[0]
+        cf = cof.args[1]
+        op = cf.functor[1:-1]
+        problog_formula = cf.args[0]
+        formula = self.compute_formula(problog_formula)
+        val = cf.args[1].compute_value()
+        return CountingFormula(formula, op, val)
+    
+    def build_size(self, name, op, val):
+        n = val.compute_value()
+        op = op.functor
+        if op in ["<", "=<"]:
+            interval = portion.closed(1,n)
+        elif op in [">",">="]:
+            interval = portion.closedopen(n,portion.inf)
+        elif op == "==":
+            interval = portion.singleton(n)
+        else:
+            interval = portion.closedopen(1,n) | portion.open(n,portion.inf)
+        return SizeFormula(name, interval)
+
+    def compute_dom(self, dformula):
         """
         Given a formula expands and computes the corresponding domain
         Parameters
         ----------
-        formula : a ProbLog predicate inter/union/not (possibly nested)
+        dformula : a domain formula : a ProbLog predicate inter/union/not (possibly nested)
+                  or a ProbLog Term with functor one of the domains
         """
         cont = self.domains[self.universe]
-        if formula.functor == "inter":
-            lf = self.compute_dom(formula.args[0])
-            rf = self.compute_dom(formula.args[1])
+        if dformula.functor == "inter":
+            lf = self.compute_dom(dformula.args[0])
+            rf = self.compute_dom(dformula.args[1])
             domain = lf.domain & rf.domain
-        elif formula.functor == "union":
-            lf = self.compute_dom(formula.args[0])
-            rf = self.compute_dom(formula.args[1])
+        elif dformula.functor == "union":
+            lf = self.compute_dom(dformula.args[0])
+            rf = self.compute_dom(dformula.args[1])
             domain = lf.domain | rf.domain
-        elif formula.functor == "not":
-            arg = self.compute_dom(formula.args[0])
+        elif dformula.functor == "not":
+            arg = self.compute_dom(dformula.args[0])
             domain =  arg.neg().domain
         else:
-            if formula.functor in self.domains:
-                domain = self.domains[str(formula)]
+            if dformula.functor in self.domains:
+                domain = self.domains[str(dformula)]
             else:
-                id = self.get_entity(formula.functor)
+                id = self.get_entity(dformula.functor)
                 if id is None:
-                    raise Exception(f"Unknown constant {formula.functor}")
+                    raise Exception(f"Unknown constant {dformula.functor}")
                 domain = Domain(id, portion.singleton(id))
-        df = DomainFormula(cont, formula, domain)
+        df = DomainFormula(cont, dformula, domain)
         return df
+
+    def compute_formula(self, formula):
+        if formula.functor == "size":
+            name = formula.args[0]
+            op = formula.args[1]
+            n = formula.args[2]
+            return self.build_size(name,op,n)
+        elif formula.functor == "count":
+            return self.build_cof(formula)
+        else:
+            return self.compute_dom(formula)
 
     def get_entity(self, e):
         if e in self.entity_map:

@@ -9,7 +9,7 @@ class CountingFormula(object):
     """
     Attributes
     ----------
-    dformula : DomainFormula
+    formula : DomainFormula/CountingFormula/SizeFormula
         property to count
     op : str
         one in < > >= =< == \=
@@ -18,12 +18,19 @@ class CountingFormula(object):
     """
 
     def __init__(self, formula, op, val):
-        self.dformula = formula
+        self.formula = formula
         self.op = op
         self._val = val
 
+    def __eq__(self, rhs):
+        return self.formula == rhs.formula and self.op == rhs.op and self._val == rhs._val
+
     def __str__(self):
-        return f"Nr. {self.dformula} {self.op} {self._val}"
+        if isinstance(self.formula, DomainFormula):
+            return f"Nr. {self.formula} {self.op} {self._val}"
+        else:
+            # return str(self.formula)
+            return f"Nr. ({self.formula}) {self.op} {self._val}"
 
     def get_operator(self):
         if self.op == ">":
@@ -40,7 +47,7 @@ class CountingFormula(object):
             return operator.ne
 
     def invert(self, tot):
-        neg_f = self.dformula.neg()
+        neg_f = self.formula.neg()
         if self.op == ">":
             return CountingFormula(neg_f, "<", tot - self._val)
         elif self.op == "<":
@@ -53,7 +60,21 @@ class CountingFormula(object):
             return CountingFormula(neg_f, "\=", tot - self._val)
         else: # self.op == "\=":
             return CountingFormula(neg_f, "==", tot - self._val)
-    
+
+    def neg(self):
+        if self.op == ">":
+            return CountingFormula(self.formula, "<=", self._val)
+        elif self.op == "<":
+            return CountingFormula(self.formula, ">=", self._val)
+        elif self.op == "=<":
+            return CountingFormula(self.formula, ">", self._val)
+        elif self.op == ">=":
+            return CountingFormula(self.formula, "<", self._val)
+        elif self.op == "==":
+            return CountingFormula(self.formula, "\=", self._val)
+        else: # self.op == "\=":
+            return CountingFormula(self.formula, "==", self._val)
+
     def num(self):
         """
         In the algorithms use <= or >= so adjust the number accordingly
@@ -66,7 +87,7 @@ class CountingFormula(object):
             return self._val
 
     def update(self, val):
-        return CountingFormula(self.dformula, self.op, val)
+        return CountingFormula(self.formula, self.op, val)
 
 
 class DomainFormula(object):
@@ -126,7 +147,10 @@ class DomainFormula(object):
         return DomainFormula(self.universe, sub_formula, sub_dom)
 
     def __str__(self):
-        str = f"{self.to_str(self.formula)} ({self.domain})"
+        descr = ""
+        if self.domain.size() > 0 :
+            descr = f" ({self.domain})"
+        str = f"{self.to_str(self.formula)}{descr}"
         return str
 
     def copy(self):
@@ -179,7 +203,8 @@ class InFormula(object):
 
 class PosFormula(object):
     """
-    Attributes:
+    Attributes
+    ----------
     struct : str
         name of the target structure
     pos : int
@@ -194,3 +219,42 @@ class PosFormula(object):
 
     def __str__(self):
         return f"Position {self.pos}: {self.dformula}"
+
+class SizeFormula(object):
+    """
+    Container for allowed cardinalities of lifted sets
+
+    Attributes
+    ----------
+    name : str
+        a string ignored for now
+    values : portion
+        interval representing set cardinalities allowed by constraints
+    universe : portion
+        interval representing all possible set cardinalities
+    """
+
+    def __init__(self, name, interval):
+        self.name = name
+        self.values = interval
+        self.universe = portion.closedopen(1, portion.inf)
+
+    def __and__(self, rhs):
+        inter = self.values & rhs.values 
+        return SizeFormula(self.name, inter)
+
+    def __eq__(self, rhs):
+        return self.values == rhs.values
+
+    def __contains__(self, rhs):
+        return rhs.values in self.values
+
+    def __iter__(self):
+        return portion.iterate(self.values,step=1)
+    
+    def __str__(self):
+        return f"size in {self.values}"
+    
+    def neg(self):
+        return self.universe.difference(self.values)
+    

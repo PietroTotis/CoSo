@@ -5,7 +5,7 @@ import itertools
 from problog.logic import Constant
 
 from formulas import *
-from structure import Domain
+from structure import Domain, LiftedSet
 
 
 class Unsatisfiable(Exception):
@@ -20,19 +20,23 @@ class Solver(object):
     Sets up the decision variables from the problem
     """
     def __init__(self,problem):
-        if problem.structure.type in ["sequence", "subset"]:
-            # pc = Constant(problem.universe)
-            pc = problem.domains[problem.universe]
-            var_dom = DomainFormula(pc, Constant(problem.universe), pc)
-            vars = [var_dom]*problem.structure.size
-        else:
-            n = problem.structure.size
-            subset_dom = Domain(problem.type, portion.closed(1,n))
-            vars = [subset_dom]*problem.domains[problem.universe].size
-        self.csp = SharpCSP(vars, problem.structure.type, problem.choice_formulas,  problem.count_formulas, problem.structure.spec)
+        self.problem = problem
+        self.universe = problem.domains[problem.universe]
+        self.size = problem.structure.size
+        self.type = problem.structure.type
 
     def solve(self, log=True):
-        count = self.csp.solve(log)
+        count = 0
+        for n in self.size:
+            if self.type in ["sequence", "subset"]:
+                var_dom = DomainFormula(self.universe, Constant(self.problem.universe), self.universe)
+                vars = [var_dom]*n
+            else:
+                ub_size = self.universe.size() - n + 1
+                size = SizeFormula("universe", portion.closed(1,ub_size))
+                vars = list(map(lambda s: LiftedSet(f"lifted_set_{s}", size, self.universe), range(1,n+1)))
+            csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec)
+            count += csp.solve(log)
         return count
 
 class SharpCSP(object):
@@ -143,7 +147,8 @@ class SharpCSP(object):
         - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
         - If we had enough variables go on with other constraints
         """
-        satisfied, not_satisfied, maybe = self.count_satisfied(cof.dformula.domain)
+        # satisfied, not_satisfied, maybe = self.count_satisfied(cof.dformula.domain)
+        satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula)
         diff = cof.num() - len(satisfied)
         ex_classes = self.exchangeable_classes(maybe)
         if len(maybe) == 0:
@@ -156,14 +161,17 @@ class SharpCSP(object):
                 self.log(cof, " is unsat here")
                 raise Unsatisfiable("Unsat!")
         else: #len(ex_classes) == 1:
-            dom = self.vars[next(iter(ex_classes))]
-            self.log(f"{len(maybe)} exchangeable free vars: {dom}")
-            if self.type == "subset" and self.alt_type == False:
+            ex_class = self.vars[next(iter(ex_classes))]
+            self.log(f"{len(maybe)} exchangeable constrainable vars: {ex_class}")
+            if self.type == "subset" and self.alt_type == False or self.type=="partition":
                 n_choices = 1
             else:
                 n_choices = math.comb(len(maybe), abs(diff))
-            sat_f = dom & cof.dformula
-            unsat_f =  dom & cof.dformula.neg()
+
+            sat_f = self.propagate(ex_class, cof.formula)
+            unsat_f = self.propagate(ex_class, cof.formula.neg())
+            # sat_f = dom & cof.dformula
+            # unsat_f =  dom & cof.dformula.neg()
             for i in maybe:
                 if diff<0:
                     self.vars[i]  = unsat_f
@@ -265,30 +273,68 @@ class SharpCSP(object):
             count = self.count_sequence(vars)
         elif self.type=="subset":
             count = self.count_subsets(vars)
+        elif self.type=="partition":
+            count = self.count_partitions(vars)
         else:
             pass
         self.log(f"Counting domains: {count}")
         return count
 
-    def count_satisfied(self, prop_f):
+    def count_partitions(self, vars=None):
+        self.log("Counting partitions:")
+        if vars is None:
+            vars = self.vars
+        ex_classes = self.exchangeable_classes() #FIXME vars/ indexes
+        if len(ex_classes) == 1: # sets are exchangeable: same size, same constraints
+            set = self.vars[0]
+            n = set.source.size()
+            if len(set.constraints) == 0: 
+                count = self.stirling(n, self.n_vars)
+        else:
+            counting_constraints = False
+            for v in self.vars:
+                counting_constraints = counting_constraints or len(v.constraints)>0
+            if counting_constraints:
+                print("heh")
+                count = -1
+            else: # sizes different but no extra constraint:
+                count = self.shatter_partition_size()
+        return count
+
+
+    def count_satisfied(self, property):
         sat = []
         not_sat = []
         maybe = []
-        for i, v in enumerate(self.vars):
-            if v.domain in prop_f:
-                sat.append(i)
-            elif v.domain.disjoint(prop_f):
-                not_sat.append(i)
-            else:
-                maybe.append(i)
+        if isinstance(property, DomainFormula):
+            for i, v in enumerate(self.vars):
+                pdom = property.dformula.domain
+                if v.domain in pdom:
+                    sat.append(i)
+                elif v.domain.disjoint(pdom):
+                    not_sat.append(i)
+                else:
+                    maybe.append(i)
+        elif isinstance(property, SizeFormula):
+            for i, v in enumerate(self.vars):
+                if v.size in property:
+                    sat.append(i)
+                elif v.size & property == SizeFormula("", portion.empty()):
+                    not_sat.append(i)
+                else:
+                    maybe.append(i)
+        else: # isinstance(property, SizeFormula)
+            # for i, v in enumerate(self.vars):
+            pass
+
         return (sat, not_sat, maybe)
 
     def count_sequence(self, vars=None):
         count = 1
+        if vars is None:
+            vars = self.vars
         if not self.alt_type:
             self.log("Counting sequences:")
-            if vars is None:
-                vars = self.vars
             for v in vars:
                 self.log(v)
                 count *= v.domain.size()
@@ -347,7 +393,7 @@ class SharpCSP(object):
  
     def exchangeable_classes(self, vars = None):
         """
-        Groups variables with same domains in a dict
+        Groups exchangeable variables in a dict
         """
         if vars is None:
             vars = range(0,self.n_vars)
@@ -460,7 +506,8 @@ class SharpCSP(object):
 
     def inj_cases(self, split_df, rest_classes):
         """
-        Computes the cases for elements of type split_df w.rt. rest_classes. i.e. if we split on french and we have other classes like dutch and italian, we need to consider for alldiff the cases where some of the french are both/neither dutch or italian or one of the two
+        Computes the cases for elements of type split_df w.rt. rest_classes. i.e. if we split on french and we have other classes like dutch and italian, 
+        we need to consider for alldiff the cases where some of the french are both/neither dutch or italian or one of the two
         """
         self.log("Computing case combinations of rest classes...")
         # if we have one other class consider only positive, since n out of m 
@@ -488,6 +535,38 @@ class SharpCSP(object):
         if self.dolog:
             print(final)
     
+    def propagate(self, var, property):
+        if isinstance(property, DomainFormula):
+            return var & property
+        elif isinstance(property, SizeFormula):
+            return var & LiftedSet("size constr.", property, var.source)
+        else: # isinstance(propery, CountingFormula)
+            return var #TODO
+    
+    def shatter_partition_size(self, vars = None, n = None):
+        """
+        Counts the number of partitions under the assumption that partitions do not have counting constraints.
+        Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
+        s elements less available to fill the partition. n keeps track of the available elements
+        """
+        if vars is None:
+            vars = self.vars
+        if n is None:
+            n = self.vars[0].source.size()
+        if len(vars) > 0:
+            v = vars[0]
+            var_count = 0 
+            for s in v.size:
+                if n >= s:
+                    choices = math.comb(n,s)
+                else:
+                    choices = 0
+                var_count += choices * self.shatter_partition_size(vars[1:], n-s)
+        else:
+            var_count = 1
+        return var_count
+                
+
     def solve(self, log=True):
         self.dolog = log
         for c in self.choice_f:
@@ -501,14 +580,6 @@ class SharpCSP(object):
         self.log("tot:" + str(count))
         return count
 
-    def split_on_constraints(self, n_choices, others):
-        self.log("Splitting on other constraints...")
-        if len(others) == 0:
-            self.log("... no other constraints")
-            count = self.count_domains()
-        else:
-            count, _ = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
-        return n_choices*count
 
     def solve_subproblem(self, vars, type, choice_constr, count_constr, alt_type):
         self.log("\tSubproblem:")
@@ -519,6 +590,15 @@ class SharpCSP(object):
         except Unsatisfiable:
             self.log("\t==========\n\tUnsat: 0")
             return 0, []
+
+    def split_on_constraints(self, n_choices, others):
+        self.log("Splitting on other constraints...")
+        if len(others) == 0:
+            self.log("... no other constraints")
+            count = self.count_domains()
+        else:
+            count, _ = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
+        return n_choices*count
         
     def split_ex_classes(self, ex_classes):
         """
@@ -586,3 +666,26 @@ class SharpCSP(object):
             count = split_class_count * rest_classes_count
             self.log("==========")
         return count
+
+    def stirling(self, n, k):
+        
+        computed = {}
+
+        def stirling_aux(n, k):
+            key = str(n) + "," + str(k)
+        
+            if key in computed.keys():
+                return computed[key]
+            if n == k == 0:
+                return 1
+            if (n > 0 and k == 0) or (n == 0 and k > 0):
+                return 0
+            if n == k:
+                return 1
+            if k > n:
+                return 0
+            result = k * stirling_aux(n - 1, k) + stirling_aux(n - 1, k - 1)
+            computed[key] = result
+            return result
+
+        return stirling_aux(n,k)

@@ -212,7 +212,7 @@ def compare2aproblog(problem ,name):
     print(f"Solver: {count} in {finish-start:.2f}s")
     print("Running aProbLog...")
     p = subprocess.Popen(
-		["pyenv/bin/python3.8", "problog","-t 240", probname], 
+		["pyenv/bin/python3.8", "problog/problog-cli.py","-t 240", probname], 
 		stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     finish = time.time()
     try:
@@ -339,16 +339,17 @@ def generate_constrained():
 
 def test_folder(folder, aproblog, minizinc):
     for filename in os.listdir(folder):
-        print(f"Test {filename}:")
-        parser = Parser(os.path.join(folder,filename))
-        problem = parser.parsed
-        if minizinc:
-            compare2minizinc(problem, os.path.join(folder,filename))
-        if aproblog:
-            compare2aproblog(problem,  os.path.join(folder,filename))
-        if not minizinc and not aproblog:
-            sol = problem.solve(log=False)
-            print(f"Count: {sol}") 
+        if filename.endswith(".test"):
+            print(f"Test {filename}:")
+            parser = Parser(os.path.join(folder,filename))
+            problem = parser.parsed
+            if minizinc:
+                compare2minizinc(problem, os.path.join(folder,filename))
+            if aproblog:
+                compare2aproblog(problem,  os.path.join(folder,filename))
+            if not minizinc and not aproblog:
+                sol = problem.solve(log=False)
+                print(f"Count: {sol}") 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

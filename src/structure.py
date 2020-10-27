@@ -116,3 +116,57 @@ class Structure(object):
             str = f"any-{str}"   
         str += f" of entity {self.domain} ({self.name})" 
         return str
+
+
+class LiftedSet(object):
+    """
+    Represents a lifted subset of the universe/a set
+
+    Attributes
+    ----------
+    name : str
+        not important at the moment
+    size : SizeFormula
+        describes the set of cardinality values that are valid for this set
+    constraints : [CountingFormulas]
+        describes properties of the set in terms of counting formulas
+    source : DomainFormula
+        the set of which the LiftedSet is subset
+    """
+
+    def __init__(self, name, size, source, constraints=[]):
+        """
+        size: portion
+        """
+        self.name = name
+        self.size = size
+        self.source = source
+        self.constraints = constraints
+
+    def __and__(self,rhs):
+        name = f"{self.name} /\ {rhs.name}"
+        size = self.size & rhs.size
+        constraints = self.constraints + rhs.constraints
+        return LiftedSet(name, size, self.source, constraints)
+
+    def __eq__(self, rhs):
+        if self.size != rhs.size:
+            return False
+        elif self.constraints != rhs.constraints:
+            return False
+        else:
+            return True
+
+    def __str__(self):
+        s = f"{self.name}: {self.size}"
+        if len(self.constraints) > 0:
+            s += "\n"
+        for c in self.constraints:
+            s += f"\t {c}."
+        return s
+
+    def __hash__(self):
+        return hash(str(self))
+    
+        
+
