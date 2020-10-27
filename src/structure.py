@@ -168,5 +168,9 @@ class LiftedSet(object):
     def __hash__(self):
         return hash(str(self))
     
+    def copy(self):
+        new = LiftedSet(self.name, self.size, self.source)
+        new.constraints = self.constraints
+        return new
         
 

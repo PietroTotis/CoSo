@@ -247,7 +247,10 @@ class SizeFormula(object):
         return self.values == rhs.values
 
     def __contains__(self, rhs):
-        return rhs.values in self.values
+        if isinstance(rhs, SizeFormula):
+            return rhs.values in self.values
+        else: # rhs is int
+            return rhs in self.values
 
     def __iter__(self):
         return portion.iterate(self.values,step=1)

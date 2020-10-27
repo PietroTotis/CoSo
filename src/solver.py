@@ -285,20 +285,25 @@ class SharpCSP(object):
         if vars is None:
             vars = self.vars
         ex_classes = self.exchangeable_classes() #FIXME vars/ indexes
-        if len(ex_classes) == 1: # sets are exchangeable: same size, same constraints
+        counting_constraints = False
+        for v in self.vars:
+            counting_constraints = counting_constraints or len(v.constraints)>0
+        if len(ex_classes) == 1: 
             set = self.vars[0]
             n = set.source.size()
-            if len(set.constraints) == 0: 
+            source_interval = SizeFormula(1,n)
+            if not counting_constraints and set.size == source_interval: 
                 count = self.stirling(n, self.n_vars)
-        else:
-            counting_constraints = False
-            for v in self.vars:
-                counting_constraints = counting_constraints or len(v.constraints)>0
-            if counting_constraints:
+            elif not counting_constraints and set.size != source_interval:
+                count = self.shatter_partition_size()
+            else:
                 print("heh")
                 count = -1
-            else: # sizes different but no extra constraint:
-                count = self.shatter_partition_size()
+        elif counting_constraints:
+            print("heh")
+            count = -1
+        else: # sizes different but no extra constraint:
+            count = self.shatter_partition_size()
         return count
 
 
@@ -553,17 +558,20 @@ class SharpCSP(object):
             vars = self.vars
         if n is None:
             n = self.vars[0].source.size()
-        if len(vars) > 0:
+        if len(vars) > 1 and n>len(vars):
             v = vars[0]
-            var_count = 0 
+            var_count = 0
             for s in v.size:
                 if n >= s:
                     choices = math.comb(n,s)
                 else:
                     choices = 0
                 var_count += choices * self.shatter_partition_size(vars[1:], n-s)
-        else:
+            print(v, "-->", var_count)
+        elif n==len(vars) or len(vars) == 1 and n in vars[0].size:
             var_count = 1
+        else:
+            var_count = 0
         return var_count
                 
 
