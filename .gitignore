@@ -3,6 +3,7 @@
 pyenv/
 minizinc/
 aproblog/
+problog/
 *.tgz
 
 # Byte-compiled / optimized / DLL files

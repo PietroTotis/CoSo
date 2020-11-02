@@ -39,6 +39,9 @@ class Domain(object):
     def __sub__(self, rhs):
         c_name = f"¬({rhs.name})"
         return Domain(c_name, self.elements - rhs.elements)
+        
+    def __repr__(self):
+        return str(self)
     
     def __str__(self):
         return f"{self.elements}"
@@ -105,6 +108,9 @@ class Structure(object):
         self.type = str(type)
         self.spec = str(spec)=="true"
         self.size = size
+        
+    def __repr__(self):
+        return str(self)
 
     def __str__(self):
         str = f"{self.size}-{self.type}"
@@ -143,10 +149,10 @@ class LiftedSet(object):
         self.source = source
         self.constraints = constraints
 
-    def __and__(self,rhs):
+    def __and__(self, rhs):
         name = f"{self.name} /\ {rhs.name}"
         size = self.size & rhs.size
-        constraints = self.constraints + rhs.constraints
+        constraints = self.constraints + rhs.constraints #compact
         return LiftedSet(name, size, self.source, constraints)
 
     def __eq__(self, rhs):
@@ -156,6 +162,9 @@ class LiftedSet(object):
             return False
         else:
             return True
+        
+    def __repr__(self):
+        return str(self)
 
     def __str__(self):
         s = f"{self.name}: {self.size}"

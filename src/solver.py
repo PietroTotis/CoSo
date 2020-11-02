@@ -1,4 +1,4 @@
-import portion
+import portion as P
 import math 
 import itertools 
 
@@ -26,18 +26,77 @@ class Solver(object):
         self.type = problem.structure.type
 
     def solve(self, log=True):
-        count = 0
+        count = Solution(0,[])
         for n in self.size:
             if self.type in ["sequence", "subset"]:
                 var_dom = DomainFormula(self.universe, Constant(self.problem.universe), self.universe)
                 vars = [var_dom]*n
             else:
                 ub_size = self.universe.size() - n + 1
-                size = SizeFormula("universe", portion.closed(1,ub_size))
-                vars = list(map(lambda s: LiftedSet(f"lifted_set_{s}", size, self.universe), range(1,n+1)))
+                size = SizeFormula("universe", P.closed(1,ub_size))
+                vars = [LiftedSet("liftedset", size, self.universe)]*n
             csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec)
             count += csp.solve(log)
         return count
+
+class Solution(object):
+    """
+    A solution is a set of pairs (count, histogram). 
+    An histogram is used to keep track of used variables for injectivity constraint.
+    For each histogram keep track of the corresponding number of (partial) solutions.
+    """
+    def __init__(self, count, histogram):
+        self.count = count
+        self.histograms = [[count,histogram]]
+    
+    def __add__(self, rhs):
+        if self.count == 0:
+            return rhs
+        elif rhs.count == 0:
+            return self
+        else:
+            self.count += rhs.count
+            self.histograms += rhs.histograms
+            return self
+
+    def __mul__(self, rhs):
+        histograms = []
+        for c1, h1 in self.histograms:
+            for c2, h2 in rhs.histograms:
+                count = c1 * c2 
+                histogram = self.add_histograms(h1, h2)
+                histograms.append([count, histogram])
+        prod = Solution(0,[])
+        prod.count = self.count * rhs.count
+        prod.histograms = histograms
+        return prod
+    
+    def __repr__(self):
+        return str(self)
+    
+    def __str__(self):
+        return str(self.count)
+    
+    def add_histograms(self, h1, h2):
+        sum = {}
+        for f1 in h1:
+            if f1 in h2:
+                sum[f1] = h1[f1] + h2[f1]
+            else:
+                sum[f1] = h1[f1]
+        for f2 in h2:
+            if f2 not in h1:
+                sum[f2] = h2[f2]
+        return sum
+    
+    def with_choices(self, n_choices):
+        updated_hst = []
+        for c, hst in self.histograms:
+            c = c*n_choices
+            updated_hst.append([c,hst])
+        self.count *= n_choices
+        self.histograms = updated_hst
+        return self
 
 class SharpCSP(object):
     """
@@ -99,20 +158,30 @@ class SharpCSP(object):
             self.fixed_choices += 1
             self.log(f"Choice n.{self.fixed_choices} set:", self.vars[self.fixed_choices])
 
-    def apply_count(self, current, others):
+    def apply_count(self, cof, others):
         """
-        Applies the constraints to satisfy 'current' count
+        Applies the constraints to satisfy 'current' count: for each admissible value n (lb<=n<=ub) 
+        of the property p in cof constrain the problem to n variables satisfying p and sum over the 
+        different (independent) counts
         """
-        self.log("Propagating ", current)
+        self.log("Propagating ", cof)
         self.lvl += 1
-        if current.op == "==":
-            count = self.count_eq(current, others)
-        elif  current.op == "\=":
-            count = self.count_ne(current, others)
-        elif current.op in ["=<", "<"]:
-            count = self.count_lt(current, others)
+        lb = cof.values.lower
+        ub = cof.values.upper
+        if ub == P.inf:
+            cof.values = cof.values.replace(upper = self.n_vars)
+        count = Solution(0,[])
+        if lb == ub:
+            try:
+                count = self.count_eq(cof, others)
+            except Unsatisfiable:
+                pass
         else:
-            count = self.count_gt(current, others)
+            self.log(f"Expanding bounds [{lb},{ub}]...")
+            for i in P.iterate(cof.values, step = 1):
+                cof_eq = CountingFormula(cof.formula, P.singleton(i))
+                count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others, self.alt_type)
+                count += count_case
         self.lvl -=1
         return count
     
@@ -127,18 +196,55 @@ class SharpCSP(object):
             count = self.count_exchangeable()
         return count
 
-    def count_bound(self, cof, lb, ub, others):
+    def choose_cof(self):
         """
-        For each admissible value n (lb<=n<=ub) of the property p in cof constrain the problem to n variables satisfying p and sum over the different (independent) counts
+        Heuristics to decide which counting constraint to propagate when variables are exchangeable
         """
-        self.log(f"Expanding bounds [{lb},{ub}]...")
-        count = 0
-        for i in range(lb, ub+1):
-            cof_eq = CountingFormula(cof.dformula, "==", i)
-            vars = list(map(lambda v: v.copy(), self.vars))
-            eq_count, _ = self.solve_subproblem(vars, self.type, {}, [cof_eq] + others, self.alt_type)
-            count += eq_count
-        return count
+        choice = self.count_f[0]
+        others = self.count_f[1:]
+        ex_class = self.vars[0]
+        for cof in self.count_f:
+            same_class = cof.formula == ex_class
+            max = cof.values.lower == self.n_vars
+            zero = cof.values.upper == 0 
+            if same_class or max or zero:
+                choice = cof
+                others = self.count_f 
+                others.remove(cof)
+                return choice, others
+        return choice, others
+
+    def compact_cofs(self, counts):
+        compact = []
+        indexes = range(0,len(counts))
+        remove = []
+        updated = False
+        for i in indexes :
+            replaced = False
+            cof1 = counts[i]
+            satisfied, not_satisfied, maybe = self.count_satisfied(cof1.formula)
+            if len(maybe) == 0 and len(satisfied) in cof1.values:
+                    remove += [i]
+            else:
+                for j in [j for j in indexes if j>i]:
+                    cof2 = counts[j]
+                    if cof1 != cof2:
+                        if cof1.formula == cof2.formula:
+                            new_int = cof1.values & cof2.values
+                            if new_int.empty:
+                                raise Unsatisfiable("Conflicting constraints")
+                            else:
+                                merged_cof = CountingFormula(cof1.formula, new_int)
+                                compact.append(merged_cof)
+                                remove += [i,j]
+                    else: # cof1 == cof2:
+                        #opposite formulas both 0
+                        remove += [i]
+        keep = [i for i in indexes if not i in remove]
+        compact += list(map(lambda i: counts[i], keep))
+        final =  len(remove) == 0
+        result = compact if final else self.compact_cofs(compact)
+        return result
 
     def count_eq(self, cof, others):
         """
@@ -147,21 +253,21 @@ class SharpCSP(object):
         - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
         - If we had enough variables go on with other constraints
         """
-        # satisfied, not_satisfied, maybe = self.count_satisfied(cof.dformula.domain)
         satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula)
-        diff = cof.num() - len(satisfied)
-        ex_classes = self.exchangeable_classes(maybe)
+        goal = cof.values.lower
+        diff = goal - len(satisfied)
+        var_maybe = self.get_vars(maybe)
+        ex_classes = self.exchangeable_classes(var_maybe)
         if len(maybe) == 0:
             n_choices = 1
             if diff == 0:
-                # count, choices = self.count_domains()
                 self.log(cof, " already satisfied")
                 return self.split_on_constraints(n_choices, others)
             else:
                 self.log(cof, " is unsat here")
                 raise Unsatisfiable("Unsat!")
         else: #len(ex_classes) == 1:
-            ex_class = self.vars[next(iter(ex_classes))]
+            ex_class = next(iter(ex_classes))
             self.log(f"{len(maybe)} exchangeable constrainable vars: {ex_class}")
             if self.type == "subset" and self.alt_type == False or self.type=="partition":
                 n_choices = 1
@@ -169,18 +275,16 @@ class SharpCSP(object):
                 n_choices = math.comb(len(maybe), abs(diff))
 
             sat_f = self.propagate(ex_class, cof.formula)
-            unsat_f = self.propagate(ex_class, cof.formula.neg())
-            # sat_f = dom & cof.dformula
-            # unsat_f =  dom & cof.dformula.neg()
+            not_sat_f = self.propagate(ex_class, cof.formula.neg())
             for i in maybe:
                 if diff<0:
-                    self.vars[i]  = unsat_f
+                    self.vars[i]  = not_sat_f
                     diff += 1
                 elif diff>0:
                     self.vars[i] = sat_f
                     diff -= 1
                 else:
-                    self.vars[i]  = unsat_f
+                    self.vars[i]  = not_sat_f
             if diff != 0:
                 raise Unsatisfiable("Unsat!")
             else:
@@ -191,16 +295,9 @@ class SharpCSP(object):
         Take one count constraint and apply it
         """
         self.log("Counting exchangeable...")
-        cof = self.count_f[0]
-        others = self.count_f[1:]
+        cof, others = self.choose_cof()
         count = self.apply_count(cof, others)
         return count
-
-    def count_gt(self, cof, others):
-        return self.count_bound(cof, cof.num(), self.n_vars, others)
-
-    def count_lt(self, cof, others):
-        return self.count_bound(cof, 0, cof.num(), others)
 
     def count_non_exchangeable(self, ex_classes):
         """
@@ -215,58 +312,53 @@ class SharpCSP(object):
         """
         self.log("Counting non-exchangeable...")
         split_class_vars, rest_classes_vars = self.split_ex_classes(ex_classes)
-        n = len(split_class_vars)
+        n_split = len(split_class_vars)
+        n_rest = self.n_vars - n_split
         cofs_split_class = []
         cofs_rest_classes = []
         for cof in self.count_f:
             cases_split_class = []
             cases_rest_classes = []
-            if cof.op == "==":
-                n = cof.num()
-                for i in range(0,n+1):
-                    cases_split_class.append(cof.update(i))
-                    cases_rest_classes.append(cof.update(n-i))
-                cofs_split_class.append(cases_split_class)
-                cofs_rest_classes.append(cases_rest_classes)
+            if cof.values.upper >= self.n_vars:
+                interval_any = cof.values.replace(upper=n_split, right=P.CLOSED) # adjust upper bound to number of vars
+                any = CountingFormula(cof.formula, interval_any) # add case >= n in split class then work on each =i <n
+                cases_split_class.append(any)
+                cof_rest_classes = CountingFormula(cof.formula, P.closed(0,n_rest))
+                cases_rest_classes.append(cof_rest_classes)
+                n_cases = cof.values.lower-1
             else:
-                n = cof.num()
-                if cof.op in ["<", "=<"]:
-                    n += 1
-                for i in range(0, n):
-                    cof_split_class = CountingFormula(cof.dformula, "==", i)
-                    cof_rest_classes = CountingFormula(cof.dformula, cof.op , cof._val-i)
+                n_cases = cof.values.upper
+            for i in range(0,n_cases+1):
+                cof_split_class = CountingFormula(cof.formula, P.singleton(i))
+                cof_rest_classes = CountingFormula(cof.formula, cof.complement(i, n_rest))
+                if self.is_feasible_split(n_split,n_rest,cof_split_class,cof_rest_classes):
                     cases_split_class.append(cof_split_class)
                     cases_rest_classes.append(cof_rest_classes)
-                # if the constraint is gt add option that left satisfies it and right is free
-                if cof.op in [">", ">="]:
-                    cases_split_class.append(cof)
-                    n = -1 if cof.op==">" else 0
-                    cof_rest_classes = CountingFormula(cof.dformula, cof.op , n)
-                    cases_rest_classes.append(cof_rest_classes)
-                cofs_split_class.append(cases_split_class)
-                cofs_rest_classes.append(cases_rest_classes)
+            cofs_split_class.append(cases_split_class)
+            cofs_rest_classes.append(cases_rest_classes)
         combs_split_class =  list(itertools.product(*cofs_split_class))
         combs_rest_classes = list(itertools.product(*cofs_rest_classes))
-        tot_count = 0
+        tot_count = Solution(0,[])
+        lvl = self.lvl
         for i in range(0,len(combs_rest_classes)):
-            scv = list(map(lambda v: v.copy(),split_class_vars))
-            rcv = list(map(lambda v: v.copy(),rest_classes_vars))
-            comb_split_class = combs_split_class[i]
-            comb_rest_classes = combs_rest_classes[i]
-            self.log(f"Solving combination {i}: {list(map(str,comb_split_class))} // {list(map(str,comb_rest_classes))}")
-            if self.alt_type:
-                classes_domains = self.get_vars(list(ex_classes.keys()))
-                count = self.split_inj(scv, rcv,classes_domains, list(comb_split_class), list(comb_rest_classes))
-            else:
-                count = self.split(scv, rcv, list(comb_split_class), list(comb_rest_classes))
+            self.lvl = lvl
+            # comb_split_class = combs_split_class[i]
+            # comb_rest_classes = combs_rest_classes[i]
+            try:
+                comb_split_class = self.compact_cofs(combs_split_class[i])
+                comb_rest_classes = self.compact_cofs(combs_rest_classes[i])
+                self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
+                if self.alt_type:
+                    count = self.split_inj(split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes))
+                else:
+                    count = self.split(split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes))
+                self.log(f"Split combination count: {count}")
+            except Unsatisfiable:
+                count = 0            
             tot_count += count
+        self.lve = lvl
+        self.log(f"Shatter count: {tot_count}")
         return tot_count
-
-    def count_ne(self, current, others):
-        overcount = self.count_domains()
-        current.op = "=="
-        nogood = self.count_eq(current, others)
-        return overcount - nogood
 
     def count_domains(self, vars=None):
         if self.type=="sequence":
@@ -277,19 +369,17 @@ class SharpCSP(object):
             count = self.count_partitions(vars)
         else:
             pass
-        self.log(f"Counting domains: {count}")
         return count
 
-    def count_partitions(self, vars=None):
+    def count_partitions(self, var_list=None):
         self.log("Counting partitions:")
-        if vars is None:
-            vars = self.vars
-        ex_classes = self.exchangeable_classes() #FIXME vars/ indexes
+        vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
         counting_constraints = False
-        for v in self.vars:
-            counting_constraints = counting_constraints or len(v.constraints)>0
+        for v in vars:
+            counting_constraints = counting_constraints or len(self.vars[v].constraints)>0
         if len(ex_classes) == 1: 
-            set = self.vars[0]
+            set = vars[0]
             n = set.source.size()
             source_interval = SizeFormula(1,n)
             if not counting_constraints and set.size == source_interval: 
@@ -313,7 +403,7 @@ class SharpCSP(object):
         maybe = []
         if isinstance(property, DomainFormula):
             for i, v in enumerate(self.vars):
-                pdom = property.dformula.domain
+                pdom = property.domain
                 if v.domain in pdom:
                     sat.append(i)
                 elif v.domain.disjoint(pdom):
@@ -324,50 +414,60 @@ class SharpCSP(object):
             for i, v in enumerate(self.vars):
                 if v.size in property:
                     sat.append(i)
-                elif v.size & property == SizeFormula("", portion.empty()):
+                elif v.size & property == SizeFormula("", P.empty()):
                     not_sat.append(i)
                 else:
                     maybe.append(i)
         else: # isinstance(property, SizeFormula)
             # for i, v in enumerate(self.vars):
+                #constraint specificita' check
             pass
 
         return (sat, not_sat, maybe)
 
-    def count_sequence(self, vars=None):
+    def count_sequence(self, var_list=None):
         count = 1
-        if vars is None:
-            vars = self.vars
+        vars = var_list if var_list is not None else self.vars
         if not self.alt_type:
             self.log("Counting sequences:")
             for v in vars:
                 self.log(v)
                 count *= v.domain.size()
+                sol = Solution(count, self.histogram())
             self.log("\tDomain product: " + str(count))
         else:
             self.log("Counting permutations:")
             ex_classes = self.exchangeable_classes(vars)
+            disjoint_classes = self.disjoint(ex_classes)
             if len(ex_classes) == 1:
-                dom = self.vars[0].domain
+                dom = vars[0].domain
                 s = dom.size()
-                extra = s - self.n_vars
+                extra = s - len(vars)
                 if extra >=0:
                     count = math.factorial(s) // math.factorial(extra)
                     self.log(f"Falling factorial: {count}")
                 else: # not enough elements in dom to make a n_vars long permutation
-                    self.log(f"{self.n_vars} different vars for {s} values!")
+                    self.log(f"{len(vars)} different vars for {s} values!")
                     count = 0
+                sol = Solution(count, self.histogram())
+            elif disjoint_classes:
+                self.log("Different classes but disjoint...")
+                for v in vars:
+                    self.log(v)
+                    count *= v.domain.size()
+                sol = Solution(count, self.histogram())
+                self.log("\tDomain product: " + str(count))
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
-                classes_domains = self.get_vars(list(ex_classes.keys()))
-                count = self.split_inj(scv, rcv, classes_domains, [], [])
-        return count
+                sol = self.split_inj(scv, rcv, [], [])
+        return sol
 
-    def count_subsets(self, vars = None):
+    def count_subsets(self, var_list = None): #CHECKME
         self.log(f"There are {self.fixed_choices} fixed elements")
-        y = self.n_vars - self.fixed_choices
-        dom = self.vars[self.fixed_choices].domain
+        vars = var_list if var_list is not None else self.vars
+        y = len(vars) - self.fixed_choices
+        dom = self.vars[self.fixed_choices].domain #????
         x = dom.size()
         if self.alt_type:
             count = math.comb(x+y-1,y)
@@ -379,38 +479,31 @@ class SharpCSP(object):
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
-                classes_domains = self.get_vars(list(ex_classes.keys()))
-                count = self.split_inj(scv, rcv, classes_domains, [], [])
+                count = self.split_inj(scv, rcv, [], [])
         return count
 
-    def count_used(self, vars):
-        """
-        Given a set of variables counts for each diferent propertty/domain how many variables are 
-        set to it
-        """
-        class_sizes = {}
-        for v in vars:
-            if v in class_sizes:
-                class_sizes[v] += 1
-            else:
-                class_sizes[v] = 1
-        return class_sizes
- 
-    def exchangeable_classes(self, vars = None):
+    def disjoint(self, classes):
+        disj = True
+        indexes = range(0,len(classes))
+        for c1 in indexes:
+            for c2 in [j for j in indexes if j>c1]:
+                disj = disj and self.vars[c1].disjoint(self.vars[c2])
+        return disj
+
+    def exchangeable_classes(self, var_list = None):
         """
         Groups exchangeable variables in a dict
         """
-        if vars is None:
-            vars = range(0,self.n_vars)
+        vars = var_list if var_list is not None else self.vars
         classes = {}
-        for i in vars:
+        for v in vars:
             new = True
             for c in classes:
-                if self.vars[i] == self.vars[c]:
-                    classes[c].append(i)
+                if v == c:
+                    classes[c].append(v)
                     new = False
             if new:
-                classes[i] = [i]
+                classes[v] = [v]
         return classes
 
     def filter_domain(self, cases, dformula):
@@ -420,14 +513,10 @@ class SharpCSP(object):
         df = dformula
         for case in cases:
             n = cases[case]
-            # print("Case:",case)
             inter = df & case
-            # print("inter:",inter)
             exclude = inter.take(n)
             if exclude.domain.size()>0:
-                # print(dformula-exclude)
                 df =  df - exclude
-                # print(dformula)
         return df
 
     def filter_domains(self, cases, variables):
@@ -453,9 +542,14 @@ class SharpCSP(object):
                     dfs = [exclude] * n
         return dfs
 
-
     def get_vars(self, indexes):
         return list(map(lambda v: self.vars[v], indexes))
+
+    def histogram(self):
+        ex_classes = self.exchangeable_classes()
+        for c in ex_classes:
+            ex_classes[c] = len(ex_classes[c])
+        return ex_classes
 
     def integer_partitions(self, n):
         """
@@ -500,7 +594,6 @@ class SharpCSP(object):
         combinations = list(itertools.product(*combinations))
         cases = []
         for c in combinations:
-            # print(list(map(str,c)))
             dom_base = c[0]
             if len(c) > 1:
                 for dom in c[1:]:
@@ -517,57 +610,62 @@ class SharpCSP(object):
         self.log("Computing case combinations of rest classes...")
         # if we have one other class consider only positive, since n out of m 
         # positives is the same as m-n negatives out of m
-        if len(rest_classes) == 1: 
+        if len(rest_classes) == 0:
+            return []
+        elif len(rest_classes) == 1: 
             all = rest_classes[0]
             none = rest_classes[0].neg()
             return [none] + [all] 
         else:
             return self.inj_cases_intersection(split_df.universe, rest_classes)
-            # all = rest_classes[0]
-            # for dom in rest_classes[1:]:
-            #     all = all | dom
-            # none = all.neg()
-            # cases = some #+ [all]
-            # return cases
+
+    def is_feasible_split(self, n_split, n_rest, scof, rcof):
+        """
+        Checks if we ask to observe more properties than available variables
+        """
+        if scof.values.lower > n_split:
+            return False
+        if rcof.values.lower > n_rest:
+            return False
+        return True
 
     def log(self, s, *args):
-        strargs = " ".join(list(map(str,args)))
-        flat = str(s) + strargs
-        ind = "\t"*self.lvl
-        lines = flat.split("\n")
-        indented = list(map(lambda l: ind+l, lines))
-        final = "\n".join(indented)
         if self.dolog:
+            strargs = " ".join(list(map(str,args)))
+            flat = str(s) + strargs
+            ind = "\t"*self.lvl
+            lines = flat.split("\n")
+            indented = list(map(lambda l: ind+l, lines))
+            final = "\n".join(indented)
             print(final)
     
     def propagate(self, var, property):
         if isinstance(property, DomainFormula):
             return var & property
         elif isinstance(property, SizeFormula):
-            return var & LiftedSet("size constr.", property, var.source)
+            return var & LiftedSet("", property, var.source)
         else: # isinstance(propery, CountingFormula)
             return var #TODO
     
-    def shatter_partition_size(self, vars = None, n = None):
+    def shatter_partition_size(self, var_list = None, n = None):
         """
         Counts the number of partitions under the assumption that partitions do not have counting constraints.
         Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
         s elements less available to fill the partition. n keeps track of the available elements
         """
-        if vars is None:
-            vars = self.vars
+        vars = var_list if var_list is not None else self.vars
+        v = vars[0]
         if n is None:
-            n = self.vars[0].source.size()
+            n = v.source.size()
         if len(vars) > 1 and n>len(vars):
-            v = vars[0]
-            var_count = 0
+            var_count = Solution(0,[])
             for s in v.size:
                 if n >= s:
                     choices = math.comb(n,s)
                 else:
                     choices = 0
                 var_count += choices * self.shatter_partition_size(vars[1:], n-s)
-            print(v, "-->", var_count)
+            self.log(f"{var_count} solutions for var {v}")
         elif n==len(vars) or len(vars) == 1 and n in vars[0].size:
             var_count = 1
         else:
@@ -577,9 +675,10 @@ class SharpCSP(object):
 
     def solve(self, log=True):
         self.dolog = log
+        self.log(self)
         for c in self.choice_f:
             self.apply_choice(c)
-        self.log(self)
+        self.count_f = self.compact_cofs(self.count_f)
         if len(self.count_f) !=0:
             count = self.apply_counts()
         else:
@@ -588,16 +687,16 @@ class SharpCSP(object):
         self.log("tot:" + str(count))
         return count
 
-
     def solve_subproblem(self, vars, type, choice_constr, count_constr, alt_type):
         self.log("\tSubproblem:")
+        vars = list(map(lambda v: v.copy(), vars))
         subproblem = SharpCSP(vars, type, choice_constr, count_constr, alt_type, self.lvl+1)
         try:
             count = subproblem.solve(self.dolog)
-            return count, subproblem.vars
+            return count
         except Unsatisfiable:
             self.log("\t==========\n\tUnsat: 0")
-            return 0, []
+            return Solution(0, self.histogram())
 
     def split_on_constraints(self, n_choices, others):
         self.log("Splitting on other constraints...")
@@ -605,8 +704,8 @@ class SharpCSP(object):
             self.log("... no other constraints")
             count = self.count_domains()
         else:
-            count, _ = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
-        return n_choices*count
+            count = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
+        return count.with_choices(n_choices)
         
     def split_ex_classes(self, ex_classes):
         """
@@ -617,71 +716,67 @@ class SharpCSP(object):
         rest_classes = []
         for i in it_excls:
             rest_classes = rest_classes + ex_classes[i]
-        split_class_vars = self.get_vars(ex_classes[split_class])
-        rest_classes_vars = self.get_vars(rest_classes)
-        return (split_class_vars, rest_classes_vars)
+        return (ex_classes[split_class], rest_classes)
 
-    def split_inj(self, split_class_vars, rest_classes_vars, classes_domains, split_class_cofs, rest_classes_cofs):
+    def split_inj(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
         """
-        Splits the problem under injectivity: we split between one class and rest: class has n variables and rest has some other classes/properties: we need to count how many "interesting" properties can end up in the split class. The interesting properties are the formulas that we have in rest: if we split between french and dutch, when splitting on french we consider the cases where n french speakers were dutch speakers, and adjust the domain of dutch in the "rest" problem.
+        Splits the problem under injectivity: we split between one split class and rest: split class has n variables and rest has some other classes/properties: we need to count how many "interesting" properties can end up in the split class. The interesting properties are the formulas that we have in rest: if we split between french and dutch, when splitting on french we consider the cases where n french speakers were dutch speakers, and adjust the domain of dutch in the "rest" problem.
         """
         self.lvl += 1
-        split_class = classes_domains[0] # order should be ok
+        split_class = split_class_vars[0]
         self.log(f"Split class: {split_class}")
         n = len(split_class_vars)
-        counts = 0
-        cases = self.inj_cases(split_class, classes_domains[1:])
+        rest_domains = list(self.exchangeable_classes(rest_classes_vars).keys())
+        rest_domains = [d for d in rest_domains if not split_class.disjoint(d)] # optimization: filter out disjoint domains
+        cases = self.inj_cases(split_class, rest_domains)
         c = len(cases)
-        for count_case in self.integer_k_partitions(n,c):
-            ints = len(count_case)
-            padded_count_case = count_case + [0] * (len(cases)-ints)
-            for n_case in set(itertools.permutations(padded_count_case)):
-                self.log(f"Case {n_case}")
-                split_count_formulas = split_class_cofs.copy()
-                scv = list(map(lambda v: v.copy(),split_class_vars))
-                for i in range(0,len(n_case)):
-                    cf = CountingFormula(cases[i], "==", n_case[i])
-                    split_count_formulas.append(cf)
-                self.log(f"Case {split_class} are {list(map(str,split_count_formulas))}:")
-                split_class_count, vars = self.solve_subproblem(scv, self.type, [], split_count_formulas, self.alt_type)
-                if split_class_count != 0:
-                    used = dict(zip(cases,n_case))
-                    filtered = self.filter_domains(used, rest_classes_vars)
-                    rest_classes_count, _ = self.solve_subproblem(filtered, self.type, [], rest_classes_cofs, self.alt_type)
-                    self.log("Split result = ", split_class_count * rest_classes_count)
-                    counts += split_class_count * rest_classes_count
-                # if case.domain.size() >= i: # trivial unsat otherwise
-                #     self.log(f"Case {i} {split_class} are {case}:")
-                #     count_case = CountingFormula(case, "==", i)
-                #     split_count_formulas = [count_case] + split_class_cofs
-                #     split_class_count, vars = self.solve_subproblem(scv, self.type, [], split_count_formulas, self.alt_type)
-                #     if split_class_count != 0:
-                #         used = self.count_used(vars)
-                #         filtered = self.filter_domains(used, rest_classes_vars)
-                #         rest_classes_count, _ = self.solve_subproblem(filtered, self.type, [], rest_classes_cofs, self.alt_type)
-                #         self.log("Split result = ", split_class_count * rest_classes_count)
-                #             counts += split_class_count * rest_classes_count
+        if c == 0: # optimization: if all disjoint then split class subproblem already independent
+            self.log("Split class is disjoint from others: no need for injectivity split...")
+            count = self.split(split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs)
+        else:
+            count = Solution(0,[])
+            for count_case in self.integer_k_partitions(n,c):
+                ints = len(count_case)
+                padded_count_case = count_case + [0] * (len(cases)-ints)
+                for n_case in set(itertools.permutations(padded_count_case)):
+                    self.log(f"Case {n_case} {cases}")
+                    split_count_formulas = split_class_cofs.copy()
+                    split_inj_formulas = list(map(lambda i: CountingFormula(cases[i], P.singleton(n_case[i])), range(0,len(n_case))))
+                    split_count_formulas = split_count_formulas + split_inj_formulas
+                    self.log(f"Case {n} {split_class} are s.t. {split_count_formulas}:")
+                    try:
+                        split_count_formulas = self.compact_cofs(split_count_formulas)
+                        split_class_count = self.solve_subproblem(split_class_vars, self.type, [], split_count_formulas, self.alt_type)
+                        if split_class_count.count != 0: #optimization: do not solve rest if split already unsat
+                            print(split_class_count.histograms)
+                            for c, hst in split_class_count.histograms:
+                                partial_count = Solution(c, hst)
+                                filtered = self.filter_domains(hst, rest_classes_vars)
+                                rest_count = self.solve_subproblem(filtered, self.type, [], rest_classes_cofs, self.alt_type)
+                                self.log(f"Split result = {c} * {rest_count.count} = {partial_count * rest_count}")
+                                count += partial_count * rest_count
+                    except Unsatisfiable:
+                        self.log(f"\t is unsat.")
         self.lvl -= 1
-        return counts
+        return count
 
     def split(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
+        scv = list(map(lambda v: v.copy(),split_class_vars))
+        rcv = list(map(lambda v: v.copy(),rest_classes_vars))
         self.log(f"Split class :")
-        count = 0
-        split_class_count, _ = self.solve_subproblem(split_class_vars, self.type, [], split_class_cofs, self.alt_type)
+        count = Solution(0, self.histogram())
+        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs, self.alt_type)
         if split_class_count != 0:
             self.log("Rest class: ")
-            rest_classes_count, _  = self.solve_subproblem(rest_classes_vars, self.type, [], rest_classes_cofs, self.alt_type)
+            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs, self.alt_type)
             count = split_class_count * rest_classes_count
             self.log("==========")
         return count
 
     def stirling(self, n, k):
-        
         computed = {}
-
         def stirling_aux(n, k):
             key = str(n) + "," + str(k)
-        
             if key in computed.keys():
                 return computed[key]
             if n == k == 0:
@@ -695,5 +790,4 @@ class SharpCSP(object):
             result = k * stirling_aux(n - 1, k) + stirling_aux(n - 1, k - 1)
             computed[key] = result
             return result
-
         return stirling_aux(n,k)

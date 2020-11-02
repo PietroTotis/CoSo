@@ -72,24 +72,17 @@ class Problem(object):
 
     def build_cof(self, cof):
         struct_name = cof.args[0]
-        cf = cof.args[1]
-        op = cf.functor[1:-1]
-        problog_formula = cf.args[0]
+        problog_formula = cof.args[1]
+        op = cof.args[2].functor
+        val = cof.args[3].compute_value()
         formula = self.compute_formula(problog_formula)
-        val = cf.args[1].compute_value()
-        return CountingFormula(formula, op, val)
+        interval = self.get_interval(op, val)
+        return CountingFormula(formula, interval)
     
     def build_size(self, name, op, val):
         n = val.compute_value()
         op = op.functor
-        if op in ["<", "=<"]:
-            interval = portion.closed(1,n)
-        elif op in [">",">="]:
-            interval = portion.closedopen(n,portion.inf)
-        elif op == "==":
-            interval = portion.singleton(n)
-        else:
-            interval = portion.closedopen(1,n) | portion.open(n,portion.inf)
+        interval = self.get_interval(op,n)
         return SizeFormula(name, interval)
 
     def compute_dom(self, dformula):
@@ -115,6 +108,8 @@ class Problem(object):
         else:
             if dformula.functor in self.domains:
                 domain = self.domains[str(dformula)]
+            elif dformula.functor == "partition":
+                domain = Domain("", portion.empty())
             else:
                 id = self.get_entity(dformula.functor)
                 if id is None:
@@ -139,6 +134,21 @@ class Problem(object):
             return self.entity_map[e]
         else:
             return None
+
+    def get_interval(self,op,n):
+        if op == "<":
+            interval = portion.closedopen(0,n)
+        elif op == "=<":
+            interval = portion.closed(0,n)
+        elif op == ">":
+            interval = portion.open(n,portion.inf)
+        elif op == ">=":
+            interval = portion.closedopen(n,portion.inf)
+        elif op == "==":
+            interval = portion.singleton(n)
+        else:
+            interval = portion.closedopen(1,n) | portion.open(n,portion.inf)
+        return interval
 
     def solve(self, log=True):
         s = Solver(self)

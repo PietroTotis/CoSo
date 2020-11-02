@@ -17,77 +17,101 @@ class CountingFormula(object):
         number to count
     """
 
-    def __init__(self, formula, op, val):
+    def __init__(self, formula, interval):
         self.formula = formula
-        self.op = op
-        self._val = val
+        self.values = interval
+        # self.op = op
+        # self._val = val
 
     def __eq__(self, rhs):
-        return self.formula == rhs.formula and self.op == rhs.op and self._val == rhs._val
+        return self.formula == rhs.formula and self.values == rhs.values
 
     def __str__(self):
+        if self.values.lower == self.values.upper:
+            val = f"== {self.values.lower}"
+        else:
+            val = f"in {self.values}"
         if isinstance(self.formula, DomainFormula):
-            return f"Nr. {self.formula} {self.op} {self._val}"
+            return f"Nr. {self.formula} {val}"
         else:
             # return str(self.formula)
-            return f"Nr. ({self.formula}) {self.op} {self._val}"
-
-    def get_operator(self):
-        if self.op == ">":
-            return operator.gt
-        elif self.op == "<":
-            return operator.lt
-        elif self.op == "=<":
-            return operator.le
-        elif self.op == ">=":
-            return operator.ge
-        elif self.op == "==":
-            return operator.eq
-        elif self.op == "\=":
-            return operator.ne
-
-    def invert(self, tot):
-        neg_f = self.formula.neg()
-        if self.op == ">":
-            return CountingFormula(neg_f, "<", tot - self._val)
-        elif self.op == "<":
-            return CountingFormula(neg_f, ">", tot - self._val)
-        elif self.op == "=<":
-            return CountingFormula(neg_f, ">=", tot - self._val)
-        elif self.op == ">=":
-            return CountingFormula(neg_f, "=<", tot - self._val)
-        elif self.op == "==":
-            return CountingFormula(neg_f, "\=", tot - self._val)
-        else: # self.op == "\=":
-            return CountingFormula(neg_f, "==", tot - self._val)
+            return f"Nr. ({self.formula}) {val}"
+        
+    def __repr__(self):
+        return str(self)
 
     def neg(self):
-        if self.op == ">":
-            return CountingFormula(self.formula, "<=", self._val)
-        elif self.op == "<":
-            return CountingFormula(self.formula, ">=", self._val)
-        elif self.op == "=<":
-            return CountingFormula(self.formula, ">", self._val)
-        elif self.op == ">=":
-            return CountingFormula(self.formula, "<", self._val)
-        elif self.op == "==":
-            return CountingFormula(self.formula, "\=", self._val)
-        else: # self.op == "\=":
-            return CountingFormula(self.formula, "==", self._val)
-
-    def num(self):
-        """
-        In the algorithms use <= or >= so adjust the number accordingly
-        """
-        if self.op == ">":
-            return self._val +1
-        elif self.op == "<":
-            return self._val -1 
+        interval = portion.open(0,portion.inf) - self.values
+        return CountingFormula(self.formula, interval)
+    
+    def complement(self, val, n_rest):
+        lb = self.values.lower
+        ub = self.values.upper
+        if lb == ub:
+            return portion.singleton(lb-val)
         else:
-            return self._val
+            comp = self.values
+            if ub == portion.inf:
+                comp = comp.replace(lower= lb - val, upper=n_rest, right=portion.CLOSED)
+            else:
+                comp = comp.replace(upper = ub - val)
+            return comp
+    # def get_operator(self):
+    #     if self.op == ">":
+    #         return operator.gt
+    #     elif self.op == "<":
+    #         return operator.lt
+    #     elif self.op == "=<":
+    #         return operator.le
+    #     elif self.op == ">=":
+    #         return operator.ge
+    #     elif self.op == "==":
+    #         return operator.eq
+    #     elif self.op == "\=":
+    #         return operator.ne
 
-    def update(self, val):
-        return CountingFormula(self.formula, self.op, val)
+    # def invert(self, tot):
+    #     neg_f = self.formula.neg()
+    #     if self.op == ">":
+    #         return CountingFormula(neg_f, "<", tot - self._val)
+    #     elif self.op == "<":
+    #         return CountingFormula(neg_f, ">", tot - self._val)
+    #     elif self.op == "=<":
+    #         return CountingFormula(neg_f, ">=", tot - self._val)
+    #     elif self.op == ">=":
+    #         return CountingFormula(neg_f, "=<", tot - self._val)
+    #     elif self.op == "==":
+    #         return CountingFormula(neg_f, "\=", tot - self._val)
+    #     else: # self.op == "\=":
+    #         return CountingFormula(neg_f, "==", tot - self._val)
+
+    # def neg(self):
+    #     if self.op == ">":
+    #         return CountingFormula(self.formula, "<=", self._val)
+    #     elif self.op == "<":
+    #         return CountingFormula(self.formula, ">=", self._val)
+    #     elif self.op == "=<":
+    #         return CountingFormula(self.formula, ">", self._val)
+    #     elif self.op == ">=":
+    #         return CountingFormula(self.formula, "<", self._val)
+    #     elif self.op == "==":
+    #         return CountingFormula(self.formula, "\=", self._val)
+    #     else: # self.op == "\=":
+    #         return CountingFormula(self.formula, "==", self._val)
+
+    # def num(self):
+    #     """
+    #     In the algorithms use <= or >= so adjust the number accordingly
+    #     """
+    #     if self.op == ">":
+    #         return self._val +1
+    #     elif self.op == "<":
+    #         return self._val -1 
+    #     else:
+    #         return self._val
+
+    # def update(self, val):
+    #     return CountingFormula(self.formula, self.op, val)
 
 
 class DomainFormula(object):
@@ -137,6 +161,9 @@ class DomainFormula(object):
         else:
             union_term = Term("union",  self.formula, rhs.formula)
         return DomainFormula(self.universe, union_term, dom)
+        
+    def __repr__(self):
+        return str(self)
 
     def __sub__(self, rhs):
         if self.disjoint(rhs):
@@ -197,6 +224,9 @@ class InFormula(object):
     def __init__(self, struct, dformula):
         self.struct = struct
         self.entity = dformula
+        
+    def __repr__(self):
+        return str(self)
 
     def __str__(self):
         return f"{self.entity} is in {self.struct}"
@@ -216,6 +246,9 @@ class PosFormula(object):
         self.struct = struct
         self.pos = pos.compute_value()
         self.dformula = df
+
+    def __repr__(self):
+        return str(self)
 
     def __str__(self):
         return f"Position {self.pos}: {self.dformula}"
@@ -254,7 +287,10 @@ class SizeFormula(object):
 
     def __iter__(self):
         return portion.iterate(self.values,step=1)
-    
+
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
         return f"size in {self.values}"
     
