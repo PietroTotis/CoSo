@@ -1,6 +1,6 @@
 import portion as P
 import math 
-import itertools 
+import itertools
 
 from problog.logic import Constant
 
@@ -27,14 +27,14 @@ class Solver(object):
 
     def solve(self, log=True):
         count = Solution(0,[])
+        var_dom = DomainFormula(self.universe, Constant(self.problem.universe), self.universe)
         for n in self.size:
             if self.type in ["sequence", "subset"]:
-                var_dom = DomainFormula(self.universe, Constant(self.problem.universe), self.universe)
                 vars = [var_dom]*n
             else:
                 ub_size = self.universe.size() - n + 1
                 size = SizeFormula("universe", P.closed(1,ub_size))
-                vars = [LiftedSet("liftedset", size, self.universe)]*n
+                vars = [LiftedSet("liftedset", size, var_dom)]*n
             csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec)
             count += csp.solve(log)
         return count
@@ -169,7 +169,7 @@ class SharpCSP(object):
         lb = cof.values.lower
         ub = cof.values.upper
         if ub == P.inf:
-            cof.values = cof.values.replace(upper = self.n_vars)
+            cof.values = cof.values.replace(upper = self.n_vars+1)
         count = Solution(0,[])
         if lb == ub:
             try:
@@ -177,7 +177,7 @@ class SharpCSP(object):
             except Unsatisfiable:
                 pass
         else:
-            self.log(f"Expanding bounds [{lb},{ub}]...")
+            self.log(f"Expanding bounds {cof.values}...")
             for i in P.iterate(cof.values, step = 1):
                 cof_eq = CountingFormula(cof.formula, P.singleton(i))
                 count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others, self.alt_type)
@@ -203,16 +203,19 @@ class SharpCSP(object):
         choice = self.count_f[0]
         others = self.count_f[1:]
         ex_class = self.vars[0]
-        for cof in self.count_f:
-            same_class = cof.formula == ex_class
-            max = cof.values.lower == self.n_vars
-            zero = cof.values.upper == 0 
-            if same_class or max or zero:
-                choice = cof
-                others = self.count_f 
-                others.remove(cof)
-                return choice, others
-        return choice, others
+        if isinstance(ex_class, DomainFormula):
+            for cof in self.count_f:
+                same_class = cof.formula == ex_class
+                max = cof.values.lower == self.n_vars
+                zero = cof.values.upper == 0 
+                if same_class or max or zero:
+                    choice = cof
+                    others = self.count_f 
+                    others.remove(cof)
+                    return choice, others
+            return choice, others
+        else:
+            return choice, others
 
     def compact_cofs(self, counts):
         compact = []
@@ -298,7 +301,7 @@ class SharpCSP(object):
         cof, others = self.choose_cof()
         count = self.apply_count(cof, others)
         return count
-
+    
     def count_non_exchangeable(self, ex_classes):
         """
         If vars are not exchangeable we split the problem into class | rest
@@ -348,10 +351,14 @@ class SharpCSP(object):
                 comb_split_class = self.compact_cofs(combs_split_class[i])
                 comb_rest_classes = self.compact_cofs(combs_rest_classes[i])
                 self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
-                if self.alt_type:
-                    count = self.split_inj(split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes))
+                split_args = [split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes)]
+                if self.type in ["sequence", "subset"]:
+                    if self.alt_type: # Fix true/false difference in language
+                        count = self.split_inj(*split_args)
+                    else:
+                        count = self.split(*split_args)
                 else:
-                    count = self.split(split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes))
+                    count = self.split_partitions(*split_args)
                 self.log(f"Split combination count: {count}")
             except Unsatisfiable:
                 count = 0            
@@ -360,7 +367,7 @@ class SharpCSP(object):
         self.log(f"Shatter count: {tot_count}")
         return tot_count
 
-    def count_domains(self, vars=None):
+    def count(self, vars=None):
         if self.type=="sequence":
             count = self.count_sequence(vars)
         elif self.type=="subset":
@@ -377,25 +384,179 @@ class SharpCSP(object):
         ex_classes = self.exchangeable_classes(vars)
         counting_constraints = False
         for v in vars:
-            counting_constraints = counting_constraints or len(self.vars[v].constraints)>0
+            counting_constraints = counting_constraints or len(v.constraints)>0
         if len(ex_classes) == 1: 
-            set = vars[0]
-            n = set.source.size()
-            source_interval = SizeFormula(1,n)
-            if not counting_constraints and set.size == source_interval: 
+            partition = vars[0]
+            max_size = partition.source.domain.size()-self.n_vars+1
+            unconstrained = SizeFormula(1,max_size)
+            if not counting_constraints and partition.size == unconstrained: 
                 count = self.stirling(n, self.n_vars)
-            elif not counting_constraints and set.size != source_interval:
-                count = self.shatter_partition_size()
+                sol = Solution(count, self.histogram())
+            elif not counting_constraints and partition.size != unconstrained:
+                count = self.count_partitions_by_size()
             else:
-                print("heh")
-                count = -1
+                count = self.shatter_exchangeable_partitions()
         elif counting_constraints:
-            print("heh")
-            count = -1
+            count = self.split_partitions()
         else: # sizes different but no extra constraint:
-            count = self.shatter_partition_size()
+            count = self.count_partitions_by_size()
         return count
 
+    def count_partitions_by_size(self, var_list = None, n = None):
+        """
+        Counts the number of partitions under the assumption that partitions do not have counting constraints.
+        Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
+        s elements less available to fill the partition. n keeps track of the available elements
+        """
+        vars = var_list if var_list is not None else self.vars
+        v = vars[0]
+        if n is None:
+            n = v.source.size()
+        if len(vars) > 1 and n>len(vars):
+            var_count = Solution(0,[])
+            for s in v.size:
+                choices = math.comb(n,s)
+                if choices > 0:
+                    rest = self.count_partitions_by_size(vars[1:], n-s)
+                var_count += rest.with_choices(choices)
+            self.log(f"{var_count} solutions for var {v}")
+        elif n==len(vars) and 1 in v.size or len(vars) == 1 and n in v.size:
+            var_count = Solution(1, self.histogram())
+        else:
+            var_count = Solution(0,self.histogram())
+        return var_count
+
+    def count_partitions_combinations(self, var, sizes, cases):
+        self.lvl += 1
+        # group partition sizes: same size = exchangeable  
+        # and count how many of them are available
+        self.log(f"Sizes {sizes} for cases {cases}")
+        if len(cases) > 1:
+            case = cases.pop()
+            rest_cases = cases.copy()
+            n = case.size()
+            k = self.n_vars
+            count_partitions = self.integer_k_partitions(n,k)
+            valid_count_partitions = [cp for cp in count_partitions if self.is_feasible_partition(var, sizes, case, cp)]
+            case_partitions = valid_count_partitions
+            count = Solution(0,[])
+            for cp in case_partitions:
+                ex_case_ps = self.exchangeable_classes(cp)
+                ex_sizes = self.exchangeable_classes(sizes)
+                for s in ex_case_ps:
+                    ex_case_ps[s] = len(ex_case_ps[s])
+                for s in ex_sizes:
+                    ex_sizes[s] = len(ex_sizes[s])
+                res = self.solve_case_partition(var, cp, case, ex_case_ps, sizes, ex_sizes, rest_cases)
+                # size_choices = self.size_class_choices(ex_sizes, ex_case_ps)
+                # res = cp_count.with_choices(size_choices)
+                self.log(f"Case {cp} has {res} solutions")
+                count += res
+        else:
+            case = cases[0]
+            n = self.count_partition_choices(sizes, case.size())
+            self.log(f"... has {n} choices/solutions")
+            count = Solution(n, [])
+        self.lvl -= 1
+        return count
+
+    def size_class_with_choices(ex_sizes, ex_case_ps):
+        n = len(ex_case_ps)
+        k = len(ex_sizes)
+        n_choices = math.factorial(n) // math.factorial(k)
+        return n_choices
+
+    def solve_case_partition(self, var, cp, case, ex_case_ps, sizes, ex_sizes, rest_cases):
+        self.log(f"Consider case-partition {cp} for {case}")
+        keys = list(ex_sizes.keys())
+        choices = self.count_partition_choices(cp, case.size())
+        self.log(f"... has {choices} choices of exchangeable elements")
+        # size_choices = self.partition_size choices(ex_sizes, ex_case_ps)
+        sub_part_count = Solution(0,[])
+        distributions = self.distribute_case_over_sizes(ex_sizes, ex_case_ps)
+        count = Solution(0,[])
+        for d in distributions:
+            new_sizes = {}
+            dist_count = Solution(choices, [])
+            for n_elems in d:
+                for i, n_sets in enumerate(d[n_elems]):
+                    # check if enough elements
+                    if keys[i] >= n_elems:
+                        new_size = keys[i] - n_elems
+                        if new_size in new_sizes:
+                            new_sizes[new_size] += n_sets
+                        else:
+                            new_sizes[new_size] = n_sets
+            rest_sizes = []
+            for ns in new_sizes:
+                rest_sizes += [ns] * new_sizes[ns]
+            rest_sizes += [0] * (len(sizes) - len(rest_sizes))
+            dist_count = self.count_partitions_combinations(var, rest_sizes, rest_cases) 
+            dist_count = dist_count.with_choices(choices)
+            sub_part_count += dist_count
+        return sub_part_count
+
+    def count_partition_choices(self, distribution, dom_size):
+        k = distribution[0]
+        if len(distribution) > 1:
+            if k <= 1:
+                return self.count_partition_choices(distribution[1:], dom_size)
+            else:
+                choices = math.comb(dom_size,k)
+                return choices * self.count_partition_choices(distribution[1:], dom_size-k)
+        else:
+            if k <= 1:
+                return 1
+            else:
+                choices = math.comb(dom_size,k)
+                return choices
+
+    def distribute_case_over_sizes(self, sizes, case):
+        """
+        Given the exchangeable classes of valid size partitions, returns the possible ways of matching
+        a sub-partition of given size to one of the valid partitions' sizes
+        """
+        # print("\t", case)
+        k = len(sizes)
+        keys = list(sizes.keys())
+        case_size, n = case.popitem()
+        # ways of matching n sub-partitions of size case_size across k possible partition sizes
+        distributions = self.integer_k_partitions(n,k)
+        options = set()
+        for d in distributions:
+            perm = itertools.permutations(d)
+            options = options.union(set(perm))
+        # print("\t", case_size, options)
+        choices = []
+        for opt in options:
+            # chack that we have enough partitions of that size 
+            feasible = True
+            for i in range(0,len(opt)):
+                s = keys[i]
+                enough_sets = sizes[s] - opt[i] >= 0
+                feasible = feasible and enough_sets
+            # print("\t opt:",opt,feasible)
+            if feasible:
+                rest_sizes = sizes.copy()
+                rest_case = case.copy()
+                # update: we match opt[i] of size case_size with a partition of size[i]
+                for i in range(0,len(opt)):
+                    s = keys[i]
+                    rest_sizes[s] -= opt[i]
+                choice = {}
+                choice[case_size] = opt
+                if len(case) > 0:
+                    # print("bch", choice)
+                    # solve w.r.t the other case_sizes with the remaining available partitions
+                    rest_choices = self.distribute_case_over_sizes(rest_sizes, rest_case)
+                    for rest_choice in rest_choices:
+                        rest_choice.update(choice)
+                    # print("rch", rest_choices)
+                    choices += rest_choices
+                else:
+                    choices.append(choice)
+        # print("\t\tchs:", choices)
+        return choices
 
     def count_satisfied(self, property):
         sat = []
@@ -419,8 +580,14 @@ class SharpCSP(object):
                 else:
                     maybe.append(i)
         else: # isinstance(property, SizeFormula)
-            # for i, v in enumerate(self.vars):
-                #constraint specificita' check
+            for i, v in enumerate(self.vars):
+                satisfies = v.satisfies(property)
+                if satisfies is None:
+                    maybe.append(i)
+                elif satisfies:
+                    sat.append(i)
+                else:
+                    not_sat.append(i)
             pass
 
         return (sat, not_sat, maybe)
@@ -463,24 +630,26 @@ class SharpCSP(object):
                 sol = self.split_inj(scv, rcv, [], [])
         return sol
 
-    def count_subsets(self, var_list = None): #CHECKME
+    def count_subsets(self, var_list = None):
         self.log(f"There are {self.fixed_choices} fixed elements")
         vars = var_list if var_list is not None else self.vars
         y = len(vars) - self.fixed_choices
-        dom = self.vars[self.fixed_choices].domain #????
+        dom = vars[self.fixed_choices].domain # first of free vars
         x = dom.size()
         if self.alt_type:
             count = math.comb(x+y-1,y)
+            sol = Solution(count, self.histogram())
         else:
             ex_classes = self.exchangeable_classes(vars)
             if len(ex_classes) == 1:
                 x = x - self.fixed_choices
                 count = math.comb(x,y)
+                sol = Solution(count, self.histogram())
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
-                count = self.split_inj(scv, rcv, [], [])
-        return count
+                sol = self.split_inj(scv, rcv, [], [])
+        return sol
 
     def disjoint(self, classes):
         disj = True
@@ -577,13 +746,84 @@ class SharpCSP(object):
             yield a[:k + 1]
     
     def integer_k_partitions(self, n, k):
-        parts = [ p for p in self.integer_partitions(n) if len(p)<=k]
+        parts = []
+        for p in self.integer_partitions(n):
+            if len(p)<k:
+                padded = p + [0]*(k-len(p))
+                parts.append(padded)
+            elif len(p) == k:
+                parts.append(p)
         return parts       
 
-    def inj_cases_intersection(self, universe, rest_classes):
+    def is_feasible_split(self, n_split, n_rest, scof, rcof):
+        """
+        Checks if we ask to observe more properties than available variables
+        """
+        if scof.values.lower > n_split:
+            return False
+        if rcof.values.lower > n_rest:
+            return False
+        return True
+
+    def is_feasible_partition(self, var, sizes, case=None, sub_part_sizes=None):
+        """
+        Given a variable LiftedSet, checks if the size of partitions are compatible with the size constraint.
+        Similarly, given a case of a counting formula, check if there is some obvious constraint unsatisfiable
+        """
+        if case is None:
+            sat = True
+            for size in sizes:
+                sat = sat & (size in var.size)
+        else:
+            l1 = sizes.copy()
+            l2 = sub_part_sizes.copy()
+            l1.sort()
+            l2.sort()
+            diff = [a >= b for a, b in zip(l1, l2)]
+            sat = not (False in diff)
+            for cof in var.constraints:
+                if case in cof.formula:
+                    for sp in sub_part_sizes:
+                        sat = sat & (sp in cof.values)
+        return sat
+
+    # def is_feasible_sub_partition(self, sub_sizes, sizes):
+    #     """
+    #     Given a list of sizes of partitions, check if there exists a feasible assignment from the sizes of the 
+    #     sub_partitions to the partitions' sizes
+    #     """
+    #     l1 = sizes.copy()
+    #     l2 = sub_sizes.copy()
+    #     l1.sort()
+    #     l2.sort()
+    #     diff = [a >= b for a, b in zip(l1, l2)]
+    #     feasible = not (False in diff)
+    #     return feasible
+
+    def log(self, s, *args):
+        if self.dolog:
+            strargs = " ".join(list(map(str,args)))
+            flat = str(s) + strargs
+            ind = "\t"*self.lvl
+            lines = flat.split("\n")
+            indented = list(map(lambda l: ind+l, lines))
+            final = "\n".join(indented)
+            print(final)
+    
+    def propagate(self, var, property):
+        if isinstance(property, DomainFormula):
+            return var & property
+        elif isinstance(property, SizeFormula):
+            return var & LiftedSet("", property, var.source)
+        else: # isinstance(propery, CountingFormula)
+            any_size = SizeFormula("", portion.closed(0, portion.inf))
+            constr = LiftedSet("", any_size, var, [property]) # var as source?
+            return var & constr
+    
+    def relevant_cases_intersection(self, universe, rest_classes):
         first = rest_classes[0]
         if first.domain == universe:
-            return self.inj_cases_intersection(universe, rest_classes[1:])
+            return self.relevant_cases_intersection(universe, rest_classes[1:])
         combinations = [[first, first.neg()]]
         for dom in rest_classes[1:]:
             # if we have other subsets we can ignore the universe since there is no element
@@ -602,77 +842,72 @@ class SharpCSP(object):
                 cases.append(dom_base) 
         return cases
 
-    def inj_cases(self, split_df, rest_classes):
+    def relevant_cases(self, split_df, rest_classes):
         """
         Computes the cases for elements of type split_df w.rt. rest_classes. i.e. if we split on french and we have other classes like dutch and italian, 
         we need to consider for alldiff the cases where some of the french are both/neither dutch or italian or one of the two
         """
-        self.log("Computing case combinations of rest classes...")
+        self.log("Computing case combinations of relevant classes:")
         # if we have one other class consider only positive, since n out of m 
         # positives is the same as m-n negatives out of m
         if len(rest_classes) == 0:
-            return []
+            res = []
         elif len(rest_classes) == 1: 
             all = rest_classes[0]
             none = rest_classes[0].neg()
-            return [none] + [all] 
+            res = [none] + [all] 
         else:
-            return self.inj_cases_intersection(split_df.universe, rest_classes)
-
-    def is_feasible_split(self, n_split, n_rest, scof, rcof):
+            res = self.relevant_cases_intersection(split_df.universe, rest_classes)
+        self.log(f"\t{res}")
+        return res
+       
+    def shatter_exchangeable_partitions(self, var_list=None):
         """
-        Checks if we ask to observe more properties than available variables
-        """
-        if scof.values.lower > n_split:
-            return False
-        if rcof.values.lower > n_rest:
-            return False
-        return True
-
-    def log(self, s, *args):
-        if self.dolog:
-            strargs = " ".join(list(map(str,args)))
-            flat = str(s) + strargs
-            ind = "\t"*self.lvl
-            lines = flat.split("\n")
-            indented = list(map(lambda l: ind+l, lines))
-            final = "\n".join(indented)
-            print(final)
-    
-    def propagate(self, var, property):
-        if isinstance(property, DomainFormula):
-            return var & property
-        elif isinstance(property, SizeFormula):
-            return var & LiftedSet("", property, var.source)
-        else: # isinstance(propery, CountingFormula)
-            return var #TODO
-    
-    def shatter_partition_size(self, var_list = None, n = None):
-        """
-        Counts the number of partitions under the assumption that partitions do not have counting constraints.
-        Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
-        s elements less available to fill the partition. n keeps track of the available elements
+        All partitions are exchangeable but constants are not: shatter into subproblems where constants are exchangeable.
         """
         vars = var_list if var_list is not None else self.vars
         v = vars[0]
-        if n is None:
-            n = v.source.size()
-        if len(vars) > 1 and n>len(vars):
-            var_count = Solution(0,[])
-            for s in v.size:
-                if n >= s:
-                    choices = math.comb(n,s)
-                else:
-                    choices = 0
-                var_count += choices * self.shatter_partition_size(vars[1:], n-s)
-            self.log(f"{var_count} solutions for var {v}")
-        elif n==len(vars) or len(vars) == 1 and n in vars[0].size:
-            var_count = 1
+        n = v.source.size()
+        count = Solution(0,[])
+        size_partitions = self.integer_k_partitions(n, len(vars))
+        valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(v, sp)]
+        if len(v.constraints) == 0:
+            return self.count_partitions_by_size()
         else:
-            var_count = 0
-        return var_count
+            # get relevant/disjoint set-properties
+            relevant = list(v.relevant())
+            cases = self.relevant_cases(v.source, relevant)
+            # for each valid set of partitions' sizes find the combinations of
+            # independent partitions that sum up to a valid set size
+            count = Solution(0,[])
+            for vsp in valid_size_partitions:
+                self.log(f"Considering partition sizes {vsp}")
+                vsp_cases = cases.copy()
+                self.lvl += 1
+                vsp_count = self.count_partitions_combinations(v, vsp, vsp_cases)
+                self.log(f"...has {vsp_count} solutions.")
+                count += vsp_count
+                self.lvl -= 1
+            return count
                 
 
+        # if not v.size_is_defined():
+        #     #consider each size partition case 
+        #     size_partitions = self.integer_k_partitions(n, len(vars))
+        #     valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(sp, v)]
+        #     for sizes in valid_size_partitions:
+        #         self.log(f"Partition sizes {sizes}")
+        #         case_count = Solution(0,[])
+        #         subproblem_vars = self.vars.copy()
+        #         for i, s in enumerate(sizes):
+        #             subproblem_vars[i].size = SizeFormula("Size case", s)
+        #         case_count = self.solve_subproblem(self.vars, self.type, [], [], self.alt_type)
+        #         # case_count = self.shatter_exchangeable_partitions(subproblem_vars, universe)
+        #         count += case_count 
+        # else:
+        #     count = self.shatter_counts_partitions()
+        # return count
+                
     def solve(self, log=True):
         self.dolog = log
         self.log(self)
@@ -682,13 +917,26 @@ class SharpCSP(object):
         if len(self.count_f) !=0:
             count = self.apply_counts()
         else:
-            count = self.count_domains()
+            count = self.count()
         self.log("=========")
         self.log("tot:" + str(count))
         return count
 
+    def split(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
+        scv = list(map(lambda v: v.copy(),split_class_vars))
+        rcv = list(map(lambda v: v.copy(),rest_classes_vars))
+        self.log(f"Split class :")
+        count = Solution(0, self.histogram())
+        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs, self.alt_type)
+        if split_class_count != 0:
+            self.log("Rest class: ")
+            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs, self.alt_type)
+            count = split_class_count * rest_classes_count
+            self.log("==========")
+        return count
+
     def solve_subproblem(self, vars, type, choice_constr, count_constr, alt_type):
-        self.log("\tSubproblem:")
+        self.log(f"\tSubproblem ({type}):")
         vars = list(map(lambda v: v.copy(), vars))
         subproblem = SharpCSP(vars, type, choice_constr, count_constr, alt_type, self.lvl+1)
         try:
@@ -702,7 +950,7 @@ class SharpCSP(object):
         self.log("Splitting on other constraints...")
         if len(others) == 0:
             self.log("... no other constraints")
-            count = self.count_domains()
+            count = self.count()
         else:
             count = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
         return count.with_choices(n_choices)
@@ -728,7 +976,7 @@ class SharpCSP(object):
         n = len(split_class_vars)
         rest_domains = list(self.exchangeable_classes(rest_classes_vars).keys())
         rest_domains = [d for d in rest_domains if not split_class.disjoint(d)] # optimization: filter out disjoint domains
-        cases = self.inj_cases(split_class, rest_domains)
+        cases = self.relevant_cases(split_class, rest_domains)
         c = len(cases)
         if c == 0: # optimization: if all disjoint then split class subproblem already independent
             self.log("Split class is disjoint from others: no need for injectivity split...")
@@ -737,8 +985,9 @@ class SharpCSP(object):
             count = Solution(0,[])
             for count_case in self.integer_k_partitions(n,c):
                 ints = len(count_case)
-                padded_count_case = count_case + [0] * (len(cases)-ints)
-                for n_case in set(itertools.permutations(padded_count_case)):
+                # padded_count_case = count_case + [0] * (len(cases)-ints)
+                # for n_case in set(itertools.permutations(padded_count_case)):
+                for n_case in set(itertools.permutations(count_case)):
                     self.log(f"Case {n_case} {cases}")
                     split_count_formulas = split_class_cofs.copy()
                     split_inj_formulas = list(map(lambda i: CountingFormula(cases[i], P.singleton(n_case[i])), range(0,len(n_case))))
@@ -748,7 +997,6 @@ class SharpCSP(object):
                         split_count_formulas = self.compact_cofs(split_count_formulas)
                         split_class_count = self.solve_subproblem(split_class_vars, self.type, [], split_count_formulas, self.alt_type)
                         if split_class_count.count != 0: #optimization: do not solve rest if split already unsat
-                            print(split_class_count.histograms)
                             for c, hst in split_class_count.histograms:
                                 partial_count = Solution(c, hst)
                                 filtered = self.filter_domains(hst, rest_classes_vars)
@@ -760,18 +1008,17 @@ class SharpCSP(object):
         self.lvl -= 1
         return count
 
-    def split(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
-        scv = list(map(lambda v: v.copy(),split_class_vars))
-        rcv = list(map(lambda v: v.copy(),rest_classes_vars))
-        self.log(f"Split class :")
-        count = Solution(0, self.histogram())
-        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs, self.alt_type)
-        if split_class_count != 0:
-            self.log("Rest class: ")
-            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs, self.alt_type)
-            count = split_class_count * rest_classes_count
-            self.log("==========")
-        return count
+    def split_partition(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
+        self.lvl += 1
+        split_class = split_class_vars[0]
+        self.log(f"Split class: {split_class}")
+        n = len(split_class_vars)
+        relevant_domains = Set(map(lambda s: s.relevant(), rest_classes_vars)) 
+        # rest_domains = [d for d in rest_domains if not split_class.disjoint(d)] # optimization: filter out disjoint domains
+        # cases = self.relevant_cases(split_class, rest_domains)
+        # se le sizes sono uguaglianze ma diverse posso splittare le exchangeable classes
+        # sizes = list(map(lambda lset: lset.size.lower))
+        # size_classes = exchangeable_classes
 
     def stirling(self, n, k):
         computed = {}

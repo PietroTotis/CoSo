@@ -22,7 +22,7 @@ constraint p2 != {};
 constraint p3 != {};
 constraint p4 != {};
 
-constraint(sum(i in p1)(1) == 2);
-constraint(sum(i in p2)(1) == 2);
+constraint(sum(i in p1)(1) <= 2) ;
+constraint(sum(i in p2)(1) <= 2);
 
 solve satisfy;

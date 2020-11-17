@@ -41,7 +41,7 @@ class CountingFormula(object):
         return str(self)
 
     def neg(self):
-        interval = portion.open(0,portion.inf) - self.values
+        interval = portion.closedopen(0,portion.inf) - self.values
         return CountingFormula(self.formula, interval)
     
     def complement(self, val, n_rest):
@@ -56,63 +56,6 @@ class CountingFormula(object):
             else:
                 comp = comp.replace(upper = ub - val)
             return comp
-    # def get_operator(self):
-    #     if self.op == ">":
-    #         return operator.gt
-    #     elif self.op == "<":
-    #         return operator.lt
-    #     elif self.op == "=<":
-    #         return operator.le
-    #     elif self.op == ">=":
-    #         return operator.ge
-    #     elif self.op == "==":
-    #         return operator.eq
-    #     elif self.op == "\=":
-    #         return operator.ne
-
-    # def invert(self, tot):
-    #     neg_f = self.formula.neg()
-    #     if self.op == ">":
-    #         return CountingFormula(neg_f, "<", tot - self._val)
-    #     elif self.op == "<":
-    #         return CountingFormula(neg_f, ">", tot - self._val)
-    #     elif self.op == "=<":
-    #         return CountingFormula(neg_f, ">=", tot - self._val)
-    #     elif self.op == ">=":
-    #         return CountingFormula(neg_f, "=<", tot - self._val)
-    #     elif self.op == "==":
-    #         return CountingFormula(neg_f, "\=", tot - self._val)
-    #     else: # self.op == "\=":
-    #         return CountingFormula(neg_f, "==", tot - self._val)
-
-    # def neg(self):
-    #     if self.op == ">":
-    #         return CountingFormula(self.formula, "<=", self._val)
-    #     elif self.op == "<":
-    #         return CountingFormula(self.formula, ">=", self._val)
-    #     elif self.op == "=<":
-    #         return CountingFormula(self.formula, ">", self._val)
-    #     elif self.op == ">=":
-    #         return CountingFormula(self.formula, "<", self._val)
-    #     elif self.op == "==":
-    #         return CountingFormula(self.formula, "\=", self._val)
-    #     else: # self.op == "\=":
-    #         return CountingFormula(self.formula, "==", self._val)
-
-    # def num(self):
-    #     """
-    #     In the algorithms use <= or >= so adjust the number accordingly
-    #     """
-    #     if self.op == ">":
-    #         return self._val +1
-    #     elif self.op == "<":
-    #         return self._val -1 
-    #     else:
-    #         return self._val
-
-    # def update(self, val):
-    #     return CountingFormula(self.formula, self.op, val)
-
 
 class DomainFormula(object):
     """
@@ -174,10 +117,10 @@ class DomainFormula(object):
         return DomainFormula(self.universe, sub_formula, sub_dom)
 
     def __str__(self):
-        descr = ""
         if self.domain.size() > 0 :
-            descr = f" ({self.domain})"
-        str = f"{self.to_str(self.formula)}{descr}"
+            str = f"set of {self.domain.name} ({self.domain})"
+        else:
+            str = f"{self.to_str(self.formula)} (empty)"
         return str
 
     def copy(self):
@@ -208,6 +151,9 @@ class DomainFormula(object):
         c = self.copy()
         c.domain = self.domain.take(n)
         return c
+
+    def size(self):
+        return self.domain.size()
 
 class InFormula(object):
     """
@@ -292,7 +238,10 @@ class SizeFormula(object):
         return str(self)
 
     def __str__(self):
-        return f"size in {self.values}"
+        if self.values.lower == self.values.upper:
+            return f"size == {self.values.lower}"
+        else:
+            return f"size in {self.values}"
     
     def neg(self):
         return self.universe.difference(self.values)

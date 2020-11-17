@@ -16,9 +16,15 @@ class Domain(object):
     def __init__(self, name, elem):
         self.name = name
         self.elements = elem
+        self.n_elements = None
 
     def __and__(self, rhs):
-        i_name = f"({self.name} ∧ {rhs.name})"
+        if self.elements in rhs.elements:
+            i_name = self.name
+        elif rhs.elements in self.elements:
+            i_name = rhs.name
+        else:
+            i_name = f"({self.name} ∧ {rhs.name})"
         i_elem = self.elements & rhs.elements
         return Domain(i_name, i_elem)
 
@@ -51,16 +57,18 @@ class Domain(object):
         return inter.elements.empty
 
     def size(self):
-        s = 0
-        for e in self.elements:
-            if not e.empty:
-                if e.left == portion.CLOSED and e.right == portion.CLOSED:
-                    s += e.upper - e.lower +1
-                elif e.left == portion.OPEN and e.right == portion.OPEN:
-                    s += e.upper - e.lower -1
-                else:
-                    s += e.upper - e.lower
-        return s
+        if self.n_elements is None:
+            s = 0
+            for e in self.elements:
+                if not e.empty:
+                    if e.left == portion.CLOSED and e.right == portion.CLOSED:
+                        s += e.upper - e.lower +1
+                    elif e.left == portion.OPEN and e.right == portion.OPEN:
+                        s += e.upper - e.lower -1
+                    else:
+                        s += e.upper - e.lower
+            self.n_elements = s
+        return self.n_elements
 
     def take(self, n):
         """
@@ -78,7 +86,7 @@ class Domain(object):
             except StopIteration:
                 hasNext = False
             i += 1
-        taken = Domain(f"{n}-subset of {self.name}", subset)
+        taken = Domain(f"{n}x {self.name}", subset)
         return taken
 
 class Structure(object):
@@ -167,11 +175,11 @@ class LiftedSet(object):
         return str(self)
 
     def __str__(self):
-        s = f"{self.name}: {self.size}"
+        s = f"{self.source}: {self.size}"
         if len(self.constraints) > 0:
             s += "\n"
         for c in self.constraints:
-            s += f"\t {c}."
+            s += f"\t {c}.\n"
         return s
 
     def __hash__(self):
@@ -181,5 +189,29 @@ class LiftedSet(object):
         new = LiftedSet(self.name, self.size, self.source)
         new.constraints = self.constraints
         return new
-        
+    
+    def size_is_defined(self):
+        s = 0
+        for e in self.size.values:
+            if not e.empty:
+                if e.left == portion.CLOSED and e.right == portion.CLOSED:
+                    s += e.upper - e.lower +1
+                elif e.left == portion.OPEN and e.right == portion.OPEN:
+                    s += e.upper - e.lower -1
+                else:
+                    s += e.upper - e.lower
+        return s == 1
+
+    def relevant(self):
+        return set([cof.formula for cof in self.constraints])
+
+    def satisfies(self, constraint):
+        sat = None
+        for cof in self.constraints:
+            if cof.formula in constraint.formula :
+                if constraint.values in cof.values:
+                    sat = True
+                elif constraint.values & cof.values == portion.empty:
+                    sat = False
+        return sat
 
