@@ -56,6 +56,9 @@ class CountingFormula(object):
             else:
                 comp = comp.replace(upper = ub - val)
             return comp
+    
+    def copy(self):
+        return CountingFormula(self.formula, self.values)
 
 class DomainFormula(object):
     """

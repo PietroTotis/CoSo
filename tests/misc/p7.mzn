@@ -1,7 +1,7 @@
 % Use this editor as a MiniZinc scratch book
 set of int: dom = {1,2,3,4,5,6,7,8};
 set of int: s1 = {1,2,3,4};
-set of int: s2 = {6,7,8,9,10};
+set of int: s2 = {3,4,5,6};
 
 var set of dom: p1;
 var set of dom: p2;
@@ -33,12 +33,6 @@ constraint p3 != {};
 constraint(sum(i in p1)(1) == 3);
 constraint(sum(i in p2)(1) == 2);
 constraint(sum(i in p3)(1) == 3);
-constraint(sum(i in p1)(bool2int(i in s1)) == 1);
-constraint(sum(i in p2)(bool2int(i in s1)) == 2);
-constraint(sum(i in p3)(bool2int(i in s1)) == 1);
-constraint(sum(i in p1)(1-bool2int(i in s1)) == 2);
-constraint(sum(i in p2)(1-bool2int(i in s1)) == 0);
-constraint(sum(i in p3)(1-bool2int(i in s1)) == 2);
 
 constraint(sum(i in p1)(bool2int(i in s1)) > 0);
 constraint(sum(i in p2)(bool2int(i in s1)) > 0);
@@ -48,11 +42,11 @@ constraint(sum(i in p2)(bool2int(i in s1)) < 4);
 constraint(sum(i in p3)(bool2int(i in s1)) < 4);
 
 % constraint( p1<p2 /\p2 <p3);
-% constraint(sum(i in p1)(bool2int(i in s2)) > 0);
-% constraint(sum(i in p2)(bool2int(i in s2)) > 0);
-% constraint(sum(i in p3)(bool2int(i in s2)) > 0);
-% constraint(sum(i in p1)(bool2int(i in s2)) < 3);
-% constraint(sum(i in p2)(bool2int(i in s2)) < 3);
-% constraint(sum(i in p3)(bool2int(i in s2)) < 3);
+constraint(sum(i in p1)(bool2int(i in s2)) > 0);
+constraint(sum(i in p2)(bool2int(i in s2)) > 0);
+constraint(sum(i in p3)(bool2int(i in s2)) > 0);
+constraint(sum(i in p1)(bool2int(i in s2)) < 3);
+constraint(sum(i in p2)(bool2int(i in s2)) < 3);
+constraint(sum(i in p3)(bool2int(i in s2)) < 3);
 
 solve satisfy;

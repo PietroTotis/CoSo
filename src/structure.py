@@ -155,12 +155,13 @@ class LiftedSet(object):
         self.name = name
         self.size = size
         self.source = source
-        self.constraints = constraints
+        self.constraints = self.compact_cofs(constraints)
 
     def __and__(self, rhs):
         name = f"{self.name} /\ {rhs.name}"
         size = self.size & rhs.size
         constraints = self.constraints + rhs.constraints #compact
+        constraints = self.compact_cofs(constraints)
         return LiftedSet(name, size, self.source, constraints)
 
     def __eq__(self, rhs):
@@ -185,6 +186,30 @@ class LiftedSet(object):
     def __hash__(self):
         return hash(str(self))
     
+    def compact_cofs(self, counts):
+        compact = []
+        remove = []
+        updated = False
+        indexes = range(0,len(counts))
+        for i in indexes:
+            cof1 = counts[i]
+            for j in [j for j in indexes if j>i]:
+                cof2 = counts[j]
+                if cof1 != cof2:
+                    if cof1.formula == cof2.formula:
+                        new_interval = cof1.values & cof2.values
+                        merged_cof = cof1.copy()
+                        merged_cof.values = new_interval
+                        compact.append(merged_cof)
+                        remove += [i,j]
+                else: # cof1 == cof2:
+                    remove += [i]
+        keep = [i for i in indexes if not i in remove]
+        compact += [counts[i] for i in keep]
+        final =  len(remove) == 0
+        result = compact if final else self.compact_cofs(compact)
+        return result
+
     def copy(self):
         new = LiftedSet(self.name, self.size, self.source)
         new.constraints = self.constraints
