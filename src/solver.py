@@ -530,8 +530,10 @@ class SharpCSP(object):
                     ec_count *= cof_count
                 ec_choices = Solution(ec_count, []) 
             else:
-                ec_count = self.count_exchangeable_class_partitions(ec.size.lower, n_elems, n)
-                ec_choices = Solution(ec_count, [])  
+                size = ec.size.lower
+                ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
+                n_elems -= size*n
+                ec_choices = Solution(ec_count, []) 
             count *= ec_choices
         return count
 
@@ -599,173 +601,6 @@ class SharpCSP(object):
             count *= choices
         count = count // math.factorial(n_partitions)
         return count
-
-    # def count_partitions_by_cofs(self, var_list = None):
-    #     vars = var_list if var_list is not None else self.vars
-    #     v = vars[0]
-    #     relevant = list(v.relevant()) # exchangeable, altrimenti devo guardare anche le altre
-    #     cofs = v.constraints
-    #     splits = self.get_partition_splits(self, relvant)
-    #     size_partitions = self.integer_k_partitions(n, len(vars))
-    #     valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(v.size, sp)]
-    #     for i, v in enumerate(self.vars):
-    #         # stabilire gli histogram validi
-    #         # ricorsione sul problema fissato l'histogram
-    #         # filtrare dom dall'histogram fissato e continuare
-    #     return Solution(0,[])
-
-    # def get_partition_histograms(self, cases, ):
-
-    # def count_partitions_combinations(self, var, sizes, cases):
-    #     gecode = Solver.lookup("gecode")
-    #     model = Model()
-
-    # def count_partitions_combinations(self, var, sizes, cases):
-    #     """
-    #     Fixes: 
-    #     (1) element choices: the way we can choose elements to go in the different sized sub-partitions
-    #     (2) size choices: the way a sub_partition of given size can be matched with a partition of given size
-    #     """
-    #     self.lvl += 1
-    #     self.log(f"Sizes {sizes} for cases {cases}")
-    #     if len(cases) > 1:
-    #         case = cases.pop()
-    #         rest_case_sizes = case_sizes.copy()
-    #         rest_cases = cases.copy()
-    #         count = Solution(0,[])
-    #         n = case.size()
-    #         k = self.n_vars
-    #         count_partitions = self.integer_k_partitions(n,k)
-    #         valid_count_partitions = [cp for cp in count_partitions if self.is_feasible_partition(var, sizes, case, cp, case_sizes)]
-    #         for cp in valid_count_partitions:
-    #             rest_case_sizes[case] = cp
-    #             ex_case_ps = self.exchangeable_classes(cp)
-    #             ex_sizes = self.exchangeable_classes(sizes)
-    #             for s in ex_case_ps:
-    #                 ex_case_ps[s] = len(ex_case_ps[s])
-    #             for s in ex_sizes:
-    #                 ex_sizes[s] = len(ex_sizes[s])
-    #             cp_count = self.solve_case_partition(var, cp, case, ex_case_ps, sizes, ex_sizes, rest_cases, rest_case_sizes)
-    #             self.log(f"Case {cp} has {cp_count} solutions")
-    #             count += cp_count
-    #     else:
-    #         case = cases[0]
-    #         if self.is_feasible_partition(var, sizes, case, sizes):
-    #             elem_choices = self.count_partition_choices(sizes, case.size())
-    #             n = self.count_partition_choices(sizes, case.size())
-    #             count = Solution(n, []).with_choices(elem_choices)
-    #             self.log(f"Case {case} has {elem_choices} element choices and {n} solutions (total:{count})")
-    #         else:
-    #             count = Solution(0,[])
-    #             self.log(f"Case {case} is unsat for {sizes}")
-    #     self.lvl -= 1
-    #     return count
-
-    # def solve_case_partition(self, var, cp, case, ex_case_ps, sizes, ex_sizes, rest_cases, rest_case_sizes):
-    #     self.log(f"Consider case-partition {cp} for {case}")
-    #     keys = list(ex_sizes.keys())
-    #     elem_choices = self.count_partition_choices(cp, case.size())
-    #     self.log(f"... has {elem_choices} choices of exchangeable elements")
-    #     sub_part_count = Solution(0,[])
-    #     # ways of associating the sub_partitions to different sizes
-    #     distributions = self.distribute_case_over_sizes(ex_sizes, ex_case_ps)
-    #     count = Solution(0,[])
-    #     for d in distributions:
-    #         rc = rest_cases.copy()
-    #         size_choices = self.count_size_choices(ex_sizes, cp, d, keys)
-    #         new_sizes = {}
-    #         for n_elems in d:
-    #             for i, n_sets in enumerate(d[n_elems]):
-    #                 # check if enough elements
-    #                 if keys[i] >= n_elems:
-    #                     new_size = keys[i] - n_elems
-    #                     if new_size in new_sizes:
-    #                         new_sizes[new_size] += n_sets
-    #                     else:
-    #                         new_sizes[new_size] = n_sets
-    #         rest_sizes = []
-    #         for ns in new_sizes:
-    #             rest_sizes += [ns] * new_sizes[ns]
-    #         rest_sizes += [0] * (len(sizes) - len(rest_sizes))
-    #         dist_count = self.count_partitions_combinations(var, rest_sizes, rc, rest_case_sizes)
-    #         dist_count = dist_count.with_choices(elem_choices)
-    #         dist_count = dist_count.with_choices(size_choices)
-    #         sub_part_count += dist_count
-    #     return sub_part_count
-
-    # def count_partition_choices(self, distribution, dom_size):
-    #     k = distribution[0]
-    #     if len(distribution) > 1:
-    #         if k <= 1:
-    #             return self.count_partition_choices(distribution[1:], dom_size)
-    #         else:
-    #             choices = math.comb(dom_size,k)
-    #             return choices * self.count_partition_choices(distribution[1:], dom_size-k)
-    #     else:
-    #         if k <= 1:
-    #             return 1
-    #         else:
-    #             choices = math.comb(dom_size,k)
-    #             return choices
-
-    # def distribute_case_over_sizes(self, sizes, case):
-    #     """
-    #     Given the exchangeable classes of valid size partitions, returns the possible ways of matching
-    #     a sub-partition of given size to one of the valid partitions' sizes
-    #     """
-    #     # print("\t", case)
-    #     k = len(sizes)
-    #     keys = list(sizes.keys())
-    #     case_size, n = case.popitem()
-    #     # ways of matching n sub-partitions of size case_size across k possible partition sizes
-    #     distributions = self.integer_k_partitions(n,k)
-    #     options = set()
-    #     for d in distributions:
-    #         perm = itertools.permutations(d)
-    #         options = options.union(set(perm))
-    #     # print("\t", case_size, options)
-    #     choices = []
-    #     for opt in options:
-    #         # check that we have enough partitions of that size 
-    #         feasible = True
-    #         for i in range(0,len(opt)):
-    #             s = keys[i]
-    #             enough_sets = sizes[s] - opt[i] >= 0
-    #             feasible = feasible and enough_sets
-    #         # print("\t opt:",opt,feasible)
-    #         if feasible:
-    #             rest_sizes = sizes.copy()
-    #             rest_case = case.copy()
-    #             # update: we match opt[i] of size case_size with a partition of size[i]
-    #             for i in range(0,len(opt)):
-    #                 s = keys[i]
-    #                 rest_sizes[s] -= opt[i]
-    #             choice = {}
-    #             choice[case_size] = opt
-    #             if len(case) > 0:
-    #                 # print("bch", choice)
-    #                 # solve w.r.t the other case_sizes with the remaining available partitions
-    #                 rest_choices = self.distribute_case_over_sizes(rest_sizes, rest_case)
-    #                 for rest_choice in rest_choices:
-    #                     rest_choice.update(choice)
-    #                 # print("rch", rest_choices)
-    #                 choices += rest_choices
-    #             else:
-    #                 choices.append(choice)
-    #     # print("\t\tchs:", choices)
-    #     return choices
-
-    # def count_size_choices(self, ex_sizes, case, distribution, keys):
-    #     """
-    #     Counts the ways we can distribute some sub-partitions across partitions sizes taking into
-    #     account exchangeability of sizes.
-    #     """
-    #     choices = 1
-    #     for size in distribution:
-    #         for i, d in enumerate(distribution[size]):
-    #             n = ex_sizes[keys[i]]
-    #             choices *= math.comb(n,d)
-    #     return choices
 
     def count_satisfied(self, property):
         sat = []
@@ -1054,63 +889,6 @@ class SharpCSP(object):
         self.log(f"\t{res}")
         return res
        
-    # def shatter_exchangeable_partitions(self, var_list=None):
-    #     """
-    #     All partitions are exchangeable but constants are not: shatter into subproblems where constants are exchangeable.
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     v = vars[0]
-    #     n = v.source.size()
-    #     count = Solution(0,[])
-    #     size_partitions = self.integer_k_partitions(n, len(vars))
-    #     valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(v.size, sp)]
-    #     if len(v.constraints) == 0:
-    #         return self.count_partitions_by_size()
-    #     else:
-    #         # get relevant/disjoint set-properties
-    #         relevant = list(v.relevant())
-    #         cases = self.relevant_cases(v.source, relevant)
-    #         # for each valid set of partitions' sizes find the combinations of
-    #         # independent partitions that sum up to a valid set size
-    #         count = Solution(0,[])     
-    #         for vsp in valid_size_partitions:
-    #             self.log(f"Considering partition sizes {vsp}")
-    #             self.lvl += 1
-    #             ex_sizes = self.exchangeable_classes(vsp)
-    #             ex_cof_cases = self.get_partition_cof_cases(v, vsp)
-    #             # vsp_count = self.count_partitions_combinations(v, vsp, vsp_cases)
-    #             self.log(f"...has {vsp_count} solutions.")
-    #             count += vsp_count
-    #             self.lvl -= 1
-    #         return count
-
-    # def get_partition_cof_cases(self, var, valid_sizes):
-    #     cof_cases = {} 
-    #     for cof in var.constraints:
-    #         n = cof.formula.size()
-    #         k = len(valid_sizes)
-    #         part_cases = self.integer_k_partitions(n, k)
-    #         valid_partitions = [pc for pc in part_cases if self.is_feasible_partition(cof.values, pc)]
-    #         cof_cases[cof.formula] = valid_partitions
-    #     return cof_cases
-    
-    # def match_sub_partitions(self, case, sizes, case_sizes):
-    #     ex_sizes = self.exchangeable_classes(sizes)
-    #     keys = list(sizes.keys())
-    #     for es in ex_sizes:
-    #         es[sizes] = len(es[sizes])
-    #     k = len(ex_sizes)
-    #     distribution = self.integer_k_partitions(case.size(),k)
-    #     valid_distribution = []
-    #     for d in distribution:
-    #         valid = True
-    #         for i in range(1,k):    
-    #             s = keys[i]
-    #             valid = valid & (distribution[i] >= s*ex_sizes[s])
-    #         if valid:
-    #             valid_distribution.append(d)
-    #     return valid_distribution
-                
     def solve(self, log=True):
         self.dolog = log
         self.log(self)
@@ -1211,7 +989,8 @@ class SharpCSP(object):
         return count
 
     def split_partitions(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
-        self.log(f"Split class :")
+        self.log(f"Split class : {split_class_cofs}")
+        self.log(f"Rest class : {rest_class_cofs}")
         count = Solution(0, [])
         return count
 
