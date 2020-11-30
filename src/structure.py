@@ -1,5 +1,14 @@
 import portion 
 
+def is_singleton(interval):
+    if interval.left == portion.CLOSED and interval.right == portion.CLOSED:
+        return interval.lower == interval.upper
+    if interval.left == portion.OPEN and interval.right == portion.CLOSED:
+        return interval.lower +1 == interval.upper
+    if interval.left == portion.CLOSED and interval.right == portion.OPEN:
+        return interval.lower == interval.upper -1
+    if interval.left == portion.OPEN and interval.right == portion.OPEN:
+        return interval.lower +1 == interval.upper -1
 
 class Domain(object):
     """
@@ -131,7 +140,6 @@ class Structure(object):
         str += f" of entity {self.domain} ({self.name})" 
         return str
 
-
 class LiftedSet(object):
     """
     Represents a lifted subset of the universe/a set
@@ -142,32 +150,32 @@ class LiftedSet(object):
         not important at the moment
     size : SizeFormula
         describes the set of cardinality values that are valid for this set
-    constraints : [CountingFormulas]
+    cofs : [CountingFormulas]
         describes properties of the set in terms of counting formulas
     source : DomainFormula
         the set of which the LiftedSet is subset
     """
 
-    def __init__(self, name, size, source, constraints=[]):
+    def __init__(self, name, size, cofs=[]):
         """
         size: portion
         """
         self.name = name
         self.size = size
-        self.source = source
-        self.constraints = self.compact_cofs(constraints)
+        self.cofs = self.compact_cofs(cofs)
+        self.check_bound()
 
     def __and__(self, rhs):
         name = f"{self.name} /\ {rhs.name}"
         size = self.size & rhs.size
-        constraints = self.constraints + rhs.constraints #compact
-        constraints = self.compact_cofs(constraints)
-        return LiftedSet(name, size, self.source, constraints)
+        cofs = self.cofs + rhs.cofs #compact
+        cofs = self.compact_cofs(cofs)
+        return LiftedSet(name, size, cofs)
 
     def __eq__(self, rhs):
         if self.size != rhs.size:
             return False
-        elif self.constraints != rhs.constraints:
+        elif self.cofs != rhs.cofs:
             return False
         else:
             return True
@@ -176,10 +184,10 @@ class LiftedSet(object):
         return str(self)
 
     def __str__(self):
-        s = f"{self.source}: {self.size}"
-        if len(self.constraints) > 0:
+        s = f"{self.name}: {self.size}"
+        if len(self.cofs) > 0:
             s += "\n"
-        for c in self.constraints:
+        for c in self.cofs:
             s += f"\t {c}.\n"
         return s
 
@@ -210,10 +218,15 @@ class LiftedSet(object):
         result = compact if final else self.compact_cofs(compact)
         return result
 
+    def check_bound(self):
+        for cof in self.cofs:
+            if cof.values.upper == portion.inf:
+                ub = self.size.values.upper
+                finite_int = cof.values.replace(upper=ub)
+                cof.values = finite_int
+
     def copy(self):
-        new = LiftedSet(self.name, self.size, self.source)
-        new.constraints = self.constraints
-        return new
+        return LiftedSet(self.name, self.size, self.cofs)
     
     def size_is_defined(self):
         s = 0
@@ -228,11 +241,11 @@ class LiftedSet(object):
         return s == 1
 
     def relevant(self):
-        return set([cof.formula for cof in self.constraints])
+        return set([cof.formula for cof in self.cofs])
 
     def satisfies(self, constraint):
         sat = None
-        for cof in self.constraints:
+        for cof in self.cofs:
             if cof.formula in constraint.formula :
                 if constraint.values in cof.values:
                     sat = True

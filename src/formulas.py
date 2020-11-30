@@ -20,8 +20,6 @@ class CountingFormula(object):
     def __init__(self, formula, interval):
         self.formula = formula
         self.values = interval
-        # self.op = op
-        # self._val = val
 
     def __eq__(self, rhs):
         return self.formula == rhs.formula and self.values == rhs.values
@@ -247,5 +245,7 @@ class SizeFormula(object):
             return f"size in {self.values}"
     
     def neg(self):
-        return self.universe.difference(self.values)
+        vals = self.universe.difference(self.values)
+        neg = SizeFormula(f"not {self.name}", vals)
+        return neg
     
