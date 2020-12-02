@@ -40,6 +40,7 @@ class CountingFormula(object):
 
     def neg(self):
         interval = portion.closedopen(0,portion.inf) - self.values
+        # print("negating", self, "->", interval)
         return CountingFormula(self.formula, interval)
     
     def complement(self, val, n_rest):

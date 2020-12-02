@@ -220,7 +220,9 @@ class SharpCSP(object):
         count = Solution(0,[])
         if lb == ub:
             try:
-                count = self.count_eq(cof, others)
+                choices, prop_vars = self.propagate_cof(cof)
+                self.vars = prop_vars
+                count = self.split_on_constraints(choices, others)
             except Unsatisfiable:
                 pass
         else:
@@ -237,10 +239,13 @@ class SharpCSP(object):
         If vars are exchangeable we can apply a count otherwise we need to split and consider the combinations of count constraints
         """
         ex_classes = self.exchangeable_classes()
-        if len(ex_classes)>1:
-            count = self.count_non_exchangeable(ex_classes)
+        if self.type in  ["sequence", "subset"]:
+            if len(ex_classes)>1:
+                count = self.count_non_exchangeable(ex_classes)
+            else:
+                count = self.count_exchangeable()
         else:
-            count = self.count_exchangeable()
+            count = self.shatter_partitions()
         return count
 
     def choose_cof(self):
@@ -296,49 +301,49 @@ class SharpCSP(object):
         result = compact if final else self.compact_cofs(compact)
         return result
 
-    def count_eq(self, cof, others):
+    def propagate_cof(self, cof, var_list = None):
         """
+        Given a set of exchangeable variables, propagate one counting formula.
         - Check how many vars already satisfy, can satisfy, cannot satisfy the property
         - If there is no var that can satisfy, either is already sat or not
         - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
-        - If we had enough variables go on with other constraints
+        return the number of exchangeable choices the propagation requires 
         """
-        satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula)
+        vars = var_list if var_list is not None else self.vars
+        satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
+        # self.log(f"{satisfied} {not_satisfied} {maybe}")
         goal = cof.values.lower
         diff = goal - len(satisfied)
-        var_maybe = self.get_vars(maybe)
+        var_maybe = [vars[v] for v in maybe]
         ex_classes = self.exchangeable_classes(var_maybe)
-        if len(maybe) == 0:
-            n_choices = 1
-            if diff == 0:
-                self.log(cof, " already satisfied")
-                return self.split_on_constraints(n_choices, others)
-            else:
-                self.log(cof, " is unsat here")
-                raise Unsatisfiable("Unsat!")
-        else: #len(ex_classes) == 1:
-            ex_class = next(iter(ex_classes))
-            self.log(f"{len(maybe)} exchangeable constrainable vars: {ex_class}")
+        if diff == 0 and len(maybe) == 0:
+            self.log(cof, " already satisfied")
+            return 1, vars
+        elif len(maybe) == 0:
+            self.log(cof, " is unsat here")
+            raise Unsatisfiable("Unsat!")
+        else: 
+            v = var_maybe[0]
+            self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
             if self.type == "subset" and self.alt_type == False or self.type=="partition":
                 n_choices = 1
             else:
                 n_choices = math.comb(len(maybe), abs(diff))
-
-            sat_f = self.propagate(ex_class, cof.formula)
-            not_sat_f = self.propagate(ex_class, cof.formula.neg())
+            sat_f = self.propagate(v, cof.formula)
+            not_sat_f = self.propagate(v, cof.formula.neg())
             for i in maybe:
                 if diff<0:
-                    self.vars[i]  = not_sat_f
+                    vars[i]  = not_sat_f
                     diff += 1
                 elif diff>0:
-                    self.vars[i] = sat_f
+                    vars[i] = sat_f
                     diff -= 1
                 else:
-                    self.vars[i]  = not_sat_f
+                    vars[i]  = not_sat_f
             if diff != 0:
                 raise Unsatisfiable("Unsat!")
             else:
-                return self.split_on_constraints(n_choices, others)
+                return n_choices, vars
 
     def count_exchangeable(self):
         """
@@ -360,8 +365,34 @@ class SharpCSP(object):
         french==0 & dutch==0 | french==1 & dutch==2
         french==1 & dutch==0 | french==0 & dutch==2 ... 
         """
-        self.log("Counting non-exchangeable...")
         split_class_vars, rest_classes_vars = self.split_ex_classes(ex_classes)
+        combs_split_class, combs_rest_classes = self.shatter_count_formulas(split_class_vars, rest_classes_vars)
+        tot_count = Solution(0,[])
+        lvl = self.lvl
+        for i in range(0,len(combs_rest_classes)):
+            self.lvl = lvl
+            try:
+                comb_split_class = self.compact_cofs(combs_split_class[i])
+                comb_rest_classes = self.compact_cofs(combs_rest_classes[i])
+                self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
+                split_args = [split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes)]
+                if self.type in ["sequence", "subset"]:
+                    if self.alt_type: # Fix true/false difference in language
+                        count = self.split_inj(*split_args)
+                    else:
+                        count = self.split(*split_args)
+                else:
+                    count = self.split_partitions(*split_args)
+                self.log(f"Split combination count: {count}")
+            except Unsatisfiable:
+                count = 0            
+            tot_count += count
+        self.lve = lvl
+        self.log(f"Shatter count: {tot_count}")
+        return tot_count
+
+    def shatter_count_formulas(self, split_class_vars, rest_classes_vars):
+        self.log("Shattering counting formulas...")
         n_split = len(split_class_vars)
         n_rest = self.n_vars - n_split
         cofs_split_class = []
@@ -388,31 +419,7 @@ class SharpCSP(object):
             cofs_rest_classes.append(cases_rest_classes)
         combs_split_class =  list(itertools.product(*cofs_split_class))
         combs_rest_classes = list(itertools.product(*cofs_rest_classes))
-        tot_count = Solution(0,[])
-        lvl = self.lvl
-        for i in range(0,len(combs_rest_classes)):
-            self.lvl = lvl
-            # comb_split_class = combs_split_class[i]
-            # comb_rest_classes = combs_rest_classes[i]
-            try:
-                comb_split_class = self.compact_cofs(combs_split_class[i])
-                comb_rest_classes = self.compact_cofs(combs_rest_classes[i])
-                self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
-                split_args = [split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes)]
-                if self.type in ["sequence", "subset"]:
-                    if self.alt_type: # Fix true/false difference in language
-                        count = self.split_inj(*split_args)
-                    else:
-                        count = self.split(*split_args)
-                else:
-                    count = self.split_partitions(*split_args)
-                self.log(f"Split combination count: {count}")
-            except Unsatisfiable:
-                count = 0            
-            tot_count += count
-        self.lve = lvl
-        self.log(f"Shatter count: {tot_count}")
-        return tot_count
+        return combs_split_class, combs_rest_classes
 
     def count(self, vars=None):
         if self.type=="sequence":
@@ -602,12 +609,13 @@ class SharpCSP(object):
         count = count // math.factorial(n_partitions)
         return count
 
-    def count_satisfied(self, property):
+    def count_satisfied(self, property, var_list = None):
+        vars = var_list if var_list is not None else self.vars
         sat = []
         not_sat = []
         maybe = []
         if isinstance(property, DomainFormula):
-            for i, v in enumerate(self.vars):
+            for i, v in enumerate(vars):
                 pdom = property.domain
                 if v.domain in pdom:
                     sat.append(i)
@@ -616,15 +624,15 @@ class SharpCSP(object):
                 else:
                     maybe.append(i)
         elif isinstance(property, SizeFormula):
-            for i, v in enumerate(self.vars):
+            for i, v in enumerate(vars):
                 if v.size in property:
                     sat.append(i)
                 elif v.size & property == SizeFormula("", P.empty()):
                     not_sat.append(i)
                 else:
                     maybe.append(i)
-        else: # isinstance(property, SizeFormula)
-            for i, v in enumerate(self.vars):
+        else: 
+            for i, v in enumerate(vars):
                 satisfies = v.satisfies(property)
                 if satisfies is None:
                     maybe.append(i)
@@ -632,8 +640,6 @@ class SharpCSP(object):
                     sat.append(i)
                 else:
                     not_sat.append(i)
-            pass
-
         return (sat, not_sat, maybe)
 
     def count_sequence(self, var_list=None):
@@ -841,10 +847,8 @@ class SharpCSP(object):
             return var & property
         elif isinstance(property, SizeFormula):
             return var & LiftedSet("", property)
-        elif isinstance(property, CountingFormula):
-            any_size = SizeFormula("", portion.closed(0, portion.inf))
-            constr = LiftedSet("", any_size, [property])
-            return var & constr
+        elif isinstance(property, CountingFormula):#
+            return var.add_cof(property)
         else:
             raise Exception(f"unexpected property type {property}: {type(property)}")
     
@@ -988,11 +992,66 @@ class SharpCSP(object):
         self.lvl -= 1
         return count
 
-    def split_partitions(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
-        self.log(f"Split class : {split_class_cofs}")
-        self.log(f"Rest class : {rest_class_cofs}")
+    def shatter_partitions(self):
+        problems = self.propagate_cofs_partitions(self.vars, self.count_f)
+        print(problems)
         count = Solution(0, [])
+        for p in problems:
+            count += self.count_partitions(p)
         return count
+
+    def propagate_cofs_partitions(self, vars, cofs):
+        self.lvl += 1
+        # self.log("pcp:", vars, cofs)
+        if len(cofs) > 0:
+            ex_classes = self.exchangeable_classes(vars)
+            cof = cofs[0]
+            if len(ex_classes) == 1:
+                # self.log(f"ex:{vars},{cof}")
+                try:
+                    # print(cofs)
+                    self.dolog = False
+                    choices, vars = self.propagate_cof(cof, vars)
+                    self.dolog = True
+                    self.lvl -= 1
+                    return self.propagate_cofs_partitions(vars, cofs[1:])
+                except Unsatisfiable:
+                    self.lvl -= 1
+                    return []
+                # self.log(f"after: {vars}, {cofs[1:]}")
+            else:
+                scv, rcv = self.split_ex_classes(ex_classes)
+                # print(f"scv: {scv}, rcv: {rcv}")
+                combs_split_class, combs_rest_classes = self.shatter_count_formulas(scv, rcv)
+                # print(vars)
+                # self.log("csc:")
+                # for csc in combs_split_class:
+                #     self.log("\t", csc)
+                # print("crc:")
+                # for crc in combs_rest_classes:
+                #     self.log("\t", crc)
+                vars_comb = []
+                for i in range(0,len(combs_split_class)):
+                    cp_scv = scv.copy()
+                    cp_rcv = rcv.copy()
+                    prop_split_vars = self.propagate_cofs_partitions(cp_scv, combs_split_class[i])
+                    # self.log(f"scv:{prop_split_vars}")
+                    if len(prop_split_vars) == 0:
+                        continue
+                    prop_rest_vars = self.propagate_cofs_partitions(cp_rcv, combs_rest_classes[i])
+                    # self.log(f"rcv:{prop_rest_vars}")
+                    if len(prop_rest_vars) == 0:
+                        continue
+                    cofs_combs = [list(comb) for comb in itertools.product(prop_split_vars, prop_rest_vars)]
+                    for cc in cofs_combs:
+                        vars_comb.append(list(itertools.chain.from_iterable(cc)))
+                    # for cc in cofs_combs:
+                    #     self.log(cc)
+                self.lvl -= 1
+                return vars_comb
+        else:
+            self.lvl -= 1
+            return [vars]        
 
     def stirling(self, n, k):
         computed = {}

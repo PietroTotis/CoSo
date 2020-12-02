@@ -7,7 +7,7 @@ french(4, [s3,s4,s5,s6,s7,s8]).
 % french([4,11]).
 
 structure(seq, sequence, true, students).
-size(seq, 4).
+size(seq, ==, 4).
 % pos(seq,1,french).
 % pos(seq,2,french).
 % pos(seq,3,dutch).
@@ -18,7 +18,7 @@ pos(seq,3,dutch).
 % in(seq, s2).
 % count(seq, french==2).
 % count(seq, dutch<2).
-count(seq, dutch>=2).
+count(seq, dutch, >=, 2).
 % pos(seq, 1, inter(dutch,french)).
 % pos(seq, 2, not(dutch)).
 % pos(seq,2,dutch).

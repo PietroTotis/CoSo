@@ -168,7 +168,7 @@ class LiftedSet(object):
     def __and__(self, rhs):
         name = f"{self.name} /\ {rhs.name}"
         size = self.size & rhs.size
-        cofs = self.cofs + rhs.cofs #compact
+        cofs = self.cofs + rhs.cofs 
         cofs = self.compact_cofs(cofs)
         return LiftedSet(name, size, cofs)
 
@@ -194,6 +194,12 @@ class LiftedSet(object):
     def __hash__(self):
         return hash(str(self))
     
+    def add_cof(self, cof):
+        v = LiftedSet(self.name, self.size,self.cofs)
+        v.cofs.append(cof)
+        v.cofs = v.compact_cofs(v.cofs)
+        return v
+
     def compact_cofs(self, counts):
         compact = []
         remove = []
@@ -221,7 +227,7 @@ class LiftedSet(object):
     def check_bound(self):
         for cof in self.cofs:
             if cof.values.upper == portion.inf:
-                ub = self.size.values.upper
+                ub = self.size.values.upper +1
                 finite_int = cof.values.replace(upper=ub)
                 cof.values = finite_int
 
@@ -252,4 +258,3 @@ class LiftedSet(object):
                 elif constraint.values & cof.values == portion.empty:
                     sat = False
         return sat
-
