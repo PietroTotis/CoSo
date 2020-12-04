@@ -311,7 +311,7 @@ class SharpCSP(object):
         """
         vars = var_list if var_list is not None else self.vars
         satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
-        # self.log(f"{satisfied} {not_satisfied} {maybe}")
+        # print(f"{satisfied} {not_satisfied} {maybe}")
         goal = cof.values.lower
         diff = goal - len(satisfied)
         var_maybe = [vars[v] for v in maybe]
@@ -443,22 +443,21 @@ class SharpCSP(object):
             counting_constraints = counting_constraints or len(v.cofs)>0
         if len(ex_classes) == 1: 
             max_size = self.universe.size() - self.n_vars + 1
-            unconstrained = SizeFormula("any",P.closed(1,max_size))
+            unconstrained = SizeFormula("any", P.closed(1, max_size))
             if not counting_constraints and partition.size == unconstrained:
-                count = self.stirling(n_elems, self.n_vars)
-                sol = Solution(count, self.histogram())
+                sol = self.stirling(n_elems, len(vars))
+                count = Solution(sol, self.histogram())
             elif not counting_constraints and partition.size != unconstrained:
-                count = self.count_partitions_by_size()
+                count = self.count_partitions_by_size(vars)
             else:
-                count = self.count_partitions_by_cof(ex_classes)
+                count = self.count_partitions_with_cof(ex_classes, vars)
         elif counting_constraints:
-            count = self.count_partitions_by_cof(ex_classes)
-            # count = self.count_fixed_partitions()
+            count = self.count_partitions_with_cof(ex_classes, vars)
         else: 
-            count = self.count_partitions_by_size()
+            count = self.count_partitions_by_size(vars)
         return count
 
-    def count_partitions_by_cof(self, ex_classes, var_list = None):
+    def count_partitions_with_cof(self, ex_classes, var_list = None):
         vars = var_list if var_list is not None else self.vars
         fixed = True
         for v in vars:
@@ -466,9 +465,9 @@ class SharpCSP(object):
             for cof in v.cofs:
                 fixed = fixed & is_singleton(cof.values)
         if fixed:
-            return self.count_fixed_partitions()
+            return self.count_fixed_partitions(vars)
         else:
-            return self.count_ne_partitions(ex_classes)
+            return self.count_ne_partitions(ex_classes, vars)
 
     def count_partitions_by_size(self, var_list = None):
         """
@@ -478,43 +477,10 @@ class SharpCSP(object):
         """
         vars = var_list if var_list is not None else self.vars
         n_elems = self.universe.size()
-        size_partitions = self.integer_k_partitions(n_elems, len(vars))
-        valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(sp,vars)]
         count = Solution(0,[])
-        for vsp in valid_size_partitions:
-            for i,v in enumerate(vars):
-                v.size = P.closed(vsp[i],vsp[i])
-            count += self.count_fixed_partitions(vars)
+        for problem in self.feasible_size_partitions(vars):
+            count += self.count_fixed_partitions(problem)
         return count
-            
-        # print(size_partitions)
-        # valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(sp,vars)]
-        # print(valid_size_partitions)
-        # count = Solution(0,[])
-        # for vsp in valid_size_partitions:
-        #     vsp_count = Solution(1,[])
-        #     n = n_elems
-        #     for size in vsp:
-        #         choices = math.comb(n,size)
-        #         n -= size
-        #         vsp_count = vsp_count.with_choices(choices)
-        #     count += vsp_count
-        # return count
-        # vars = var_list if var_list is not None else self.vars
-        # v = vars[0]
-        # if len(vars) > 1 and n_elems>len(vars):
-        #     var_count = Solution(0,[])
-        #     for s in v.size:
-        #         choices = math.comb(n_elems,s)
-        #         if choices > 0:
-        #             rest = self.count_partitions_by_size(n_elems-s, vars[1:])
-        #         var_count += rest.with_choices(choices)
-        #     self.log(f"{var_count} solutions for var {v}")
-        # elif len(vars) == 1 and n_elems in v.size:
-        #     var_count = Solution(1, [])
-        # else:
-        #     var_count = Solution(0,[])
-        # return var_count
 
     def count_fixed_partitions(self, var_list = None):
         """
@@ -544,10 +510,13 @@ class SharpCSP(object):
             count *= ec_choices
         return count
 
-    def count_ne_partitions(self, ex_classes):
-        n_elems = self.universe.size()
-        size_partitions = self.integer_k_partitions(n_elems, self.n_vars)
-        valid_size_partitions = [sp for sp in size_partitions if self.is_feasible_partition(sp)]
+    def count_ne_partitions(self, ex_classes, var_list = None):
+        """
+        
+        """
+        vars = var_list if var_list is not None else self.vars
+        print("vs",vars)
+        valid_size_partitions = self.feasible_size_partitions(vars)
         relevant = set()
         for c in ex_classes:
             relevant = relevant.union(c.relevant())
@@ -559,7 +528,7 @@ class SharpCSP(object):
             p_model =  cp_model.CpModel()
             # decision variables
             case_vars = []
-            for i, v in enumerate(self.vars):
+            for i, v in enumerate(vsp):
                 cvs = []
                 for j,c in enumerate(cases):
                     cvs += [p_model.NewIntVar(0, c.size() ,f"c{i}{j}")]
@@ -567,24 +536,29 @@ class SharpCSP(object):
             for i,c in enumerate(cases):
                 ith_case_vars = [cv[i] for cv in case_vars]
                 p_model.Add(sum(ith_case_vars) == c.size())
+                # print(f"sum {cases[i]} ({ith_case_vars}) is {c.size()}")
             # local constraints
-            for i,v in enumerate(self.vars):
+            for i,v in enumerate(vsp):
                 shatter_vars = case_vars[i]
-                p_model.Add(sum(shatter_vars) == vsp[i])
+                part_size = v.size.values.lower # size should be fixed to singleton
+                p_model.Add(sum(shatter_vars) == part_size)
+                # print(f"sum {shatter_vars} is {vsp[i]}" )
                 # counting constraints
                 for cof in v.cofs:
+                    # print(cof)
                     subcases = [j for j,c in enumerate(cases) if c in cof.formula]
                     cof_vars = [shatter_vars[s] for s in subcases]
                     if cof.values.atomic:
                         lb, ub = self.get_lbub(cof.values)
                         p_model.Add(sum(cof_vars) >= lb)
                         p_model.Add(sum(cof_vars) <= ub)
+                        # print(f"\tsum cof {cof_vars} <= {ub}")
+                        # print(f"\tsum cof {cof_vars} >= {lb}")
                     else:
                         for vals_interval in cof.values:
                             lb, ub = self.get_lbub(vals_interval)
                             p_model.Add(sum(cof_vars) >= lb)
                             p_model.Add(sum(cof_vars) <= ub)
-
             solver = cp_model.CpSolver()
             solution_counter = SolutionCounter(case_vars, cases, self.universe, self.lvl)
             status = solver.SearchForAllSolutions(p_model, solution_counter)
@@ -597,7 +571,7 @@ class SharpCSP(object):
         if interval.left == P.OPEN:
             lower +=1
         if interval.right == P.OPEN:
-            upper +=1
+            upper -=1
         return lower, upper
     
     def count_exchangeable_class_partitions(self, size, n_elems, n_partitions):
@@ -725,6 +699,13 @@ class SharpCSP(object):
                 classes[v] = [v]
         return classes
 
+    def ex_classes_hist(self, var_list = None):
+        vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
+        for c in ex_classes:
+            ex_classes[c] = len(ex_classes[c])
+        return ex_classes
+
     def filter_domain(self, cases, dformula):
         """
         Given a domain formula dformula and the domain formula case_f of n elements shrinks dformula by (up to) n elements satisfying case_f
@@ -815,22 +796,94 @@ class SharpCSP(object):
             return False
         return True
 
-    def is_feasible_partition(self, sizes, var_list = None):
+    def feasible_size_partitions(self, var_list = None):
         """
         Given a variable LiftedSet, checks if the size of partitions are compatible with the size constraint.
         Similarly, given a case of a counting formula, check if there is some obvious constraint unsatisfiable
         """
         vars = var_list if var_list is not None else self.vars
-        if len(sizes) > 1:
-            for i, size in enumerate(sizes):
-                for j, v in enumerate(vars):
-                    if size in v.size.values:
-                        rec_sizes = sizes[:i] + sizes[i+1:]
-                        rec_vars = vars[:j] + vars[j+1:]
-                        return self.is_feasible_partition(rec_sizes, rec_vars)
-                return False
+        n_elems = self.universe.size()
+        size_partitions = self.integer_k_partitions(n_elems, len(vars))
+        non_empty = [sp for sp in size_partitions if 0 not in sp]
+        fsp = []
+        for size_partition in non_empty:
+            ex_sizes = self.ex_classes_hist(size_partition)
+            ex_parts = self.ex_classes_hist(vars)
+            fsp += self.fix_size(ex_sizes, ex_parts)
+        return fsp
+    
+    def fix_size(self, ex_sizes, ex_parts):
+        if len(ex_parts)==0:
+            return []
         else:
-            return sizes[0] in vars[0].size.values
+            part, n_sets = ex_parts.popitem()
+            valid_sizes = [size for size in ex_sizes if size in part.size.values] # there's valid sizes [2,3,...]
+            n_choices = len(valid_sizes)
+            size_distr = self.integer_k_partitions(n_sets, n_choices) # how many vays of having different sizes
+            feasible = []
+            for sd in size_distr:
+                sizes_cases = set(itertools.permutations(sd)) # is the first/second/... size assigned to n partitions?
+                for sc in sizes_cases:
+                    fixed_vars = []
+                    ex_s = copy.deepcopy(ex_sizes)
+                    ex_p = copy.deepcopy(ex_parts)
+                    i = 0
+                    n = sc[0]
+                    size = valid_sizes[0]
+                    while ex_s[size] >= n and i<len(sc):
+                        fixed_part = copy.deepcopy(part)
+                        fixed_part.size.values = P.singleton(size)
+                        ex_s[size] -= n
+                        fixed_vars += [fixed_part]*n
+                        i += 1
+                        if i<len(sc):
+                            size = valid_sizes[i]
+                            n = sc[i]
+                    if i == len(sc):
+                        others = self.fix_size(ex_s, ex_p)
+                        if len(others) > 0:
+                            feasible += [fixed_vars + o for o in others]
+                        else:
+                            feasible += [fixed_vars]
+            return feasible
+
+
+                    
+                    
+
+
+
+
+                # for size in ex_sizes:
+                #     if size in part.size.values:
+                #         m = min(ex_sizes[size], ex_parts[part])
+                #         for i in range(0, m+1):
+                #             ex_s = copy.deepcopy(ex_sizes)
+                #             ex_p = copy.deepcopy(ex_parts)
+                #             fixed_size = copy.deepcopy(part)
+                #             fixed_size.size.values = P.singleton(size)
+                #             fixed += [fixed_size] * i
+                #             ex_p[part] -= i
+                #             ex_s[size] -= i
+                #             fixed += self.fix_size(ex_s, ex_p, fixed, n-i)
+            return fixed
+
+    # def is_feasible_partition(self, sizes, var_list = None):
+    #     """
+    #     Given a variable LiftedSet, checks if the size of partitions are compatible with the size constraint.
+    #     Similarly, given a case of a counting formula, check if there is some obvious constraint unsatisfiable
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     if len(sizes) > 1:
+    #         for i, size in enumerate(sizes):
+    #             for j, v in enumerate(vars):
+    #                 if size in v.size.values:
+    #                     rec_sizes = sizes[:i] + sizes[i+1:]
+    #                     rec_vars = vars[:j] + vars[j+1:]
+    #                     return self.is_feasible_partition(rec_sizes, rec_vars)
+    #             return False
+    #     else:
+    #         return sizes[0] in vars[0].size.values
 
     def log(self, s, *args):
         if self.dolog:
@@ -994,9 +1047,9 @@ class SharpCSP(object):
 
     def shatter_partitions(self):
         problems = self.propagate_cofs_partitions(self.vars, self.count_f)
-        print(problems)
         count = Solution(0, [])
         for p in problems:
+            print("Pr", p)
             count += self.count_partitions(p)
         return count
 
@@ -1023,7 +1076,7 @@ class SharpCSP(object):
                 scv, rcv = self.split_ex_classes(ex_classes)
                 # print(f"scv: {scv}, rcv: {rcv}")
                 combs_split_class, combs_rest_classes = self.shatter_count_formulas(scv, rcv)
-                # print(vars)
+                print(vars)
                 # self.log("csc:")
                 # for csc in combs_split_class:
                 #     self.log("\t", csc)
@@ -1038,6 +1091,7 @@ class SharpCSP(object):
                     # self.log(f"scv:{prop_split_vars}")
                     if len(prop_split_vars) == 0:
                         continue
+                    # print("ehm",cp_rcv, combs_rest_classes[i])
                     prop_rest_vars = self.propagate_cofs_partitions(cp_rcv, combs_rest_classes[i])
                     # self.log(f"rcv:{prop_rest_vars}")
                     if len(prop_rest_vars) == 0:

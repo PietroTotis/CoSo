@@ -195,10 +195,8 @@ class LiftedSet(object):
         return hash(str(self))
     
     def add_cof(self, cof):
-        v = LiftedSet(self.name, self.size,self.cofs)
-        v.cofs.append(cof)
-        v.cofs = v.compact_cofs(v.cofs)
-        return v
+        cofs = self.cofs + [cof]
+        return LiftedSet(self.name, self.size, cofs)
 
     def compact_cofs(self, counts):
         compact = []
@@ -228,11 +226,13 @@ class LiftedSet(object):
         for cof in self.cofs:
             if cof.values.upper == portion.inf:
                 ub = self.size.values.upper +1
-                finite_int = cof.values.replace(upper=ub)
-                cof.values = finite_int
+                max_int = portion.closed(0,ub)
+                cof.values = cof.values & max_int
 
     def copy(self):
-        return LiftedSet(self.name, self.size, self.cofs)
+        size = self.size.copy()
+        cofs = self.cofs.copy()
+        return LiftedSet(self.name, size, cofs)
     
     def size_is_defined(self):
         s = 0
@@ -253,7 +253,7 @@ class LiftedSet(object):
         sat = None
         for cof in self.cofs:
             if cof.formula in constraint.formula :
-                if constraint.values in cof.values:
+                if cof.values in constraint.values:
                     sat = True
                 elif constraint.values & cof.values == portion.empty:
                     sat = False

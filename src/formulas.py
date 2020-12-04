@@ -1,5 +1,6 @@
 import portion
 import operator
+import copy
 
 from structure import Domain
 from problog.logic import Term
@@ -40,7 +41,6 @@ class CountingFormula(object):
 
     def neg(self):
         interval = portion.closedopen(0,portion.inf) - self.values
-        # print("negating", self, "->", interval)
         return CountingFormula(self.formula, interval)
     
     def complement(self, val, n_rest):
@@ -245,6 +245,9 @@ class SizeFormula(object):
         else:
             return f"size in {self.values}"
     
+    def copy(self):
+        return SizeFormula(self.name, self.values.copy(), self.universe)
+
     def neg(self):
         vals = self.universe.difference(self.values)
         neg = SizeFormula(f"not {self.name}", vals)
