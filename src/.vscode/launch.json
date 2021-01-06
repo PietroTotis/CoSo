@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: File corrente",
+            "name": "CoSo",
             "type": "python",
             "request": "launch",
             "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-f","../tests/misc/p8.pl"]
+            "args": ["-f", "../tests/misc/p8.pl"]
         }
     ]
 }
