@@ -65,8 +65,8 @@ class DomainFormula(object):
 
     Attributes
     ----------
-    universe : str
-        the name of the universe of the problem, as each complement is computed w.r.t. that
+    universe : Domain
+        the universe of the problem: each complement is computed w.r.t. it
     formula : ProbLog Term
         the description of the set operations to generate the set
     domain : Domain

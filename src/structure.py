@@ -18,14 +18,23 @@ class Domain(object):
     ----------
     name : str
         the str representation of the formula corresponding to the domains
-    elements : portion
+    elements : Interval
         intervals corresponding to the entities (mapped to integers) of the domain
+    distinguishable : IntervalDict
+        (sub)sets of (in)distinguishable elements
     """
 
-    def __init__(self, name, elem):
+    def __init__(self, name, elem, distinguishable):
         self.name = name
         self.elements = elem
+        self.distinguishable = distinguishable
         self.n_elements = None
+
+    @staticmethod
+    def is_distinguishable(d1, d2):
+        # if e is distinguishable truth value in one domain is d1 and the other d2,
+        # if any of the two elements is distinguishable then keep distinguishing
+        return d1 or d2 
 
     def __and__(self, rhs):
         if self.elements in rhs.elements:
@@ -35,7 +44,9 @@ class Domain(object):
         else:
             i_name = f"({self.name} ∧ {rhs.name})"
         i_elem = self.elements & rhs.elements
-        return Domain(i_name, i_elem)
+        dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)
+        dist = dist[i_elem]
+        return Domain(i_name, i_elem, dist)
 
     def __contains__(self, val):
         return val.elements in self.elements
@@ -49,11 +60,14 @@ class Domain(object):
     def __or__(self, rhs):
         u_name = f"({self.name} ∨ {rhs.name})"
         u_elem = self.elements | rhs.elements
-        return Domain(u_name, u_elem)
+        dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)  
+        return Domain(u_name, u_elem, dist)
     
     def __sub__(self, rhs):
         c_name = f"¬({rhs.name})"
-        return Domain(c_name, self.elements - rhs.elements)
+        diff =  self.elements - rhs.elements
+        dist = self.distinguishable[diff]
+        return Domain(c_name, diff, dist)
         
     def __repr__(self):
         return str(self)

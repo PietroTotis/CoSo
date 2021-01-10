@@ -14,13 +14,13 @@ class Solver(object):
     """
     def __init__(self,problem):
         self.problem = problem
-        self.universe = problem.domains[problem.universe]
+        self.universe = problem.universe
         self.size = problem.structure.size
         self.type = problem.structure.type
 
     def solve(self, log=True):
         count = Solution(0,[])
-        var_dom = DomainFormula(self.universe, Constant(self.problem.universe), self.universe)
+        var_dom = DomainFormula(self.universe.name, Term("universe"), self.universe)
         for n in self.size:
             if self.type in ["sequence", "subset"]:
                 vars = [var_dom]*n
@@ -28,6 +28,6 @@ class Solver(object):
                 ub_size = self.universe.size() - n + 1
                 size = SizeFormula("universe", P.closed(1,ub_size))
                 vars = [LiftedSet(f"part. of {var_dom}", size)]*n
-                csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec, var_dom)
+            csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec, var_dom)
             count += csp.solve(log)
         return count

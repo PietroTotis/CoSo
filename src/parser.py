@@ -23,7 +23,8 @@ class Parser(object):
 
     def add_domain(self, stmt):
         """ 
-        Adds to the problem a domain expressed ether as an interval 'name([lb,ub])' or as an enumeration 'name(size,[e1,...en])' (size is useless, just to distinguish enumerations of size 2 and intervals)
+        Adds to the problem a domain expressed ether as an interval 'name((in)distinguishable,[lb,ub])' 
+        or as an enumeration 'name((in)distinguishable,[e1,...en])'
         
         Parameters
         ----------
@@ -31,10 +32,15 @@ class Parser(object):
         stmt : a ProbLog clause
         """
         if len(stmt.args) == 1:
-                bounds = term2list(stmt.args[0])
-                ivs = [portion.closed(*bounds)]
+            distinguishable = True
+            elems = term2list(stmt.args[0])
         else:
-            entities = list(map(self.parsed.add_entity, term2list(stmt.args[1])))
+            distinguishable = stmt.args[0] == "distinguishable"
+            elems = term2list(stmt.args[1])
+        if len(elems) == 2 and isinstance(elems[0],int) and isinstance(elems[1],int):
+            ivs = [portion.closed(elems[0], elems[1])]
+        else:
+            entities = list(map(self.parsed.add_entity, elems))
             entities.sort()
             ivs = []
             i = 0
@@ -47,7 +53,10 @@ class Parser(object):
                 else:
                     ivs.append(portion.singleton(low))
                 i += 1
-        d = Domain(stmt.functor, functools.reduce(lambda a,b: a.union(b), ivs, portion.empty()))
+        elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+        dist = P.IntervalDict()
+        dist[elements] = distinguishable
+        d = Domain(stmt.functor, elements, dist)
         self.parsed.add_domain(d)
 
 

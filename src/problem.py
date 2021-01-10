@@ -1,4 +1,4 @@
-
+import portion as P
 from structure import *
 from solver import Solver
 from formulas import *
@@ -18,7 +18,7 @@ class Problem(object):
     
     def __init__(self):
         self.choice_formulas = []
-        self.universe = None
+        self.universe = Domain(Term("universe"), P.empty(), P.IntervalDict())
         self.count_formulas = []
         self.domains = {}
         self.entity_map = {}
@@ -38,12 +38,8 @@ class Problem(object):
 
     def add_domain(self, dom):
         self.domains[dom.name] = dom
-        if self.universe is None:
-            self.universe = dom.name
-        else: 
-            universe = self.domains[self.universe]
-            if universe in dom:
-                self.universe = dom.name
+        self.universe = self.universe | dom
+        self.universe.name = Term("universe")
 
     def add_counting_formula(self, cof):
         cformula = self.build_cof(cof)
@@ -93,7 +89,6 @@ class Problem(object):
         dformula : a domain formula : a ProbLog predicate inter/union/not (possibly nested)
                   or a ProbLog Term with functor one of the domains
         """
-        cont = self.domains[self.universe]
         if dformula.functor == "inter":
             lf = self.compute_dom(dformula.args[0])
             rf = self.compute_dom(dformula.args[1])
@@ -115,7 +110,7 @@ class Problem(object):
                 if id is None:
                     raise Exception(f"Unknown constant {dformula.functor}")
                 domain = Domain(id, portion.singleton(id))
-        df = DomainFormula(cont, dformula, domain)
+        df = DomainFormula(self.universe, dformula, domain)
         return df
 
     def compute_formula(self, formula):

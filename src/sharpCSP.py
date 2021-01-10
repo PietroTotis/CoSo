@@ -696,37 +696,70 @@ class SharpCSP(object):
         vars = var_list if var_list is not None else self.vars
         if not self.alt_type:
             self.log("Counting sequences:")
-            for v in vars:
-                self.log(v)
-                count *= v.domain.size()
-                sol = Solution(count, self.histogram())
-            self.log("\tDomain product: " + str(count))
+            sol = self.count_sequence_cartesian(vars)
         else:
             self.log("Counting permutations:")
             ex_classes = self.exchangeable_classes(vars)
             disjoint_classes = self.disjoint(ex_classes)
             if len(ex_classes) == 1:
-                dom = vars[0].domain
-                s = dom.size()
-                extra = s - len(vars)
-                if extra >=0:
-                    count = math.factorial(s) // math.factorial(extra)
-                    self.log(f"Falling factorial: {count}")
-                else: # not enough elements in dom to make a n_vars long permutation
-                    self.log(f"{len(vars)} different vars for {s} values!")
-                    count = 0
-                sol = Solution(count, self.histogram())
+                self.log(f"Exchangeable variables...")
+                sol = self.count_sequence_exchangeable(vars)
             elif disjoint_classes:
                 self.log("Different classes but disjoint...")
-                for v in vars:
-                    self.log(v)
-                    count *= v.domain.size()
-                sol = Solution(count, self.histogram())
-                self.log("\tDomain product: " + str(count))
+                sol = count_sequence_cartesian(vars)
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
                 sol = self.split_inj(scv, rcv, [], [])
+        return sol
+
+    def count_sequence_cartesian(self, var_list = None):
+        """
+        When variables are independent, solutions are from the cartesian product of the domain.
+        Indistinguishable elements collapse to one in terms of possible choiches 
+        """
+        vars = var_list if var_list is not None else self.vars
+        count = 1
+        for v in vars:
+            indist = v.domain.distinguishable.find(False)
+            indist_sizes = self.get_sizes_indistinguishable(indist)
+            dist_size = v.domain.size() - sum(indist_sizes)
+            count *= dist_size + len(indist_sizes)
+        sol = Solution(count, self.histogram())
+        self.log(f"\tDomain product: {count}")
+        return sol
+
+    def count_sequence_exchangeable(self, var_list = None):
+        """
+        When all elements belong to the same set in a permutation, apply falling factorial
+        However if sets have indistinguishable elements, account for it
+        """
+        vars = var_list if var_list is not None else self.vars
+        n = len(vars)
+        dom = vars[0].domain
+        size = dom.size()
+        extra = size - n
+        if extra >=0:
+            indist = dom.distinguishable.find(False)
+            if indist.empty:
+                count = math.factorial(size) // math.factorial(extra)
+                self.log(f"Falling factorial: {count}")
+            else:
+                indist_sizes = self.get_sizes_indistinguishable(indist)
+                dist_size = size - sum(indist_sizes)
+                choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+                count = 0
+                for choice in choices:
+                    dist_choice = choice[0]
+                    n_dist_choices = math.comb(dist_size, dist_choice)
+                    arrange_all = math.factorial(n) # count = n! / n1!*n2!*...*nm!
+                    arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+                    count += n_dist_choices * arrange_all // math.prod(arrange_indist_choices)
+                self.log(f"Permutations with indistinguishable elements: {count}")
+        else: # not enough elements in dom to make a n_vars long permutation
+            count = 0
+            self.log(f"{len(vars)} different vars for {size} values!")
+        sol = Solution(count, self.histogram())
         return sol
 
     def count_subsets(self, var_list = None):
@@ -739,24 +772,104 @@ class SharpCSP(object):
         """
         self.log(f"There are {self.fixed_choices} fixed elements")
         vars = var_list if var_list is not None else self.vars
-        y = len(vars) - self.fixed_choices
-        dom = vars[self.fixed_choices].domain # first of free vars
-        x = dom.size()
+        f = self.fixed_choices
         if self.alt_type:
-            count = math.comb(x+y-1,y)
-            sol = Solution(count, self.histogram())
+            sol = self.count_multisubsets(vars[f:])
         else:
             ex_classes = self.exchangeable_classes(vars)
             if len(ex_classes) == 1:
-                x = x - self.fixed_choices
-                count = math.comb(x,y)
-                sol = Solution(count, self.histogram())
+                sol = self.count_subsets_exchangeable(vars[f:])
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
                 sol = self.split_inj(scv, rcv, [], [])
         return sol
 
+    def count_multisubsets(self, var_list = None):
+        vars = var_list if var_list is not None else self.vars
+        n = len(vars)
+        dom = vars[0].domain
+        indist = dom.distinguishable.find(False)
+        indist_sizes = self.get_sizes_indistinguishable(indist)
+        dist_size = dom.size() - sum(indist_sizes)
+        choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+        count = 0
+        for choice in choices:
+            print(choice)
+            dist_choice = choice[0]
+            n_dist_choices = math.comb(dist_size, dist_choice)
+            arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+            print(n_dist_choices,arrange_indist_choices)
+            count += n_dist_choices
+        sol = Solution(count, self.histogram())
+        return sol
+
+    def count_subsets_exchangeable(self, var_list = None):
+        """
+        When all elements belong to the same set in a permutation, apply binomial coefficient
+        However if sets have indistinguishable elements, account for it
+        """
+        vars = var_list if var_list is not None else self.vars
+        n = len(vars)
+        dom = vars[0].domain
+        size = dom.size()
+        extra = size - n
+        if extra >=0:
+            indist = dom.distinguishable.find(False)
+            if indist.empty:
+                count = math.comb(size, n)
+                self.log(f"Binomial coefficient: {count}")
+            else:
+                indist_sizes = self.get_sizes_indistinguishable(indist)
+                dist_size = size - sum(indist_sizes)
+                choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+                count = 0
+                for choice in choices:
+                    dist_choice = choice[0]
+                    n_dist_choices = math.comb(dist_size, dist_choice)
+                    count += n_dist_choices 
+                self.log(f"Subsets with indistinguishable elements: {count}")
+        else: # not enough elements in dom to make a n_vars sized subset
+            count = 0
+            self.log(f"{len(vars)} different vars for {size} values!")
+        sol = Solution(count, self.histogram())
+        return sol
+
+    def get_sizes_indistinguishable(self, indistinguishable):
+        """
+        Given an interval containing the indistinguishable elements, returns 
+        the count of each group
+        """
+        indist_sizes = []
+        for left, lower, upper, right in P.to_data(indistinguishable):
+            if not left:
+                lower+= 1
+            if not right:
+                upper+= 1
+            size = upper-lower+1
+            indist_sizes.append(size)
+        return indist_sizes
+
+    def get_group_choices(self, sizes, length):
+        """
+        For a sequence of given length, fix any way of picking n elements from each group
+        that go in the sequence (and then count arrangements based on distinguishability)
+        sizes: size of each group of elements in the domain: 
+               first one is the group of distinguishable, others are groups of indistinguishable
+        length: length of the sequence
+        """
+        if len(sizes) > 0:
+            group_size = sizes[0]
+            upper = min(length, group_size)
+            lower = max(0,length-sum(sizes[1:]))
+            indist_choices = []
+            for s in range(lower, upper+1):
+                rest_indist_choices = self.get_group_choices(sizes[1:], length-s)
+                indist_choices += [[s] + ric for ric in rest_indist_choices] 
+            return indist_choices
+        else:
+            return [[]]
+                
     def split_inj(self, split_class_vars, rest_classes_vars, split_class_cofs, rest_classes_cofs):
         """
         Splits the problem under injectivity: we split between one split class and rest: split class has n variables and rest has some other classes/properties: we need to count how many "relevant" properties can end up in the split class. The relevant properties are the formulas that we have in rest: if we split between french and dutch, when splitting on french we consider the cases where n french speakers were dutch speakers, and adjust the domain of dutch in the "rest" problem.
