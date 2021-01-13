@@ -5,6 +5,37 @@ import copy
 from structure import Domain
 from problog.logic import Term
 
+class Not(object):
+    
+    def __init__(self, child):
+        self.child = child
+
+    def __repr__(self):
+        if isinstance(self.child,str):
+            return f"¬{self.child}"
+        else:
+            return f"¬({self.child})"
+class And(object):
+
+    def __init__(self, l, r):
+        self.left = l
+        self.right = r
+    
+    def __repr__(self):
+        l = ("","") if isinstance(self.left, str) else ("(",")")
+        r = ("","") if isinstance(self.right, str) else ("(",")")
+        return f"{l[0]}{self.left}{l[1]} ∧ {r[0]}{self.right}{r[1]}"
+
+class Or(object):
+
+    def __init__(self, l, r):
+        self.left = l
+        self.right = r
+
+    def __repr__(self):
+        l = ("","") if isinstance(self.left, str) else ("(",")")
+        r = ("","") if isinstance(self.right, str) else ("(",")")
+        return f"{l[0]}{self.left}{l[1]} ∨ {r[0]}{self.right}{r[1]}"
 
 class CountingFormula(object):
     """
@@ -67,7 +98,7 @@ class DomainFormula(object):
     ----------
     universe : Domain
         the universe of the problem: each complement is computed w.r.t. it
-    formula : ProbLog Term
+    formula : str/And/Or/Not
         the description of the set operations to generate the set
     domain : Domain
         the corresponding elements
@@ -85,7 +116,7 @@ class DomainFormula(object):
         elif dom == rhs.domain:
             int_term = rhs.formula
         else:
-            int_term = Term("inter", self.formula, rhs.formula)
+            int_term = And(self.formula, rhs.formula)
         return DomainFormula(self.universe, int_term, dom)
     
     def __contains__(self, other):
@@ -104,7 +135,7 @@ class DomainFormula(object):
         elif dom in rhs.domain:
             union_term = rhs.formula
         else:
-            union_term = Term("union",  self.formula, rhs.formula)
+            union_term = Or(self.formula, rhs.formula)
         return DomainFormula(self.universe, union_term, dom)
         
     def __repr__(self):
@@ -114,15 +145,15 @@ class DomainFormula(object):
         if self.disjoint(rhs):
             sub_formula = self.formula
         else:
-            sub_formula = Term("inter", self.formula, Term("not", rhs.formula))
+            sub_formula = And(self.formula, Not(rhs.formula))
         sub_dom = self.domain - rhs.domain
         return DomainFormula(self.universe, sub_formula, sub_dom)
 
     def __str__(self):
         if self.domain.size() > 0 :
-            str = f"set of {self.domain.name} ({self.domain})"
+            str = f"{self.formula} ({self.domain})"
         else:
-            str = f"{self.to_str(self.formula)} (empty)"
+            str = f"{self.formula} (empty)"
         return str
 
     def copy(self):
@@ -132,22 +163,12 @@ class DomainFormula(object):
         return self.domain.disjoint(rhs.domain)
 
     def neg(self):
-        if self.formula.functor == "not":
-            not_term = self.formula.args[0]
+        if isinstance(self.formula, Not):
+            not_term = self.formula.child
         else:
-            not_term = Term("not", self.formula)
+            not_term = Not(self.formula)
         dom = self.universe - self.domain
         return DomainFormula(self.universe, not_term, dom)
-
-    def to_str(self, f):
-        if f.functor == "inter":
-            return " ∧ ".join(map(self.to_str, f.args))
-        elif f.functor == "union":
-            return " ∨ ".join(map(self.to_str, f.args))
-        elif f.functor == "not":
-            return f"¬({self.to_str(f.args[0])})"
-        else:
-            return str(f)       
 
     def take(self, n):
         c = self.copy()

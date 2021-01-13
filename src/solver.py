@@ -20,7 +20,7 @@ class Solver(object):
 
     def solve(self, log=True):
         count = Solution(0,[])
-        var_dom = DomainFormula(self.universe.name, Term("universe"), self.universe)
+        var_dom = DomainFormula(self.universe.name, "universe", self.universe)
         for n in self.size:
             if self.type in ["sequence", "subset"]:
                 vars = [var_dom]*n

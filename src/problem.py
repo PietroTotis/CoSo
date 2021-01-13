@@ -18,7 +18,7 @@ class Problem(object):
     
     def __init__(self):
         self.choice_formulas = []
-        self.universe = Domain(Term("universe"), P.empty(), P.IntervalDict())
+        self.universe = Domain("universe", P.empty(), P.IntervalDict())
         self.count_formulas = []
         self.domains = {}
         self.entity_map = {}
@@ -39,7 +39,7 @@ class Problem(object):
     def add_domain(self, dom):
         self.domains[dom.name] = dom
         self.universe = self.universe | dom
-        self.universe.name = Term("universe")
+        self.universe.name = "universe"
 
     def add_counting_formula(self, cof):
         cformula = self.build_cof(cof)
@@ -81,36 +81,35 @@ class Problem(object):
         interval = self.get_interval(op,n)
         return SizeFormula(name, interval)
 
-    def compute_dom(self, dformula):
+    def compute_dom(self, sformula):
         """
-        Given a formula expands and computes the corresponding domain
+        Given a set-formula expands and computes the corresponding domain
         Parameters
         ----------
-        dformula : a domain formula : a ProbLog predicate inter/union/not (possibly nested)
-                  or a ProbLog Term with functor one of the domains
+        sformula : a set formula : an And/Or/Not (possibly nested)
+                  or a string corresponding to one of the domains
+                  or an entity (singleton)
         """
-        if dformula.functor == "inter":
-            lf = self.compute_dom(dformula.args[0])
-            rf = self.compute_dom(dformula.args[1])
+        if isinstance(sformula, And):
+            lf = self.compute_dom(sformula.left)
+            rf = self.compute_dom(sformula.right)
             domain = lf.domain & rf.domain
-        elif dformula.functor == "union":
-            lf = self.compute_dom(dformula.args[0])
-            rf = self.compute_dom(dformula.args[1])
+        elif isinstance(sformula, Or):
+            lf = self.compute_dom(sformula.left)
+            rf = self.compute_dom(sformula.right)
             domain = lf.domain | rf.domain
-        elif dformula.functor == "not":
-            arg = self.compute_dom(dformula.args[0])
+        elif isinstance(sformula, Not):
+            arg = self.compute_dom(sformula.child)
             domain =  arg.neg().domain
         else:
-            if dformula.functor in self.domains:
+            if sformula in self.domains:
                 domain = self.domains[str(dformula)]
-            elif dformula.functor == "partition":
-                domain = Domain("", portion.empty())
             else:
                 id = self.get_entity(dformula.functor)
                 if id is None:
-                    raise Exception(f"Unknown constant {dformula.functor}")
+                    raise Exception(f"Unknown constant {sformula}")
                 domain = Domain(id, portion.singleton(id))
-        df = DomainFormula(self.universe, dformula, domain)
+        df = DomainFormula(self.universe, sformula, domain)
         return df
 
     def compute_formula(self, formula):
@@ -139,7 +138,7 @@ class Problem(object):
             interval = portion.open(n,portion.inf)
         elif op == ">=":
             interval = portion.closedopen(n,portion.inf)
-        elif op == "==":
+        elif op == "=":
             interval = portion.singleton(n)
         else:
             interval = portion.closedopen(1,n) | portion.open(n,portion.inf)

@@ -1,96 +1,257 @@
 import argparse
 import portion
 import operator, functools
-
-from problog.parser import PrologParser
-from problog.parser import ParseError
-from problog.program import PrologFile
-from problog.logic import Clause, term2list
-
 from problem import *
 from formulas import *
 
-reserved = ["count", "query", "size", "pos", "in", "part"]
+import ply.ply.lex as lex
+import ply.ply.yacc as yacc
+
+class Lexer(object):
+
+    def __init__(self):
+        self.lexer = lex.lex(module=self)
+    
+    reserved = {
+        'indist' : 'INDIST',
+        'in' : 'IN',
+    }
+
+    # Tokens
+
+    t_EQUALS = r'='
+    t_GT = r'>'
+    t_LT = r'<'
+    t_COL = r':'
+    t_SEMI = r';'
+    # t_SLASH : r'\?'
+    t_COMMA = r','
+    t_LPAR  = r'\{'
+    t_RPAR  = r'\}'
+    t_LSPAR  = r'\['
+    t_RSPAR  = r'\]'
+    t_LRPAR  = r'\('
+    t_RRPAR  = r'\)'
+    t_COUNT = r'\#'
+    t_UNION = r'\+'
+    t_INTER = r'\&'
+    t_NOT = r'\¬'
+    t_ignore_COMMENT = r'%.*'
+    t_ignore_WHITES = r'\ +|\t|\n'
+
+    def t_SLASH(self, t):
+        r'\|'
+        t.value = "|"
+        return t
+
+    def t_LABEL(self, t):
+        r'[a-z][a-zA-Z\-\_0-9]*|[0-9]+\-[0-9\-]+'
+        t.type = self.reserved.get(t.value,'LABEL')    # Check for reserved words
+        return t
+    
+    def t_NUMBER(self, t):
+        r'\d+'
+        try:
+            t.value = int(t.value)
+        except ValueError:
+            print("Integer value too large %d", t.value)
+            t.value = 0
+        return t
+
+    def t_newline(self, t):
+        r'\n+'
+        t.lexer.lineno += t.value.count("\n")
+
+    def t_error(self, t):
+        print("Illegal character '%s'" % t.value[0])
+        t.lexer.skip(1)
+
+    tokens = ['COUNT', 'COMMA', 'EQUALS', 'LT', 'GT', 'COL', 'SEMI', 'LPAR', 'RPAR', 'LSPAR', 'RSPAR', 'LRPAR', 'RRPAR', 'NUMBER', 'UNION', 'INTER', 'NOT', 'LABEL', 'SLASH'] + list(reserved.values())
 
 class Parser(object):
 
+    tokens = Lexer.tokens
+
     def __init__(self, file):
-        self.parsed = Problem()
-        self.parse_file(file)
+        self.file = file
+        self.lexer = Lexer()
+        self.parser = yacc.yacc(module=self)
+        self.problem = Problem()
 
-    def add_clause(self, cl):
-        self.parsed.add_choice_formula(cl.head,cl.body)
+    def parse(self):
+        with open(self.file, "r") as f:
+            return self.parser.parse(f.read())
 
-    def add_domain(self, stmt):
-        """ 
-        Adds to the problem a domain expressed ether as an interval 'name((in)distinguishable,[lb,ub])' 
-        or as an enumeration 'name((in)distinguishable,[e1,...en])'
-        
-        Parameters
-        ----------
-        problem : Problem to which the statement belongs
-        stmt : a ProbLog clause
-        """
-        if len(stmt.args) == 1:
-            distinguishable = True
-            elems = term2list(stmt.args[0])
+    def p_program(self, p):
+        '''program : statement
+                | statement program
+        '''
+
+    def p_statement(self, p):
+        '''statement : declare_set SEMI
+                | replace SEMI
+                | arrangement SEMI
+                | pos_constraint SEMI
+                | size_constraint SEMI
+                | count_constraint SEMI
+        '''
+
+
+    def p_entity(self, p):
+        '''entity : NUMBER
+                  | LABEL
+        '''
+        p[0] = p[1]
+
+    def p_replace(self, p):
+        '''replace : SLASH
+                | SLASH SLASH
+        '''
+        p[0] = len(p)
+
+    def p_entity_list(self, p):
+        '''entity_list : entity
+                        | entity COMMA entity_list
+        '''
+        p[0] = p[1]
+        if len(p) > 2:
+            p[0] += p[-1]
+
+    def p_comp(self, p):
+        '''comp : EQUALS 
+            | LT
+            | GT
+            | GT EQUALS
+            | EQUALS LT
+            | SLASH EQUALS
+        '''
+        p[0] = p[1]
+
+    def p_set(self, p):
+        '''set : LABEL
+               | LRPAR set RRPAR
+               | NOT set
+               | set INTER set
+               | set UNION set
+        '''
+        if len(p) == 2: p[0] = p[1]
         else:
-            distinguishable = stmt.args[0] == "distinguishable"
-            elems = term2list(stmt.args[1])
-        if len(elems) == 2 and isinstance(elems[0],int) and isinstance(elems[1],int):
-            ivs = [portion.closed(elems[0], elems[1])]
+            if p[1] == '(': p[0] = p[2]
+            elif p[1] == '¬': p[0] = Not(p[2])
+            elif p[2] == '&': p[0] = And(p[1],p[3])
+            else: p[0] = Or(p[1],p[3])
+
+    def p_declare_set(self, p):
+        '''declare_set : INDIST LABEL EQUALS LPAR entity_list RPAR 
+                | LABEL EQUALS LPAR entity_list RPAR 
+                | INDIST LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
+                | LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
+        '''
+        indist = p[1]=="indist"
+        label = p[2] if indist else p[1]
+        if ':' in p:
+            lb = p[5] if indist else p[4]
+            ub = p[7] if indist else p[6]
+            elements = portion.closed(lb,ub)
         else:
-            entities = list(map(self.parsed.add_entity, elems))
-            entities.sort()
-            ivs = []
-            i = 0
-            while i< len(entities):
-                low = entities[i]
-                while i <len(entities)-1 and entities[i]+1 == entities[i+1]: i +=1
-                hi = entities[i]
-                if hi - low >=1:
-                    ivs.append(portion.closed(low, hi))
-                else:
-                    ivs.append(portion.singleton(low))
-                i += 1
-        elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+            elems = p[5] if indist else p[4]
+            ivs = self.list_to_set(elems)
+            elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
         dist = P.IntervalDict()
-        dist[elements] = distinguishable
-        d = Domain(stmt.functor, elements, dist)
-        self.parsed.add_domain(d)
+        dist[elements] = not indist
+        d = Domain(label, elements, dist)
+        self.problem.add_domain(d)
+        p[0] = d
 
-
-    def add_statement(self, stmt):
-        if stmt.functor == 'structure':
-            s = Structure(*stmt.args)
-            self.parsed.add_structure(s)
-        elif stmt.functor not in reserved:
-            self.add_domain(stmt)
-        elif stmt.functor == "count":
-            self.parsed.add_counting_formula(stmt)
-        elif stmt.functor == "query":
-            q = stmt.args[0]
-            self.parsed.add_query(q)
-        elif stmt.functor == "size":
-            self.parsed.add_size(stmt)
-        elif stmt.functor in ["pos", "in", "part"]:
-            self.parsed.add_choice_formula(stmt, None)
+    def p_arrangement(self, p):
+        '''arrangement : LABEL EQUALS LPAR LABEL replace LABEL IN set RPAR 
+                       | LABEL EQUALS LSPAR LABEL replace LABEL IN set RSPAR 
+                       | LABEL EQUALS LSPAR LPAR LABEL SLASH LABEL IN set RPAR RSPAR 
+                       | LABEL EQUALS LPAR LPAR LABEL SLASH LABEL IN set RPAR RPAR 
+        '''
+        # not checking var consistency and set existence
+        name = p[1]
+        partition = p[4] =='{'
+        if partition: set = p[9]
+        else: set = p[8]
+        if p[3] == '{' and p[4] == '{':
+            type = "partition"   
+        elif p[3] == '[' and p[4] == '{':
+            type = "composition"
+        elif p[3] == '{':
+            type = "subset"
         else:
-            pass
+            type = "sequence"
+        if type == "sequence":
+            spec = p[5] == 1
+        elif type == "subset":
+            spec = p[5] == 2
+        else:
+            spec = False    
+        s = Structure(name, type, spec, set)
+        self.problem.structure = s
+        p[0] = s
 
-    def parse_file(self, filename):
-        program = PrologFile(filename)
-        for stmt in program:
-            if isinstance(stmt, Clause):
-                self.add_clause(stmt)
+
+    def p_pos_constraint(self, p):
+        '''pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity 
+                        | LABEL LSPAR NUMBER RSPAR EQUALS set
+                        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+        '''
+        arrangement = p[1]
+        pos = p[3]
+        if pos[6] == '{':
+            set = self.list_to_set(pos[7])
+        else:
+            set = problem.compute_dom(pos[6])
+        df = DomainFormula(problem.universe,"anon", set)
+        p[0] = PosFormula(arrangement, pos, df)
+
+    def p_size_constraint(self, p):
+        'size_constraint : COUNT set comp NUMBER'
+        inter = self.problem.get_interval(p[3], p[4])
+        name = p[2]
+        size = SizeFormula(name, inter)
+        if name == self.problem.structure.name:
+            self.problem.structure.size = size
+        p[0] = size
+
+
+    def p_count_constraint(self, p):
+        '''count_constraint : COUNT set IN LABEL comp NUMBER
+                            | COUNT LPAR LABEL SLASH LABEL IN LABEL RPAR comp NUMBER
+        '''
+        if p[2] == '{':
+            int = problem.get_interval(p[9], p[10])
+            dom = problem.compute_dom(p[1])
+            df = DomainFormula(problem.universe, p[1], dom)
+            cf = CountingFormula(df,int)
+        else:
+            int = problem.get_interval(p[5], p[6])
+            cf = CountingFormula("partition", int)
+        p[0] = cf
+
+    def p_error(self, p):
+        if p == None:
+            token = "end of file"
+        else:
+            token = f"{p.type}({p.value}) on line {p.lineno}"
+            #ignore propery as label
+            if p.type != 'PROPERTY':
+                print(f"Syntax error: Unexpected {token}")
+
+    def list_to_set(self, elems):
+        entities = [self.problem.add_entity(e) for e in elems]
+        entities.sort()
+        ivs = []
+        i = 0
+        while i< len(entities):
+            low = entities[i]
+            while i <len(entities)-1 and entities[i]+1 == entities[i+1]: i +=1
+            hi = entities[i]
+            if hi - low >=1:
+                ivs.append(portion.closed(low, hi))
             else:
-                self.add_statement(stmt)
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('program', help='file name')
-    args = parser.parse_args()
-    p = Parser(args.program)
-    print(p.parsed)
-    sol = p.parsed.solve()
-    print("count: ", sol)
+                ivs.append(portion.singleton(low))
+            i += 1
+        return ivs

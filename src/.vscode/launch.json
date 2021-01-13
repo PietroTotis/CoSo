@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-f", "../tests/misc/indistinguishable_test.pl"]
+            "args": ["-f", "../tests/misc/t1.pl"]
         }
     ]
 }

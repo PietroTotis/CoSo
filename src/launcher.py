@@ -10,8 +10,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.f:
         parser = Parser(args.f)
-        problem = parser.parsed
+        parser.parse()
+        print(parser.problem)
         print("Running solver...")
-        count = problem.solve(log=True)
+        count = parser.problem.solve(log=True)
     else:
         parser.print_help()

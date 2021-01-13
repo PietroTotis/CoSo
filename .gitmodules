@@ -1,0 +1,3 @@
+[submodule "src/ply"]
+	path = src/ply
+	url = https://github.com/dabeaz/ply.git

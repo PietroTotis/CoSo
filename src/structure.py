@@ -128,9 +128,9 @@ class Structure(object):
         subset -> multisubset
         composition -> multi-composition
         partition -> partition of any size up to n
-    domain: Constant
-        name of the universe, never used actually
-    size: Constant
+    domain: str
+        name of the universe
+    size: SizeFormula
         length of sequence/size of subset/number of compositions of partitions    
     """
     def __init__(self, name, type, spec, domain, size = None):
@@ -173,6 +173,7 @@ class LiftedSet(object):
     def __init__(self, name, size, cofs=[]):
         """
         size: portion
+        cofs: [CountingFormulas]
         """
         self.name = name
         self.size = size
