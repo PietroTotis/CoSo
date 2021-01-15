@@ -15,6 +15,7 @@ class Lexer(object):
     reserved = {
         'indist' : 'INDIST',
         'in' : 'IN',
+        'universe' : 'UNIVERSE',
     }
 
     # Tokens
@@ -107,15 +108,16 @@ class Parser(object):
         '''replace : SLASH
                 | SLASH SLASH
         '''
-        p[0] = len(p)
+        p[0] = len(p)-1
 
     def p_entity_list(self, p):
         '''entity_list : entity
                         | entity COMMA entity_list
         '''
-        p[0] = p[1]
         if len(p) > 2:
-            p[0] += p[-1]
+            p[0] = [p[1]] + p[3]
+        else:
+            p[0] = [p[1]]
 
     def p_comp(self, p):
         '''comp : EQUALS 
@@ -125,10 +127,15 @@ class Parser(object):
             | EQUALS LT
             | SLASH EQUALS
         '''
-        p[0] = p[1]
+        if len(p)>2:
+            p[0] = p[1]+p[2]
+        else:
+            p[0] = p[1]
+
 
     def p_set(self, p):
         '''set : LABEL
+               | UNIVERSE
                | LRPAR set RRPAR
                | NOT set
                | set INTER set
@@ -152,11 +159,11 @@ class Parser(object):
         if ':' in p:
             lb = p[5] if indist else p[4]
             ub = p[7] if indist else p[6]
-            elements = portion.closed(lb,ub)
+            elems = [n for n in range(lb, ub+1)]
         else:
             elems = p[5] if indist else p[4]
-            ivs = self.list_to_set(elems)
-            elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+        ivs = self.list_to_set(elems)
+        elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
         dist = P.IntervalDict()
         dist[elements] = not indist
         d = Domain(label, elements, dist)
@@ -187,8 +194,9 @@ class Parser(object):
         elif type == "subset":
             spec = p[5] == 2
         else:
-            spec = False    
-        s = Structure(name, type, spec, set)
+            spec = False
+        dom = self.problem.compute_dom(set)
+        s = Structure(name, type, spec, dom)
         self.problem.structure = s
         p[0] = s
 
@@ -200,12 +208,14 @@ class Parser(object):
         '''
         arrangement = p[1]
         pos = p[3]
-        if pos[6] == '{':
-            set = self.list_to_set(pos[7])
+        if p[6] == '{':
+            set = self.list_to_set(p[7])
+            df = DomainFormula(self.problem.universe,"anon", set)
         else:
-            set = problem.compute_dom(pos[6])
-        df = DomainFormula(problem.universe,"anon", set)
-        p[0] = PosFormula(arrangement, pos, df)
+            df = self.problem.compute_dom(p[6])
+        pf = PosFormula(arrangement, pos, df)
+        self.problem.add_choice_formula(pf)
+        p[0] = pf
 
     def p_size_constraint(self, p):
         'size_constraint : COUNT set comp NUMBER'
@@ -219,16 +229,23 @@ class Parser(object):
 
     def p_count_constraint(self, p):
         '''count_constraint : COUNT set IN LABEL comp NUMBER
-                            | COUNT LPAR LABEL SLASH LABEL IN LABEL RPAR comp NUMBER
+                            | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+                            | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
         '''
         if p[2] == '{':
-            int = problem.get_interval(p[9], p[10])
-            dom = problem.compute_dom(p[1])
-            df = DomainFormula(problem.universe, p[1], dom)
-            cf = CountingFormula(df,int)
+            cf_par = p[3]
+            comp = p[9]
+            n = p[10]
+            interval = self.problem.get_interval(comp, n)
+            cf = CountingFormula(cf_par, interval)
         else:
-            int = problem.get_interval(p[5], p[6])
-            cf = CountingFormula("partition", int)
+            set = p[2]
+            comp = p[5]
+            n = p[6]
+            interval = self.problem.get_interval(comp, n)
+            df = self.problem.compute_dom(set)
+            cf = CountingFormula(df, interval)
+        self.problem.add_counting_formula(cf)
         p[0] = cf
 
     def p_error(self, p):

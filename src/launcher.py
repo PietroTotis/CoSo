@@ -6,6 +6,7 @@ from formulas import PosFormula, InFormula
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-v', action='store_true')
     parser.add_argument('-f', help='Run solver on file')
     args = parser.parse_args()
     if args.f:
@@ -13,6 +14,7 @@ if __name__ == '__main__':
         parser.parse()
         print(parser.problem)
         print("Running solver...")
-        count = parser.problem.solve(log=True)
+        count = parser.problem.solve(log=args.v)
+        print(f"Solution: {count}")
     else:
         parser.print_help()

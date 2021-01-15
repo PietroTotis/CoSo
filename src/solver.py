@@ -14,13 +14,16 @@ class Solver(object):
     """
     def __init__(self,problem):
         self.problem = problem
-        self.universe = problem.universe
-        self.size = problem.structure.size
+        self.universe = problem.structure.df.domain
+        self.size  = problem.structure.size
+        if self.size.values.upper == P.inf:
+            n = self.universe.size()
+            self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.structure.type
 
     def solve(self, log=True):
         count = Solution(0,[])
-        var_dom = DomainFormula(self.universe.name, "universe", self.universe)
+        var_dom = DomainFormula(self.universe, "universe", self.universe)
         for n in self.size:
             if self.type in ["sequence", "subset"]:
                 vars = [var_dom]*n

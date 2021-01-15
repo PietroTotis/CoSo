@@ -344,7 +344,10 @@ class SharpCSP(object):
                 cases_split_class.append(any)
                 cof_rest_classes = CountingFormula(cof.formula, P.closed(0,n_rest))
                 cases_rest_classes.append(cof_rest_classes)
-                n_cases = cof.values.lower-1
+                if cof.values.left == P.OPEN:
+                    n_cases = cof.values.lower
+                else:
+                    n_cases = cof.values.lower-1
             else:
                 n_cases = cof.values.upper
             for i in range(0,n_cases+1):
@@ -379,15 +382,6 @@ class SharpCSP(object):
             upper -=1
         return lower, upper
     
-    def count_exchangeable_class_partitions(self, size, n_elems, n_partitions):
-        count = 1
-        for i in range(1,n_partitions+1):
-            choices = math.comb(n_elems, size)
-            n_elems -= size
-            count *= choices
-        count = count // math.factorial(n_partitions)
-        return count
-
     def count_satisfied(self, property, var_list = None):
         vars = var_list if var_list is not None else self.vars
         sat = []
@@ -706,7 +700,7 @@ class SharpCSP(object):
                 sol = self.count_sequence_exchangeable(vars)
             elif disjoint_classes:
                 self.log("Different classes but disjoint...")
-                sol = count_sequence_cartesian(vars)
+                sol = self.count_sequence_cartesian(vars)
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
@@ -723,8 +717,9 @@ class SharpCSP(object):
         for v in vars:
             indist = v.domain.distinguishable.find(False)
             indist_sizes = self.get_sizes_indistinguishable(indist)
+            indist_size = len([s for s in indist_sizes if s>0])
             dist_size = v.domain.size() - sum(indist_sizes)
-            count *= dist_size + len(indist_sizes)
+            count *= dist_size + indist_size
         sol = Solution(count, self.histogram())
         self.log(f"\tDomain product: {count}")
         return sol
@@ -846,7 +841,10 @@ class SharpCSP(object):
                 lower+= 1
             if not right:
                 upper+= 1
-            size = upper-lower+1
+            if upper > lower:
+                size = upper-lower+1
+            else:
+                size = 0
             indist_sizes.append(size)
         return indist_sizes
 
@@ -913,6 +911,15 @@ class SharpCSP(object):
     #########################
     ##  partitions methods ##
     #########################
+
+    def count_exchangeable_class_partitions(self, size, n_elems, n_partitions):
+        count = 1
+        for i in range(1,n_partitions+1):
+            choices = math.comb(n_elems, size)
+            n_elems -= size
+            count *= choices
+        count = count // math.factorial(n_partitions)
+        return count
 
     def count_partitions(self, var_list=None):
         """
@@ -996,7 +1003,7 @@ class SharpCSP(object):
                     ec_count *= cof_count
                 ec_choices = Solution(ec_count, []) 
             else:
-                size = ec.size.lower
+                size = ec.size.values.lower
                 ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
                 n_elems -= size*n
                 ec_choices = Solution(ec_count, []) 

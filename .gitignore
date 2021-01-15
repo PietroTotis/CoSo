@@ -6,6 +6,7 @@ aproblog/
 problog/
 *.tgz
 *.vscode
+tests/examples
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -213,7 +213,7 @@ class PosFormula(object):
     """
     def __init__(self, struct, pos, df):
         self.struct = struct
-        self.pos = pos.compute_value()
+        self.pos = pos
         self.dformula = df
 
     def __repr__(self):

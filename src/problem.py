@@ -25,25 +25,29 @@ class Problem(object):
         self.queries = []
         self.structure = None
 
-    def add_choice_formula(self, head, body):
-        struct_name = head.args[0]
-        formula = head.args[-1]
-        df = self.compute_dom(formula)
-        if head.functor == "pos":
-            pos = head.args[1]
-            c = PosFormula(struct_name, pos, df)
-        if head.functor == "in":
-            c = InFormula(self.structure.name, df)
-        self.choice_formulas.append(c)
+    # def add_choice_formula(self, head, body):
+    #     struct_name = head.args[0]
+    #     formula = head.args[-1]
+    #     df = self.compute_dom(formula)
+    #     if head.functor == "pos":
+    #         pos = head.args[1]
+    #         c = PosFormula(struct_name, pos, df)
+    #     if head.functor == "in":
+    #         c = InFormula(self.structure.name, df)
+    #     self.choice_formulas.append(c)
+
 
     def add_domain(self, dom):
         self.domains[dom.name] = dom
         self.universe = self.universe | dom
         self.universe.name = "universe"
 
+    def add_choice_formula(self, chf):
+        self.choice_formulas.append(chf)
+        
     def add_counting_formula(self, cof):
-        cformula = self.build_cof(cof)
-        self.count_formulas.append(cformula)
+        # cformula = self.build_cof(cof)
+        self.count_formulas.append(cof)
 
     def add_entity(self, e):
         if str(e) in self.entity_map:
@@ -53,33 +57,33 @@ class Problem(object):
             self.entity_map[str(e)] = i
             return i
 
-    def add_query(self, q):
-        self.queries.append(q)
+    # def add_query(self, q):
+    #     self.queries.append(q)
 
-    def add_size(self, sf):
-        name = sf.args[0]
-        op = sf.args[1]
-        formula = sf.args[2]
-        s = self.build_size(name,op,formula)
-        self.structure.size = s
+    # def add_size(self, sf):
+    #     name = sf.args[0]
+    #     op = sf.args[1]
+    #     formula = sf.args[2]
+    #     s = self.build_size(name,op,formula)
+    #     self.structure.size = s
 
-    def add_structure(self, struct):
-        self.structure = struct
+    # def add_structure(self, struct):
+    #     self.structure = struct
 
-    def build_cof(self, cof):
-        struct_name = cof.args[0]
-        problog_formula = cof.args[1]
-        op = cof.args[2].functor
-        val = cof.args[3].compute_value()
-        formula = self.compute_formula(problog_formula)
-        interval = self.get_interval(op, val)
-        return CountingFormula(formula, interval)
+    # def build_cof(self, cof):
+    #     struct_name = cof.args[0]
+    #     problog_formula = cof.args[1]
+    #     op = cof.args[2].functor
+    #     val = cof.args[3].compute_value()
+    #     formula = self.compute_formula(problog_formula)
+    #     interval = self.get_interval(op, val)
+    #     return CountingFormula(formula, interval)
     
-    def build_size(self, name, op, val):
-        n = val.compute_value()
-        op = op.functor
-        interval = self.get_interval(op,n)
-        return SizeFormula(name, interval)
+    # def build_size(self, name, op, val):
+    #     n = val.compute_value()
+    #     op = op.functor
+    #     interval = self.get_interval(op,n)
+    #     return SizeFormula(name, interval)
 
     def compute_dom(self, sformula):
         """
@@ -103,25 +107,31 @@ class Problem(object):
             domain =  arg.neg().domain
         else:
             if sformula in self.domains:
-                domain = self.domains[str(dformula)]
+                domain = self.domains[sformula]
             else:
-                id = self.get_entity(dformula.functor)
+                id = self.get_entity(sformula)
                 if id is None:
-                    raise Exception(f"Unknown constant {sformula}")
-                domain = Domain(id, portion.singleton(id))
+                    id = -1 # dummy
+                    single = portion.singleton(id)
+                    # raise Exception(f"Unknown constant {sformula}")
+                else:
+                    single = portion.singleton(id)
+                dist = portion.IntervalDict()
+                dist[single] = True
+                domain = Domain(id, single, dist)
         df = DomainFormula(self.universe, sformula, domain)
         return df
 
-    def compute_formula(self, formula):
-        if formula.functor == "size":
-            name = formula.args[0]
-            op = formula.args[1]
-            n = formula.args[2]
-            return self.build_size(name,op,n)
-        elif formula.functor == "count":
-            return self.build_cof(formula)
-        else:
-            return self.compute_dom(formula)
+    # def compute_formula(self, formula):
+    #     if formula.functor == "size":
+    #         name = formula.args[0]
+    #         op = formula.args[1]
+    #         n = formula.args[2]
+    #         return self.build_size(name,op,n)
+    #     elif formula.functor == "count":
+    #         return self.build_cof(formula)
+    #     else:
+    #         return self.compute_dom(formula)
 
     def get_entity(self, e):
         if e in self.entity_map:
@@ -145,6 +155,9 @@ class Problem(object):
         return interval
 
     def solve(self, log=True):
+        if self.structure.size is None:
+            vals = portion.closed(1, self.universe.size())
+            self.structure.size = SizeFormula("unconstr", vals)
         s = Solver(self)
         return s.solve(log)
 

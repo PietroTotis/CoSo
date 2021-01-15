@@ -109,7 +109,9 @@ class Domain(object):
             except StopIteration:
                 hasNext = False
             i += 1
-        taken = Domain(f"{n}x {self.name}", subset)
+        dist = portion.IntervalDict()
+        dist[subset] = True
+        taken = Domain(f"{n}x {self.name}", subset, dist )
         return taken
 
 class Structure(object):
@@ -128,30 +130,30 @@ class Structure(object):
         subset -> multisubset
         composition -> multi-composition
         partition -> partition of any size up to n
-    domain: str
-        name of the universe
+    domain: DomainFormula
+        source set for choices
     size: SizeFormula
         length of sequence/size of subset/number of compositions of partitions    
     """
     def __init__(self, name, type, spec, domain, size = None):
         self.name = name
-        self.domain = domain
+        self.df = domain
         self.type = str(type)
-        self.spec = str(spec)=="true"
+        self.spec = spec
         self.size = size
         
     def __repr__(self):
         return str(self)
 
     def __str__(self):
-        str = f"{self.size}-{self.type}"
+        str = f"{self.type} ({self.size})"
         if self.type == "sequences" and self.spec:
             str = "permutation"
         if self.type == "subset" and self.spec:
             str = f"multi-{str}"
         if self.type == "partition" and self.spec:
             str = f"any-{str}"   
-        str += f" of entity {self.domain} ({self.name})" 
+        str += f" of entity {self.df} ({self.name})" 
         return str
 
 class LiftedSet(object):
