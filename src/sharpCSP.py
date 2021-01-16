@@ -211,6 +211,8 @@ class SharpCSP(object):
         for i in indexes :
             replaced = False
             cof1 = counts[i]
+            if cof1.values.empty:
+                raise Unsatisfiable("Empty set of valid counts")
             satisfied, not_satisfied, maybe = self.count_satisfied(cof1.formula)
             if len(maybe) == 0 and len(satisfied) in cof1.values: # remove cofs already satisfied
                     remove += [i]
@@ -310,7 +312,7 @@ class SharpCSP(object):
                 self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
                 split_args = [split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes)]
                 if self.type in ["sequence", "subset"]:
-                    if self.alt_type: # Fix true/false difference in language
+                    if self.alt_type: 
                         count = self.split_inj(*split_args)
                     else:
                         count = self.split(*split_args)
@@ -318,7 +320,7 @@ class SharpCSP(object):
                     count = self.split_partitions(*split_args)
                 self.log(f"Split combination count: {count}")
             except Unsatisfiable:
-                count = 0            
+                count = Solution(0,self.histogram())            
             tot_count += count
         self.lve = lvl
         self.log(f"Shatter count: {tot_count}")
@@ -353,7 +355,7 @@ class SharpCSP(object):
             for i in range(0,n_cases+1):
                 cof_split_class = CountingFormula(cof.formula, P.singleton(i))
                 cof_rest_classes = CountingFormula(cof.formula, cof.complement(i, n_rest))
-                if self.is_feasible_split(n_split,n_rest,cof_split_class,cof_rest_classes):
+                if self.is_feasible_split(split_class_vars[0],n_split,n_rest,cof_split_class,cof_rest_classes):
                     cases_split_class.append(cof_split_class)
                     cases_rest_classes.append(cof_rest_classes)
             cofs_split_class.append(cases_split_class)
@@ -523,13 +525,19 @@ class SharpCSP(object):
                 parts.append(p)
         return parts       
 
-    def is_feasible_split(self, n_split, n_rest, scof, rcof):
+    def is_feasible_split(self, split_class_var, n_split, n_rest, scof, rcof):
         """
         Checks if we ask to observe more properties than available variables
         """
         if scof.values.lower > n_split:
             return False
         if rcof.values.lower > n_rest:
+            return False
+        disjoint = split_class_var.disjoint(scof.formula)
+        included = scof.formula in split_class_var
+        if disjoint and scof.values.lower > 0:
+            return False
+        if included and scof.values.upper < n_split:
             return False
         return True
     
@@ -602,7 +610,10 @@ class SharpCSP(object):
         self.log(self)
         for c in self.choice_f:
             self.apply_choice(c)
-        self.count_f = self.compact_cofs(self.count_f)
+        try:
+            self.count_f = self.compact_cofs(self.count_f)
+        except Unsatisfiable:
+            return 0
         if len(self.count_f) !=0:
             count = self.apply_counts()
         else:
@@ -647,12 +658,20 @@ class SharpCSP(object):
     def split_ex_classes(self, ex_classes):
         """
         Groups the exchangeable classes as left | right by taking one as left and uniting the others
+        don't pick universe as split class
         """
-        it_excls = iter(ex_classes)
-        split_class = next(it_excls)
+        split_class = None
         rest_classes = []
-        for i in it_excls:
-            rest_classes = rest_classes + ex_classes[i]
+        for ex_class in ex_classes:
+            if split_class is None and ex_class != self.universe:
+                split_class = ex_class
+            else:
+                rest_classes = rest_classes + ex_classes[ex_class]
+        # it_excls = iter(ex_classes)
+        # split_class = next(it_excls)
+        # rest_classes = []
+        # for i in it_excls:
+        #     rest_classes = rest_classes + ex_classes[i]
         return (ex_classes[split_class], rest_classes)
 
     def stirling(self, n, k):
