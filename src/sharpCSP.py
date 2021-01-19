@@ -260,7 +260,7 @@ class SharpCSP(object):
         else: 
             v = var_maybe[0]
             self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
-            if self.type == "subset" and self.alt_type == False or self.type=="partition":
+            if self.type == "subset" or self.type=="partition":
                 n_choices = 1
             else:
                 n_choices = math.comb(len(maybe), abs(diff))
@@ -717,9 +717,9 @@ class SharpCSP(object):
             if len(ex_classes) == 1:
                 self.log(f"Exchangeable variables...")
                 sol = self.count_sequence_exchangeable(vars)
-            elif disjoint_classes:
-                self.log("Different classes but disjoint...")
-                sol = self.count_sequence_cartesian(vars)
+            # elif disjoint_classes:
+            #     self.log("Different classes but disjoint...")
+            #     sol = self.count_sequence_cartesian(vars)
             else:
                 self.log("Splitting injectivity...")
                 scv, rcv = self.split_ex_classes(ex_classes)
@@ -801,21 +801,32 @@ class SharpCSP(object):
 
     def count_multisubsets(self, var_list = None):
         vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
         n = len(vars)
         dom = vars[0].domain
         indist = dom.distinguishable.find(False)
         indist_sizes = self.get_sizes_indistinguishable(indist)
-        dist_size = dom.size() - sum(indist_sizes)
-        choices = self.get_group_choices([dist_size] + indist_sizes, n) 
-        count = 0
-        for choice in choices:
-            print(choice)
-            dist_choice = choice[0]
-            n_dist_choices = math.comb(dist_size, dist_choice)
-            arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
-            print(n_dist_choices,arrange_indist_choices)
-            count += n_dist_choices
-        sol = Solution(count, self.histogram())
+        indist_size = sum(indist_sizes)
+        dist_size = dom.size() - indist_size
+        if indist_size == 0:
+            if len(ex_classes) == 1:
+                count = math.comb(dist_size+n-1,n)
+            else:
+                count = 0
+                for exc in ex_classes:
+                    s = self.count_multisubsets(ex_classes[exc])
+                    count += s.count
+            sol = Solution(count, self.histogram())
+        else:
+            choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+            count = 0
+            for choice in choices:
+                dist_choice = choice[0]
+                n_dist_choices = math.comb(dist_size, dist_choice)
+                arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+                print(n_dist_choices,arrange_indist_choices)
+                count += n_dist_choices
+            sol = Solution(count, self.histogram())
         return sol
 
     def count_subsets_exchangeable(self, var_list = None):

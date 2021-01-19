@@ -27,10 +27,14 @@ class Solver(object):
         for n in self.size:
             if self.type in ["sequence", "subset"]:
                 vars = [var_dom]*n
+                csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec, var_dom)
+                count += csp.solve(log)
             else:
-                ub_size = self.universe.size() - n + 1
-                size = SizeFormula("universe", P.closed(1,ub_size))
-                vars = [LiftedSet(f"part. of {var_dom}", size)]*n
-            csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec, var_dom)
-            count += csp.solve(log)
+                print("Partitions and compositions not yet supported")
+                count = 0
+                # ub_size = self.universe.size() - n + 1
+                # size = SizeFormula("universe", P.closed(1,ub_size))
+                # vars = [LiftedSet(f"part. of {var_dom}", size)]*n
+            # csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.problem.structure.spec, var_dom)
+            # count += csp.solve(log)
         return count

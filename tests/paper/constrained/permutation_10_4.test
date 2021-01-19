@@ -1,6 +1,0 @@
-universe([1,10]).
-dom1([4,9]).
-dom2([6,10]).
-structure(s,sequence,true,universe).
-size(s,4).
-count(s,not(dom2) > 2).

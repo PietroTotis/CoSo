@@ -43,10 +43,8 @@ class CountingFormula(object):
     ----------
     formula : DomainFormula/CountingFormula/SizeFormula
         property to count
-    op : str
-        one in < > >= =< == \=
     val :
-        number to count
+        value interval
     """
 
     def __init__(self, formula, interval):

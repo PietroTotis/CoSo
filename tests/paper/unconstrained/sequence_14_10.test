@@ -1,5 +1,0 @@
-universe([1,14]).
-dom1([10,13]).
-dom2([10,11]).
-structure(s,sequence,false,universe).
-size(s,10).

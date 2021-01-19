@@ -146,14 +146,14 @@ class Structure(object):
         return str(self)
 
     def __str__(self):
-        str = f"{self.type} ({self.size})"
-        if self.type == "sequences" and self.spec:
+        str = f"{self.type}"
+        if self.type == "sequence" and self.spec:
             str = "permutation"
         if self.type == "subset" and self.spec:
             str = f"multi-{str}"
         if self.type == "partition" and self.spec:
             str = f"any-{str}"   
-        str += f" of entity {self.df} ({self.name})" 
+        str += f" ({self.size}) of entity {self.df} ({self.name})" 
         return str
 
 class LiftedSet(object):

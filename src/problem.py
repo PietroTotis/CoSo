@@ -108,6 +108,8 @@ class Problem(object):
         else:
             if sformula in self.domains:
                 domain = self.domains[sformula]
+            elif self.structure is not None and sformula == self.structure.name:
+                domain = self.universe
             else:
                 id = self.get_entity(sformula)
                 if id is None:
@@ -142,7 +144,7 @@ class Problem(object):
     def get_interval(self,op,n):
         if op == "<":
             interval = portion.closedopen(0,n)
-        elif op == "=<":
+        elif op == "<=":
             interval = portion.closed(0,n)
         elif op == ">":
             interval = portion.open(n,portion.inf)
@@ -155,10 +157,14 @@ class Problem(object):
         return interval
 
     def solve(self, log=True):
-        if self.structure.size is None:
-            vals = portion.closed(1, self.universe.size())
-            self.structure.size = SizeFormula("unconstr", vals)
-        s = Solver(self)
+        if self.structure is None:
+            print("empty problem!")
+            return 0
+        else:
+            if self.structure.size is None:
+                vals = portion.closed(1, self.universe.size())
+                self.structure.size = SizeFormula("unconstr", vals)
+            s = Solver(self)
         return s.solve(log)
 
     def __str__(self):

@@ -1,7 +1,0 @@
-universe([1,5]).
-dom1([2,3]).
-dom2([4,5]).
-structure(s,sequence,false,universe).
-size(s,4).
-pos(s,3,dom1).
-count(s,dom2==1).

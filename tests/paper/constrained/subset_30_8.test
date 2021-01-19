@@ -1,6 +1,0 @@
-universe([1,30]).
-dom1([14,26]).
-dom2([18,30]).
-structure(s,subset,false,universe).
-size(s,8).
-count(s,inter(dom1,dom2)\=6).

@@ -16,6 +16,8 @@ class Lexer(object):
         'indist' : 'INDIST',
         'in' : 'IN',
         'universe' : 'UNIVERSE',
+        'partitions' : 'PARTITIONS',
+        'compositions' : 'COMPOSITIONS', 
     }
 
     # Tokens
@@ -36,6 +38,7 @@ class Lexer(object):
     t_COUNT = r'\#'
     t_UNION = r'\+'
     t_INTER = r'\&'
+    t_DIFF  = r'!'
     t_NOT = r'\¬'
     t_ignore_COMMENT = r'%.*'
     t_ignore_WHITES = r'\ +|\t|\n'
@@ -67,7 +70,7 @@ class Lexer(object):
         print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
-    tokens = ['COUNT', 'COMMA', 'EQUALS', 'LT', 'GT', 'COL', 'SEMI', 'LPAR', 'RPAR', 'LSPAR', 'RSPAR', 'LRPAR', 'RRPAR', 'NUMBER', 'UNION', 'INTER', 'NOT', 'LABEL', 'SLASH'] + list(reserved.values())
+    tokens = ['COUNT', 'COMMA', 'EQUALS', 'LT', 'GT', 'COL', 'SEMI', 'LPAR', 'RPAR', 'LSPAR', 'RSPAR', 'LRPAR', 'RRPAR', 'NUMBER', 'UNION', 'INTER', 'NOT', 'DIFF', 'LABEL', 'SLASH'] + list(reserved.values())
 
 class Parser(object):
 
@@ -94,7 +97,6 @@ class Parser(object):
                 | arrangement SEMI
                 | pos_constraint SEMI
                 | size_constraint SEMI
-                | count_constraint SEMI
         '''
 
 
@@ -124,8 +126,8 @@ class Parser(object):
             | LT
             | GT
             | GT EQUALS
-            | EQUALS LT
-            | SLASH EQUALS
+            | LT EQUALS
+            | DIFF EQUALS
         '''
         if len(p)>2:
             p[0] = p[1]+p[2]
@@ -171,28 +173,27 @@ class Parser(object):
         p[0] = d
 
     def p_arrangement(self, p):
-        '''arrangement : LABEL EQUALS LPAR LABEL replace LABEL IN set RPAR 
-                       | LABEL EQUALS LSPAR LABEL replace LABEL IN set RSPAR 
-                       | LABEL EQUALS LSPAR LPAR LABEL SLASH LABEL IN set RPAR RSPAR 
-                       | LABEL EQUALS LPAR LPAR LABEL SLASH LABEL IN set RPAR RPAR 
+        '''arrangement : LABEL IN LPAR replace set RPAR 
+                       | LABEL IN LSPAR replace set RSPAR 
+                       | LABEL IN PARTITIONS LRPAR set RRPAR
+                       | LABEL IN COMPOSITIONS LRPAR set RRPAR 
         '''
         # not checking var consistency and set existence
         name = p[1]
-        partition = p[4] =='{'
-        if partition: set = p[9]
-        else: set = p[8]
-        if p[3] == '{' and p[4] == '{':
+        partition = p[4] =='('
+        set = p[5]
+        if p[3] == "partitions":
             type = "partition"   
-        elif p[3] == '[' and p[4] == '{':
+        elif p[3] == "compositions":
             type = "composition"
         elif p[3] == '{':
             type = "subset"
         else:
             type = "sequence"
         if type == "sequence":
-            spec = p[5] == 1
+            spec = p[4] == 1
         elif type == "subset":
-            spec = p[5] == 2
+            spec = p[4] == 2
         else:
             spec = False
         dom = self.problem.compute_dom(set)
@@ -218,35 +219,51 @@ class Parser(object):
         p[0] = pf
 
     def p_size_constraint(self, p):
-        'size_constraint : COUNT set comp NUMBER'
-        inter = self.problem.get_interval(p[3], p[4])
-        name = p[2]
-        size = SizeFormula(name, inter)
-        if name == self.problem.structure.name:
-            self.problem.structure.size = size
-        p[0] = size
-
-
-    def p_count_constraint(self, p):
-        '''count_constraint : COUNT set IN LABEL comp NUMBER
+        """size_constraint : COUNT set comp NUMBER
                             | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
-                            | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
-        '''
+        """
         if p[2] == '{':
             cf_par = p[3]
             comp = p[9]
             n = p[10]
             interval = self.problem.get_interval(comp, n)
             cf = CountingFormula(cf_par, interval)
+            p[0] = cf
         else:
+            inter = self.problem.get_interval(p[3], p[4])
             set = p[2]
-            comp = p[5]
-            n = p[6]
-            interval = self.problem.get_interval(comp, n)
-            df = self.problem.compute_dom(set)
-            cf = CountingFormula(df, interval)
-        self.problem.add_counting_formula(cf)
-        p[0] = cf
+            size = SizeFormula(set, inter)
+            if set == self.problem.structure.name:
+                if size.values.lower == 0:
+                    size.values = size.values.replace(lower=1)
+                self.problem.structure.size = size
+                cf = None
+            else:
+                df = self.problem.compute_dom(set)
+                cf = CountingFormula(df, inter)
+                self.problem.add_counting_formula(cf)
+
+
+    # def p_count_constraint(self, p):
+    #     '''count_constraint : COUNT set IN LABEL comp NUMBER
+    #                         | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+    #                         | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+    #     '''
+    #     if p[2] == '{':
+    #         cf_par = p[3]
+    #         comp = p[9]
+    #         n = p[10]
+    #         interval = self.problem.get_interval(comp, n)
+    #         cf = CountingFormula(cf_par, interval)
+    #     else:
+    #         set = p[2]
+    #         comp = p[5]
+    #         n = p[6]
+    #         interval = self.problem.get_interval(comp, n)
+    #         df = self.problem.compute_dom(set)
+    #         cf = CountingFormula(df, interval)
+    #     self.problem.add_counting_formula(cf)
+    #     p[0] = cf
 
     def p_error(self, p):
         if p == None:
