@@ -1,8 +1,0 @@
-uni = [1:15];
-dom1 = [4:9];
-dom2 = [2:14];
-a = { x | x in uni};
-#a = 10;
-#¬(dom2) in a > 8;
-#(dom2+¬dom1) in a <= 1;
-#dom2 in a < 3;

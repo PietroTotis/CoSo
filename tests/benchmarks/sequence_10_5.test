@@ -1,6 +1,6 @@
 uni = [1:10];
 dom1 = [4:7];
 dom2 = [2:9];
-a = [ x | x in uni];
+a in [|| uni];
 #a = 5;
 a[2] = dom2;

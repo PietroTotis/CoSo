@@ -53,9 +53,9 @@ def generate_problem(n_domains,u_size,is_sequence,struct_size,spec,choice_constr
         upper = random.randint(base+1,universe_size)
         problem+= f"dom{i} = [{base}:{upper}];\n"
     if is_sequence:
-        problem += f"a = [ x {spec} x in uni];\n"
+        problem += f"a in [{spec} uni];\n"
     else:
-        problem += f"a = {{ x {spec} x in uni}};\n"
+        problem += f"a in {{{spec} uni}};\n"
     problem += f"#a = {struct_size};\n"
     if choice_constraints and is_sequence:
         n_constr = random.randint(1,struct_size // 2)
@@ -69,7 +69,7 @@ def generate_problem(n_domains,u_size,is_sequence,struct_size,spec,choice_constr
             n = random.randint(1,struct_size)
             dom = get_random_complex_dom(n_domains-1)
             op = ops[random.randint(0,5)]
-            problem += f"#{dom} in a {op} {n};\n"
+            problem += f"#{dom} {op} {n};\n"
     return problem
 
 def domf2minizinc(df,n):
@@ -287,7 +287,7 @@ def compare2minizinc(problem, name):
             minicount = 0
             tot_time = start - finish
         print(f"Minizinc: {minicount} in {tot_time:.2f}s")
-        if minicount == count:
+        if minicount == count and finish-start < (timeout-0.1*timeout)/1000:
             print("\t OK")
         else:
             if finish-start > (timeout-0.1*timeout)/1000:

@@ -14,6 +14,6 @@ constraint sequence[1] in df2;
 
 set of int: df3= uni diff dom2;
 constraint sequence[5] in df3;
-constraint sum(i in 1..n)(bool2int(sequence[i] in dom2)) <= 4;
-constraint sum(i in 1..n)(bool2int(sequence[i] in dom2)) >= 2;
+constraint sum(i in 1..n)(bool2int(sequence[i] in dom2)) >= 0 /\ sum(i in 1..n)(bool2int(sequence[i] in dom2)) <= 4;
+constraint sum(i in 1..n)(bool2int(sequence[i] in dom2)) >= 2 /\ sum(i in 1..n)(bool2int(sequence[i] in dom2)) <= 16;
 solve satisfy;

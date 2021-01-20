@@ -1,7 +1,7 @@
 uni = [1:15];
 dom1 = [4:9];
 dom2 = [2:14];
-a = [ x | x in uni];
+a in [|| uni];
 #a = 10;
 a[8] = ¬(dom2);
 a[2] = dom2;

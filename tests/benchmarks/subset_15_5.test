@@ -1,6 +1,6 @@
 uni = [1:15];
 dom1 = [4:9];
 dom2 = [2:14];
-a = { x | x in uni};
+a in {| uni};
 #a = 5;
-#¬(dom2) in a > 4;
+#¬(dom2) > 4;

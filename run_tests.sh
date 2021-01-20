@@ -5,4 +5,4 @@ if [[ ! (-d "minizinc" && -d "pyenv") ]]; then
 fi
 py="pyenv/bin/python3.8"
 source pyenv/bin/activate
-"$py" src/tester.py --test-folder tests/paper --minizinc
+"$py" src/tester.py --test-folder tests/benchmarks --minizinc
