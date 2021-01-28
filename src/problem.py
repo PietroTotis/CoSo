@@ -47,7 +47,11 @@ class Problem(object):
         
     def add_counting_formula(self, cof):
         # cformula = self.build_cof(cof)
-        self.count_formulas.append(cof)
+        subsets = self.structure.type in ["partition","composition"]
+        count_prop = isinstance(cof.formula, DomainFormula)
+        # ignore recursive parsing of counting formulas
+        if not (subsets and count_prop):
+            self.count_formulas.append(cof)
 
     def add_entity(self, e):
         if str(e) in self.entity_map:

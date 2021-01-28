@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-v", "-f", "../tests/benchmarks/permutation_10_5.test"]
+            "args": ["-v", "-f", "../tests/examples/h147.pl"]
         }
     ]
 }

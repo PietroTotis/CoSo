@@ -1,13 +1,13 @@
-import portion 
+import portion as P
 
 def is_singleton(interval):
-    if interval.left == portion.CLOSED and interval.right == portion.CLOSED:
+    if interval.left == P.CLOSED and interval.right == P.CLOSED:
         return interval.lower == interval.upper
-    if interval.left == portion.OPEN and interval.right == portion.CLOSED:
+    if interval.left == P.OPEN and interval.right == P.CLOSED:
         return interval.lower +1 == interval.upper
-    if interval.left == portion.CLOSED and interval.right == portion.OPEN:
+    if interval.left == P.CLOSED and interval.right == P.OPEN:
         return interval.lower == interval.upper -1
-    if interval.left == portion.OPEN and interval.right == portion.OPEN:
+    if interval.left == P.OPEN and interval.right == P.OPEN:
         return interval.lower +1 == interval.upper -1
 
 class Domain(object):
@@ -84,9 +84,9 @@ class Domain(object):
             s = 0
             for e in self.elements:
                 if not e.empty:
-                    if e.left == portion.CLOSED and e.right == portion.CLOSED:
+                    if e.left == P.CLOSED and e.right == P.CLOSED:
                         s += e.upper - e.lower +1
-                    elif e.left == portion.OPEN and e.right == portion.OPEN:
+                    elif e.left == P.OPEN and e.right == P.OPEN:
                         s += e.upper - e.lower -1
                     else:
                         s += e.upper - e.lower
@@ -98,18 +98,18 @@ class Domain(object):
         returns a subset of itself of size n
         if n > size returns itself
         """
-        iter = portion.iterate(self.elements, step = 1)
-        subset = portion.empty()
+        iter = P.iterate(self.elements, step = 1)
+        subset = P.empty()
         i = 0
         hasNext = True
         while hasNext and i<n:
             try:
-                elem = portion.singleton(next(iter))
+                elem = P.singleton(next(iter))
                 subset = subset | elem
             except StopIteration:
                 hasNext = False
             i += 1
-        dist = portion.IntervalDict()
+        dist = P.IntervalDict()
         dist[subset] = True
         taken = Domain(f"{n}x {self.name}", subset, dist )
         return taken
@@ -153,6 +153,8 @@ class Structure(object):
             str = f"multi-{str}"
         if self.type == "partition" and self.spec:
             str = f"any-{str}"   
+        if self.type == "composition" and self.spec:
+            str = f"any-{str}"   
         str += f" ({self.size}) of entity {self.df} ({self.name})" 
         return str
 
@@ -188,6 +190,16 @@ class LiftedSet(object):
         cofs = self.cofs + rhs.cofs 
         cofs = self.compact_cofs(cofs)
         return LiftedSet(name, size, cofs)
+        
+    def __contains__(self, constr):
+        if hasattr(constr, "formula"):
+            for cof in self.cofs:
+                if cof.formula == constr.formula:
+                    return cof.values in constr.values
+        else:
+            return self.size.values in constr.values
+
+        return other.domain in self.domain
 
     def __eq__(self, rhs):
         if self.size != rhs.size:
@@ -241,23 +253,35 @@ class LiftedSet(object):
 
     def check_bound(self):
         for cof in self.cofs:
-            if cof.values.upper == portion.inf:
+            if cof.values.upper == P.inf:
                 ub = self.size.values.upper +1
-                max_int = portion.closed(0,ub)
+                max_int = P.closed(0,ub)
                 cof.values = cof.values & max_int
 
     def copy(self):
         size = self.size.copy()
         cofs = self.cofs.copy()
         return LiftedSet(self.name, size, cofs)
-    
+
+    def disjoint(self, constr):
+        if hasattr(constr, "formula"):
+            dis_cofs = False
+            for cof in self.cofs:
+                if cof.formula == constr.formula:
+                    if cof.values & constr.values == P.empty:
+                        dis_cofs = True
+            return dis_cofs
+        else:
+            disj = (self.size.values & constr.values) == P.empty
+            return disj
+
     def size_is_defined(self):
         s = 0
         for e in self.size.values:
             if not e.empty:
-                if e.left == portion.CLOSED and e.right == portion.CLOSED:
+                if e.left == P.CLOSED and e.right == P.CLOSED:
                     s += e.upper - e.lower +1
-                elif e.left == portion.OPEN and e.right == portion.OPEN:
+                elif e.left == P.OPEN and e.right == P.OPEN:
                     s += e.upper - e.lower -1
                 else:
                     s += e.upper - e.lower
@@ -272,6 +296,6 @@ class LiftedSet(object):
             if cof.formula in constraint.formula :
                 if cof.values in constraint.values:
                     sat = True
-                elif constraint.values & cof.values == portion.empty:
+                elif constraint.values & cof.values == P.empty:
                     sat = False
         return sat

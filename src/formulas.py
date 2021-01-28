@@ -43,7 +43,7 @@ class CountingFormula(object):
     ----------
     formula : DomainFormula/CountingFormula/SizeFormula
         property to count
-    val :
+    values :
         value interval
     """
 

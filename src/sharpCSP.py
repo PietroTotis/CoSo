@@ -662,11 +662,17 @@ class SharpCSP(object):
         """
         split_class = None
         rest_classes = []
-        for ex_class in ex_classes:
-            if split_class is None and ex_class != self.universe:
-                split_class = ex_class
-            else:
-                rest_classes = rest_classes + ex_classes[ex_class]
+        if self.type in ["partition", "composition"]:
+            it_excls = iter(ex_classes)
+            split_class = next(it_excls)
+            for i in it_excls:
+                rest_classes = rest_classes + ex_classes[i]
+        else:
+            for ex_class in ex_classes:
+                if split_class is None and ex_class != self.universe:
+                    split_class = ex_class
+                else:
+                    rest_classes = rest_classes + ex_classes[ex_class]
         # it_excls = iter(ex_classes)
         # split_class = next(it_excls)
         # rest_classes = []

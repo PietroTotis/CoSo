@@ -224,11 +224,12 @@ class Parser(object):
         """
         if p[2] == '{':
             cf_par = p[3]
+            print("cfp =", cf_par)
             comp = p[9]
             n = p[10]
             interval = self.problem.get_interval(comp, n)
             cf = CountingFormula(cf_par, interval)
-            p[0] = cf
+            self.problem.add_counting_formula(cf)
         else:
             inter = self.problem.get_interval(p[3], p[4])
             set = p[2]
@@ -242,6 +243,8 @@ class Parser(object):
                 df = self.problem.compute_dom(set)
                 cf = CountingFormula(df, inter)
                 self.problem.add_counting_formula(cf)
+            p[0] = cf
+        
 
 
     # def p_count_constraint(self, p):
