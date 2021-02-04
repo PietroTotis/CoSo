@@ -326,18 +326,19 @@ class SharpCSP(object):
         self.log(f"Shatter count: {tot_count}")
         return tot_count
 
-    def shatter_count_formulas(self, split_class_vars, rest_classes_vars):
+    def shatter_count_formulas(self, split_class_vars, rest_classes_vars, cofs=None):
         """
         Returns a shattering of the counting constraints for the given split.
         Given a split, for each counting formula compute the set of splits that shatter the constraint.
         Then combine each different cof shattering with the other constraints' possible splits (cartesian product).
         """
         self.log("Shattering counting formulas...")
+        count_f = self.count_f if cofs is None else cofs
         n_split = len(split_class_vars)
         n_rest = self.n_vars - n_split
         cofs_split_class = []
         cofs_rest_classes = []
-        for cof in self.count_f:
+        for cof in count_f:
             cases_split_class = []  # split for cof (left)
             cases_rest_classes = [] # split for cof (right)
             if cof.values.upper >= self.n_vars:
@@ -528,6 +529,7 @@ class SharpCSP(object):
     def is_feasible_split(self, split_class_var, n_split, n_rest, scof, rcof):
         """
         Checks if we ask to observe more properties than available variables
+        Or things that split_class_var cannot satisfy
         """
         if scof.values.lower > n_split:
             return False
@@ -950,11 +952,12 @@ class SharpCSP(object):
 
     def count_exchangeable_class_partitions(self, size, n_elems, n_partitions):
         count = 1
-        for i in range(1,n_partitions+1):
+        for i in range(0,n_partitions):
             choices = math.comb(n_elems, size)
             n_elems -= size
             count *= choices
-        count = count // math.factorial(n_partitions)
+        if self.type == "composition":
+            count = count * math.factorial(n_partitions)
         return count
 
     def count_partitions(self, var_list=None):
@@ -964,7 +967,6 @@ class SharpCSP(object):
         - If there are size constraints solve with simpler solving method
         - If there are counting formulas use the integer constraint solver method
         """
-        self.log("Counting partitions:")
         vars = var_list if var_list is not None else self.vars
         partition = vars[0]
         n_elems = self.universe.size()
@@ -1099,25 +1101,36 @@ class SharpCSP(object):
                             p_model.Add(sum(cof_vars) >= lb)
                             p_model.Add(sum(cof_vars) <= ub)
             solver = cp_model.CpSolver()
-            solution_counter = SolutionCounter(case_vars, cases, self.universe, self.lvl)
+            solution_counter = SolutionCounter(self.type, case_vars, cases, self.universe, self.lvl)
             status = solver.SearchForAllSolutions(p_model, solution_counter)
             count += solution_counter.SolutionCount()
         return count
 
     def feasible_size_partitions(self, var_list = None):
         """
-        Given a variable LiftedSet, checks if the size of partitions are compatible with the size constraint.
+        Given a list of variables LiftedSet, checks if the size of partitions are compatible with the size constraint.
         Similarly, given a case of a counting formula, check if there is some obvious constraint unsatisfiable
         """
         vars = var_list if var_list is not None else self.vars
-        n_elems = self.universe.size()
-        size_partitions = self.integer_k_partitions(n_elems, len(vars))
+        bound = [v for v in vars if is_singleton(v.size.values)] 
+        b_sizes = [v.size.values for v in bound]
+        free = [v for v in vars if not is_singleton(v.size.values)]
+        # decide how to partition elements over partitions with variable sizes
+        n_elems = self.universe.size()- sum([b.lower for b in b_sizes]) 
+        size_partitions = self.integer_k_partitions(n_elems, len(free))
         non_empty = [sp for sp in size_partitions if 0 not in sp]
-        fsp = []
-        for size_partition in non_empty:
-            ex_sizes = self.histogram(size_partition)
-            ex_parts = self.histogram(vars)
-            fsp += self.fix_size(ex_sizes, ex_parts)
+        if len(free) > 1:
+            fsp = []
+            for size_partition in non_empty:
+                ex_sizes = self.histogram(size_partition)
+                ex_parts = self.histogram(free)
+                fsp += bound + self.fix_size(ex_sizes, ex_parts)
+        else:
+            fsp = [bound]
+            if len(free) == 1: # if there is one free size then it must have the remaining elems
+                f = free[0]
+                f.size.values = f.size.values & P.singleton(n_elems)
+                fsp[0].append(f)
         return fsp
 
     def fix_size(self, ex_sizes, ex_parts):
@@ -1144,7 +1157,7 @@ class SharpCSP(object):
                     size = valid_sizes[0]
                     while ex_s[size] >= n and i<len(sc):
                         fixed_part = copy.deepcopy(part)
-                        fixed_part.size.values = P.singleton(size)
+                        fixed_part.size.values = fixed_part.size.values & P.singleton(size)
                         ex_s[size] -= n
                         fixed_vars += [fixed_part]*n
                         i += 1
@@ -1159,7 +1172,7 @@ class SharpCSP(object):
                             feasible += [fixed_vars]
             return feasible
 
-    def propagate_cofs_partitions(self, vars, cofs):
+    def propagate_cofs_partitions(self, vars, cofs, choices=1):
         """
         Given a list/set of variable partitions propagates counting constraints over partitions.
         If variables are exchangeable propagate, else shatter
@@ -1171,34 +1184,38 @@ class SharpCSP(object):
             if len(ex_classes) == 1:
                 try:
                     self.dolog = False
-                    choices, vars = self.propagate_cof(cof, vars)
+                    c_prop, vars = self.propagate_cof(cof, vars)
                     self.dolog = True
                     self.lvl -= 1
-                    return self.propagate_cofs_partitions(vars, cofs[1:])
+                    return self.propagate_cofs_partitions(vars, cofs[1:], c_prop)
                 except Unsatisfiable:
                     self.lvl -= 1
-                    return []
+                    return [(0,[])]
             else:
                 scv, rcv = self.split_ex_classes(ex_classes)
-                combs_split_class, combs_rest_classes = self.shatter_count_formulas(scv, rcv)
+                combs_split_class, combs_rest_classes = self.shatter_count_formulas(scv, rcv, cofs)
                 vars_comb = []
                 for i in range(0,len(combs_split_class)):
                     cp_scv = scv.copy()
                     cp_rcv = rcv.copy()
                     prop_split_vars = self.propagate_cofs_partitions(cp_scv, combs_split_class[i])
-                    if len(prop_split_vars) == 0:
+                    if len(prop_split_vars) == 1 and prop_split_vars[0][0] == 0: #unsat
                         continue
                     prop_rest_vars = self.propagate_cofs_partitions(cp_rcv, combs_rest_classes[i])
-                    if len(prop_rest_vars) == 0:
+                    if len(prop_rest_vars) == 1 and prop_rest_vars[0][0] == 0: #unsat
                         continue
                     cofs_combs = [list(comb) for comb in itertools.product(prop_split_vars, prop_rest_vars)]
                     for cc in cofs_combs:
-                        vars_comb.append(list(itertools.chain.from_iterable(cc)))
+                        s_problem, r_problem = cc
+                        s_choices, svars = s_problem
+                        r_choices, rvars = r_problem
+                        c = choices * s_choices * r_choices
+                        vars_comb.append((c, svars+rvars))
                 self.lvl -= 1
                 return vars_comb
         else:
             self.lvl -= 1
-            return [vars]        
+            return [(choices, vars)]       
 
     def shatter_partitions(self):
         """
@@ -1206,8 +1223,8 @@ class SharpCSP(object):
         """
         problems = self.propagate_cofs_partitions(self.vars, self.count_f)
         count = Solution(0, [])
-        for p in problems:
-            count += self.count_partitions(p)
+        for c, p in problems:
+            count += self.count_partitions(p).with_choices(c)
         return count
 
 
@@ -1218,8 +1235,9 @@ class SolutionCounter(cp_model.CpSolverSolutionCallback):
     (all of the form #p=n)
     """
 
-    def __init__(self, variables, cases, universe, lvl):
+    def __init__(self, type, variables, cases, universe, lvl):
         cp_model.CpSolverSolutionCallback.__init__(self)
+        self.__type = type
         self.__variables = variables
         self.__cases = cases
         self.__universe = universe
@@ -1239,7 +1257,7 @@ class SolutionCounter(cp_model.CpSolverSolutionCallback):
                 ls.cofs.append(cof)
             var_partitions.append(ls)
         # recursively solve the problem, now with fixed value constraints
-        csp = SharpCSP(var_partitions, "partition", [], [], False, self.__universe, self.__lvl +1) #fix for compositions
+        csp = SharpCSP(var_partitions, self.__type, [], [], False, self.__universe, self.__lvl +1) 
         sol = csp.solve(True)
         self.__solution_count += sol
 

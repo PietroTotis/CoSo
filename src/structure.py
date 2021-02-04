@@ -268,11 +268,11 @@ class LiftedSet(object):
             dis_cofs = False
             for cof in self.cofs:
                 if cof.formula == constr.formula:
-                    if cof.values & constr.values == P.empty:
+                    if cof.values & constr.values == P.empty():
                         dis_cofs = True
             return dis_cofs
         else:
-            disj = (self.size.values & constr.values) == P.empty
+            disj = (self.size.values & constr.values) == P.empty()
             return disj
 
     def size_is_defined(self):

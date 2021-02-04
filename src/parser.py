@@ -224,7 +224,8 @@ class Parser(object):
         """
         if p[2] == '{':
             cf_par = p[3]
-            print("cfp =", cf_par)
+            if cf_par.formula.formula == p[5]:
+                cf_par = SizeFormula(p[5], cf_par.values)
             comp = p[9]
             n = p[10]
             interval = self.problem.get_interval(comp, n)

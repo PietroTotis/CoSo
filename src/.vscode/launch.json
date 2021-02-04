@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-v", "-f", "../tests/examples/h147.pl"]
+            "args": ["-v", "-f", "../tests/examples/m722.pl"]
         }
     ]
 }
