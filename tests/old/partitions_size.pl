@@ -9,5 +9,6 @@ french = {s3,s4,s5,s6,s7,s8};
 parts in partitions(students);
 #parts = 4;
 #{#p<=2 | p in parts} >0;
-#{#dutch > 0 | p in parts} = 2;
+#{#dutch > 0 | p in parts} > 1;
+#{#french=0 | p in parts} > 0;
 

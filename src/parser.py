@@ -190,14 +190,12 @@ class Parser(object):
             type = "subset"
         else:
             type = "sequence"
-        if type == "sequence":
-            spec = p[4] == 1
-        elif type == "subset":
-            spec = p[4] == 2
-        else:
-            spec = False
+        if type == "sequence" and p[4] == 1:
+            type = "permutation"
+        if type == "subset" and p[4] == 2:
+            type = "multisubset"
         dom = self.problem.compute_dom(set)
-        s = Structure(name, type, spec, dom)
+        s = Structure(name, type, dom)
         self.problem.structure = s
         p[0] = s
 

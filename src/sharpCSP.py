@@ -88,16 +88,13 @@ class SharpCSP(object):
         choice formulas to enforce
     count_f : [CountFormulas]
         set of counting formulas to enforce
-    alt_type : boolean
-        same as Structure
     fixed_choices: int
         subsets only: number of variables already set by choice constraints
     lvl: int
         nesting level for logging 
     """
 
-    def __init__(self, vars, type, choice_f, count_f, alt_type, universe=None, lvl=0):
-        self.alt_type = alt_type
+    def __init__(self, vars, type, choice_f, count_f, universe=None, lvl=0):
         self.choice_f = choice_f
         self.count_f = count_f
         self.fixed_choices = 0
@@ -160,7 +157,7 @@ class SharpCSP(object):
             self.log(f"Expanding bounds {cof.values}...")
             for i in P.iterate(cof.values, step = 1):
                 cof_eq = CountingFormula(cof.formula, P.singleton(i))
-                count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others, self.alt_type)
+                count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others)
                 count += count_case
         self.lvl -=1
         return count
@@ -312,11 +309,10 @@ class SharpCSP(object):
                 comb_rest_classes = self.compact_cofs(combs_rest_classes[i])
                 self.log(f"Solving combination {i}: {comb_split_class} // {comb_rest_classes}")
                 split_args = [split_class_vars, rest_classes_vars, list(comb_split_class), list(comb_rest_classes)]
-                if self.type in ["sequence", "subset"]:
-                    if self.alt_type: 
-                        count = self.split_inj(*split_args)
-                    else:
-                        count = self.split(*split_args)
+                if self.type in ["permutation", "subset"]:
+                    count = self.split_inj(*split_args)
+                elif self.type in ["sequence", "multisubset"]:
+                    count = self.split(*split_args)
                 else:
                     count = self.split_partitions(*split_args)
                 self.log(f"Split combination count: {count}")
@@ -630,18 +626,18 @@ class SharpCSP(object):
         rcv = [v.copy() for v in rest_classes_vars]
         self.log(f"Split class :")
         count = Solution(0, self.histogram())
-        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs, self.alt_type)
+        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs)
         if split_class_count != 0:
             self.log("Rest class: ")
-            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs, self.alt_type)
+            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs)
             count = split_class_count * rest_classes_count
             self.log("==========")
         return count
 
-    def solve_subproblem(self, vars, type, choice_constr, count_constr, alt_type):
+    def solve_subproblem(self, vars, type, choice_constr, count_constr):
         self.log(f"\tSubproblem ({type}):")
         vars = [v.copy() for v in vars]
-        subproblem = SharpCSP(vars, type, choice_constr, count_constr, alt_type, self.universe, self.lvl+1)
+        subproblem = SharpCSP(vars, type, choice_constr, count_constr, self.universe, self.lvl+1)
         try:
             count = subproblem.solve(self.dolog)
             return count
@@ -655,7 +651,7 @@ class SharpCSP(object):
             self.log("... no other constraints")
             count = self.count()
         else:
-            count = self.solve_subproblem(self.vars, self.type, [], others, self.alt_type)
+            count = self.solve_subproblem(self.vars, self.type, [], others)
         return count.with_choices(n_choices)
         
     def split_ex_classes(self, ex_classes):
@@ -709,14 +705,14 @@ class SharpCSP(object):
     def count_sequence(self, var_list=None):
         """
         Look at a sequence problem and figure out what to do:
-        - Sequence: just cartesian product
+        - Sequence: cartesian product
         - Sequence with alldiff (permutation): 
             - Exchangeable: counting rule (factorial)
             - Non-exchangeable: split/shatter
         """
         count = 1
         vars = var_list if var_list is not None else self.vars
-        if not self.alt_type:
+        if self.type == "sequence":
             self.log("Counting sequences:")
             sol = self.count_sequence_cartesian(vars)
         else:
@@ -796,7 +792,7 @@ class SharpCSP(object):
         self.log(f"There are {self.fixed_choices} fixed elements")
         vars = var_list if var_list is not None else self.vars
         f = self.fixed_choices
-        if self.alt_type:
+        if self.type == "multisubset":
             sol = self.count_multisubsets(vars[f:])
         else:
             ex_classes = self.exchangeable_classes(vars)
@@ -934,12 +930,12 @@ class SharpCSP(object):
                     self.log(f"Case {n} {split_class} are s.t. {split_count_formulas}:")
                     try:
                         split_count_formulas = self.compact_cofs(split_count_formulas)
-                        split_class_count = self.solve_subproblem(split_class_vars, self.type, [], split_count_formulas, self.alt_type)
+                        split_class_count = self.solve_subproblem(split_class_vars, self.type, [], split_count_formulas)
                         if split_class_count.count != 0: #optimization: do not solve rest if split already unsat
                             for c, hst in split_class_count.histograms:
                                 partial_count = Solution(c, hst)
                                 filtered = self.filter_domains(hst, rest_classes_vars)
-                                rest_count = self.solve_subproblem(filtered, self.type, [], rest_classes_cofs, self.alt_type)
+                                rest_count = self.solve_subproblem(filtered, self.type, [], rest_classes_cofs)
                                 self.log(f"Split result = {c} * {rest_count.count} = {partial_count * rest_count}")
                                 count += partial_count * rest_count
                     except Unsatisfiable:
@@ -953,10 +949,12 @@ class SharpCSP(object):
 
     def count_exchangeable_class_partitions(self, size, n_elems, n_partitions, formula = "universe"):
         # https://math.stackexchange.com/questions/640558/how-many-ways-can-n-elements-be-partitioned-into-subsets-of-size-k
-        # assumption: size divides n_elems
         self.log(f"Dividing {n_elems} {formula} in {n_partitions} {self.type} of size {size}")
         if size == 0:
-            return 1 
+            return 1
+        if n_partitions == 1:
+            return math.comb(n_elems, size)
+        assert n_elems % size == 0
         num = math.factorial(n_elems)
         r = n_elems//size
         d1 = math.factorial(size)**r

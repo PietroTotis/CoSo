@@ -97,6 +97,7 @@ class Domain(object):
         """
         returns a subset of itself of size n
         if n > size returns itself
+        since we use it for shattering alldiff, assumes that all elements are distinguishable
         """
         iter = P.iterate(self.elements, step = 1)
         subset = P.empty()
@@ -135,7 +136,7 @@ class Structure(object):
     size: SizeFormula
         length of sequence/size of subset/number of compositions of partitions    
     """
-    def __init__(self, name, type, spec, domain, size = None):
+    def __init__(self, name, type, domain, size = None):
         self.name = name
         self.df = domain
         self.type = str(type)
@@ -147,14 +148,6 @@ class Structure(object):
 
     def __str__(self):
         str = f"{self.type}"
-        if self.type == "sequence" and self.spec:
-            str = "permutation"
-        if self.type == "subset" and self.spec:
-            str = f"multi-{str}"
-        if self.type == "partition" and self.spec:
-            str = f"any-{str}"   
-        if self.type == "composition" and self.spec:
-            str = f"any-{str}"   
         str += f" ({self.size}) of entity {self.df} ({self.name})" 
         return str
 
