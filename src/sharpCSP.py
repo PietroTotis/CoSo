@@ -240,6 +240,7 @@ class SharpCSP(object):
     def propagate_cof(self, cof, var_list = None):
         """
         Given a set of exchangeable variables, propagate one counting formula.
+        Assumes count is == n, i.e. size is singleton
         - Check how many vars already satisfy, can satisfy, cannot satisfy the property
         - If there is no var that can satisfy, either is already sat or not
         - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
@@ -950,12 +951,17 @@ class SharpCSP(object):
     ##  partitions methods ##
     #########################
 
-    def count_exchangeable_class_partitions(self, size, n_elems, n_partitions):
-        count = 1
-        for i in range(0,n_partitions):
-            choices = math.comb(n_elems, size)
-            n_elems -= size
-            count *= choices
+    def count_exchangeable_class_partitions(self, size, n_elems, n_partitions, formula = "universe"):
+        # https://math.stackexchange.com/questions/640558/how-many-ways-can-n-elements-be-partitioned-into-subsets-of-size-k
+        # assumption: size divides n_elems
+        self.log(f"Dividing {n_elems} {formula} in {n_partitions} {self.type} of size {size}")
+        if size == 0:
+            return 1 
+        num = math.factorial(n_elems)
+        r = n_elems//size
+        d1 = math.factorial(size)**r
+        d2 = math.factorial(r)
+        count = num//(d1*d2)
         if self.type == "composition":
             count = count * math.factorial(n_partitions)
         return count
@@ -1034,17 +1040,17 @@ class SharpCSP(object):
             n = len(ex_classes[ec])
             if len(ec.cofs) > 0:
                 ec_count = 1
-                cof_sizes = [cof.values.lower for cof in ec.cofs]
-                for i, cof_size in enumerate(cof_sizes):
-                    cof_count = self.count_exchangeable_class_partitions(cof_size, case_n_elems[i], n)
-                    case_n_elems[i] -= cof_sizes[i] 
+                for i, cof in enumerate(ec.cofs):
+                    size = cof.values.lower # fized value i.e. singleton
+                    cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
+                    case_n_elems[i] -= size
                     ec_count *= cof_count
                 ec_choices = Solution(ec_count, []) 
             else:
                 size = ec.size.values.lower
                 ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
                 n_elems -= size*n
-                ec_choices = Solution(ec_count, []) 
+                ec_choices = Solution(ec_count, [])
             count *= ec_choices
         return count
 
@@ -1181,17 +1187,25 @@ class SharpCSP(object):
         if len(cofs) > 0:
             ex_classes = self.exchangeable_classes(vars)
             cof = cofs[0]
-            if len(ex_classes) == 1:
-                try:
-                    self.dolog = False
-                    c_prop, vars = self.propagate_cof(cof, vars)
-                    self.dolog = True
-                    self.lvl -= 1
-                    return self.propagate_cofs_partitions(vars, cofs[1:], c_prop)
-                except Unsatisfiable:
-                    self.lvl -= 1
-                    return [(0,[])]
-            else:
+            if len(ex_classes) == 1: # pick a constraint and propagate
+                if cof.values.upper == P.inf:
+                    cof.values=cof.values.replace(upper=len(vars), right = P.CLOSED)
+                cases = []
+                for i in P.iterate(cof.values, step = 1):
+                    i_vars = vars.copy()
+                    cof_eq = CountingFormula(cof.formula, P.singleton(i))
+                    try:
+                        self.dolog = False
+                        c_prop, p_vars = self.propagate_cof(cof_eq, i_vars) # propagate one constraint
+                        shatter = self.propagate_cofs_partitions(p_vars, cofs[1:], c_prop) # shatter otheers
+                        cases += shatter
+                        self.dolog = True
+                        self.lvl -= 1
+                    except Unsatisfiable:
+                        self.dolog = True
+                        self.lvl -= 1
+                return cases
+            else: # shatter constraints
                 scv, rcv = self.split_ex_classes(ex_classes)
                 combs_split_class, combs_rest_classes = self.shatter_count_formulas(scv, rcv, cofs)
                 vars_comb = []

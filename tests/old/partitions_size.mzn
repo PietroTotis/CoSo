@@ -1,6 +1,6 @@
 % Use this editor as a MiniZinc scratch book
 set of int: dom = {1,2,3,4,5,6,7,8};
-% set of int: dom = {1,2,3,4,5,6};
+set of int: dutch = {1,2,3,4,5,6};
 
 var set of dom: p1;
 var set of dom: p2;
@@ -22,7 +22,14 @@ constraint p2 != {};
 constraint p3 != {};
 constraint p4 != {};
 
-constraint(sum(i in p1)(1) <= 2) ;
-constraint(sum(i in p2)(1) <= 2);
+constraint(sum(i in p1)(bool2int(i in dutch))) > 0;
+constraint(sum(i in p2)(bool2int(i in dutch))) > 0;
+constraint(sum(i in p3)(bool2int(i in dutch))) = 0;
+constraint(sum(i in p4)(bool2int(i in dutch))) = 0;
+
+constraint(sum(i in p4)(1) <= 2);
+constraint(sum(i in p3)(1) <= 2);
+constraint(sum(i in p2)(1) > 2);
+constraint(sum(i in p1)(1) > 2);
 
 solve satisfy;

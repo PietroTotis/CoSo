@@ -196,10 +196,11 @@ class LiftedSet(object):
             for cof in self.cofs:
                 if cof.formula == constr.formula:
                     return cof.values in constr.values
+            return False
         else:
             return self.size.values in constr.values
 
-        return other.domain in self.domain
+        return constr.domain in self.domain
 
     def __eq__(self, rhs):
         if self.size != rhs.size:
