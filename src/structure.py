@@ -1,88 +1,89 @@
 import portion as P
+from util import *
 
-def is_singleton(interval):
-    if interval.left == P.CLOSED and interval.right == P.CLOSED:
-        return interval.lower == interval.upper
-    if interval.left == P.OPEN and interval.right == P.CLOSED:
-        return interval.lower +1 == interval.upper
-    if interval.left == P.CLOSED and interval.right == P.OPEN:
-        return interval.lower == interval.upper -1
-    if interval.left == P.OPEN and interval.right == P.OPEN:
-        return interval.lower +1 == interval.upper -1
 
 class Domain(object):
     """
-    Represents a domain as a portion (set of intervals)
+    Represents a domain as a portion (set of intervals) with extra info, i.e. distinguishability, size
+    and take operation
     
     Attributes
     ----------
     name : str
-        the str representation of the formula corresponding to the domains
-    elements : Interval
+        the label associated to the domains
+    elements : IntervalDict
         intervals corresponding to the entities (mapped to integers) of the domain
-    distinguishable : IntervalDict
-        (sub)sets of (in)distinguishable elements
+        mapped as dict to boolean saying whether elements are distinguishable or not
     """
 
-    def __init__(self, name, elem, distinguishable):
+    def __init__(self, name, elems):
         self.name = name
-        self.elements = elem
-        self.distinguishable = distinguishable
+        self.elements = elems
         self.n_elements = None
 
-    @staticmethod
-    def is_distinguishable(d1, d2):
-        # if e is distinguishable truth value in one domain is d1 and the other d2,
-        # if any of the two elements is distinguishable then keep distinguishing
-        return d1 or d2 
+    # @staticmethod
+    # def is_distinguishable(d1, d2):
+    #     # if e is distinguishable truth value in one domain is d1 and the other d2,
+    #     # if any of the two elements is distinguishable then keep distinguishing
+    #     return d1 or d2 
 
-    def __and__(self, rhs):
-        if self.elements in rhs.elements:
-            i_name = self.name
-        elif rhs.elements in self.elements:
-            i_name = rhs.name
-        else:
-            i_name = f"({self.name} ∧ {rhs.name})"
-        i_elem = self.elements & rhs.elements
-        dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)
-        dist = dist[i_elem]
-        return Domain(i_name, i_elem, dist)
+    # def __and__(self, rhs):
+    #     if self.elements in rhs.elements:
+    #         i_name = self.name
+    #     elif rhs.elements in self.elements:
+    #         i_name = rhs.name
+    #     else:
+    #         i_name = f"({self.name} ∧ {rhs.name})"
+    #     i_elem = self.elements & rhs.elements
+    #     dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)
+    #     dist = dist[i_elem]
+    #     return Domain(i_name, i_elem, dist)
 
     def __contains__(self, val):
-        return val.elements in self.elements
+        return val.elements.domain() in self.elements.domain()
 
     def __eq__(self, rhs):
         return self.elements == rhs.elements
 
-    def __lt__(self, rhs):
-        return self in rhs
+    def __hash__(self):
+        return hash(self.name)
 
-    def __or__(self, rhs):
-        u_name = f"({self.name} ∨ {rhs.name})"
-        u_elem = self.elements | rhs.elements
-        dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)  
-        return Domain(u_name, u_elem, dist)
+    # def __lt__(self, rhs):
+    #     return self in rhs
+
+    # def __or__(self, rhs):
+    #     u_name = f"({self.name} ∨ {rhs.name})"
+    #     u_elem = self.elements | rhs.elements
+    #     dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)  
+    #     return Domain(u_name, u_elem, dist)
     
     def __sub__(self, rhs):
-        c_name = f"¬({rhs.name})"
+        c_name = f"({self.name} - {rhs.name})"
         diff =  self.elements - rhs.elements
-        dist = self.distinguishable[diff]
+        dist = self.distinguishable # if distinguishability is different makes no sense
         return Domain(c_name, diff, dist)
         
     def __repr__(self):
         return str(self)
     
     def __str__(self):
-        return f"{self.elements}"
+        if self.size() > 0 :
+            str = f"{self.name} ({self.elements.domain()})"
+        else:
+            str = f"{self.name} (none)"
+        return str
 
-    def disjoint(self,rhs):
+    def all_indistinguishable(self):
+        return not (True in self.elements.values())
+
+    def disjoint(self, rhs):
         inter = self & rhs
-        return inter.elements.empty
+        return inter.elements.domain().empty
 
     def size(self):
         if self.n_elements is None:
             s = 0
-            for e in self.elements:
+            for e in self.elements.domain():
                 if not e.empty:
                     if e.left == P.CLOSED and e.right == P.CLOSED:
                         s += e.upper - e.lower +1
@@ -99,7 +100,7 @@ class Domain(object):
         if n > size returns itself
         since we use it for shattering alldiff, assumes that all elements are distinguishable
         """
-        iter = P.iterate(self.elements, step = 1)
+        iter = P.iterate(self.elements.domain(), step = 1)
         subset = P.empty()
         i = 0
         hasNext = True
@@ -140,7 +141,6 @@ class Structure(object):
         self.name = name
         self.df = domain
         self.type = str(type)
-        self.spec = spec
         self.size = size
         
     def __repr__(self):
@@ -163,6 +163,8 @@ class LiftedSet(object):
         describes the set of cardinality values that are valid for this set
     cofs : [CountingFormulas]
         describes properties of the set in terms of counting formulas
+    relevant : [CountingFormulas]
+        defines which groups of indistinguishable objects need to be accounted for
     source : DomainFormula
         the set of which the LiftedSet is subset
     """
@@ -192,7 +194,6 @@ class LiftedSet(object):
             return False
         else:
             return self.size.values in constr.values
-
         return constr.domain in self.domain
 
     def __eq__(self, rhs):
@@ -210,8 +211,8 @@ class LiftedSet(object):
         s = f"{self.name}: {self.size}"
         if len(self.cofs) > 0:
             s += "\n"
-        for c in self.cofs:
-            s += f"\t {c}.\n"
+        s+= "\t counting: "
+        s+= ",".join([str(c) for c in self.cofs])
         return s
 
     def __hash__(self):
@@ -246,6 +247,9 @@ class LiftedSet(object):
         return result
 
     def check_bound(self):
+        """
+        Removes inf upper bound from counting constraints
+        """
         for cof in self.cofs:
             if cof.values.upper == P.inf:
                 ub = self.size.values.upper +1
@@ -258,14 +262,14 @@ class LiftedSet(object):
         return LiftedSet(self.name, size, cofs)
 
     def disjoint(self, constr):
-        if hasattr(constr, "formula"):
+        if hasattr(constr, "formula"): # counting formula
             dis_cofs = False
             for cof in self.cofs:
                 if cof.formula == constr.formula:
                     if cof.values & constr.values == P.empty():
                         dis_cofs = True
             return dis_cofs
-        else:
+        else: # size formula
             disj = (self.size.values & constr.values) == P.empty()
             return disj
 

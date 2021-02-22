@@ -2,11 +2,12 @@ import portion as P
 from structure import *
 from solver import Solver
 from formulas import *
+from util import *
  
 
 class Problem(object):
     """
-    Represents a problem as a collection of domains, a target structure, a set of choice formulas and a set of constraint formulas (queries?).
+    Represents a problem as a collection of domains, a target structure, a set of choice formulas and a set of constraint formulas.
 
     Attributes
     ----------
@@ -18,11 +19,10 @@ class Problem(object):
     
     def __init__(self):
         self.choice_formulas = []
-        self.universe = Domain("universe", P.empty(), P.IntervalDict())
+        self.universe = None
         self.count_formulas = []
         self.domains = {}
         self.entity_map = {}
-        self.queries = []
         self.structure = None
 
     # def add_choice_formula(self, head, body):
@@ -39,8 +39,6 @@ class Problem(object):
 
     def add_domain(self, dom):
         self.domains[dom.name] = dom
-        self.universe = self.universe | dom
-        self.universe.name = "universe"
 
     def add_choice_formula(self, chf):
         self.choice_formulas.append(chf)
@@ -96,37 +94,49 @@ class Problem(object):
         ----------
         sformula : a set formula : an And/Or/Not (possibly nested)
                   or a string corresponding to one of the domains
-                  or an entity (singleton)
         """
         if isinstance(sformula, And):
             lf = self.compute_dom(sformula.left)
             rf = self.compute_dom(sformula.right)
-            domain = lf.domain & rf.domain
+            domain = lf & rf
         elif isinstance(sformula, Or):
             lf = self.compute_dom(sformula.left)
             rf = self.compute_dom(sformula.right)
-            domain = lf.domain | rf.domain
+            domain = lf | rf
         elif isinstance(sformula, Not):
             arg = self.compute_dom(sformula.child)
-            domain =  arg.neg().domain
-        else:
+            domain =  arg.neg()
+        else: # base cases: universe, arrangement, user-defined, single element
             if sformula in self.domains:
                 domain = self.domains[sformula]
-            elif self.structure is not None and sformula == self.structure.name:
+            elif sformula == "universe" or sformula == self.structure.name:
                 domain = self.universe
             else:
                 id = self.get_entity(sformula)
                 if id is None:
-                    id = -1 # dummy
-                    single = portion.singleton(id)
+                    id = sformula # dummy
+                    single = portion.singleton(-1)
                     # raise Exception(f"Unknown constant {sformula}")
                 else:
                     single = portion.singleton(id)
                 dist = portion.IntervalDict()
                 dist[single] = True
-                domain = Domain(id, single, dist)
-        df = DomainFormula(self.universe, sformula, domain)
-        return df
+                domain = DomainFormula(id, dist, None)
+        return domain
+
+    def compute_universe(self):
+        dom_iter = iter(self.domains.values())
+        universe = next(dom_iter)
+        for d in dom_iter:
+            universe = universe | d
+        # universe.name = "universe"
+        dom_iter = iter(self.domains.values())
+        for d in dom_iter:
+            d.universe = universe
+        if self.structure.df is None:
+            self.structure.df  = universe
+        self.universe = universe
+
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -167,9 +177,9 @@ class Problem(object):
         else:
             if self.structure.size is None:
                 vals = portion.closed(1, self.universe.size())
-                self.structure.size = SizeFormula("unconstr", vals)
+                self.structure.size = SizeFormula("unconstrained", vals)
             s = Solver(self)
-        return s.solve(log)
+            return s.solve(log)
 
     def __str__(self):
         s = ""
@@ -180,6 +190,4 @@ class Problem(object):
         for f in self.count_formulas:
             s += f"{f}\n"
         s += f"{self.structure}\n"
-        for q in self.queries:
-            s += f"query({q}).\n"
         return s

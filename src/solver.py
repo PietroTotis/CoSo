@@ -14,7 +14,7 @@ class Solver(object):
     """
     def __init__(self,problem):
         self.problem = problem
-        self.universe = problem.structure.df.domain
+        self.universe = problem.structure.df
         self.size  = problem.structure.size
         if self.size.values.upper == P.inf:
             n = self.universe.size()
@@ -23,16 +23,13 @@ class Solver(object):
 
     def solve(self, log=True):
         count = Solution(0,[])
-        var_dom = DomainFormula(self.universe, "universe", self.universe)
         for n in self.size:
-            if self.type in ["sequence", "subset", "perrmutation", "multisubset"]:
-                vars = [var_dom]*n
-                csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, var_dom)
-                count += csp.solve(log)
+            if self.type in ["sequence", "subset", "permutation", "multisubset"]:
+                vars = [self.universe]*n
             else:
                 ub_size = self.universe.size() - n + 1
                 size = SizeFormula("universe", P.closed(1,ub_size))
-                vars = [LiftedSet(f"part. of {var_dom}", size)]*n
-            csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, var_dom)
+                vars = [LiftedSet(f"part. of {self.universe}", size)]*n
+            csp = SharpCSP(vars, self.type, self.problem.choice_formulas, self.problem.count_formulas, self.universe)
             count += csp.solve(log)
         return count

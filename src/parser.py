@@ -80,11 +80,18 @@ class Parser(object):
         self.file = file
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self)
+        self.parse_domains = True 
         self.problem = Problem()
 
     def parse(self):
         with open(self.file, "r") as f:
-            return self.parser.parse(f.read())
+            data = f.read()
+            self.parser.parse(data) # first collect domains/universe
+            self.problem.compute_universe()
+            self.lexer = Lexer()
+            self.parser = yacc.yacc(module=self)
+            self.parse_domains = False # then structure and formula
+            self.parser.parse(data)
 
     def p_program(self, p):
         '''program : statement
@@ -165,11 +172,12 @@ class Parser(object):
         else:
             elems = p[5] if indist else p[4]
         ivs = self.list_to_set(elems)
-        elements = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+        dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
         dist = P.IntervalDict()
-        dist[elements] = not indist
-        d = Domain(label, elements, dist)
-        self.problem.add_domain(d)
+        dist[dom] = not indist
+        d = DomainFormula(label, dist, self.problem.universe)
+        if self.parse_domains:
+            self.problem.add_domain(d)
         p[0] = d
 
     def p_arrangement(self, p):
@@ -180,7 +188,6 @@ class Parser(object):
         '''
         # not checking var consistency and set existence
         name = p[1]
-        partition = p[4] =='('
         set = p[5]
         if p[3] == "partitions":
             type = "partition"   
@@ -196,7 +203,8 @@ class Parser(object):
             type = "multisubset"
         dom = self.problem.compute_dom(set)
         s = Structure(name, type, dom)
-        self.problem.structure = s
+        if self.parse_domains:
+            self.problem.structure = s
         p[0] = s
 
 
@@ -209,26 +217,30 @@ class Parser(object):
         pos = p[3]
         if p[6] == '{':
             set = self.list_to_set(p[7])
-            df = DomainFormula(self.problem.universe,"anon", set)
+            df = DomainFormula("anon", set, self.problem.universe)
         else:
             df = self.problem.compute_dom(p[6])
-        pf = PosFormula(arrangement, pos, df)
-        self.problem.add_choice_formula(pf)
         p[0] = pf
+        if not self.parse_domains:
+            pf = PosFormula(arrangement, pos, df)
+            self.problem.add_choice_formula(pf)
 
     def p_size_constraint(self, p):
         """size_constraint : COUNT set comp NUMBER
                             | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
         """
+        p[0] = None
         if p[2] == '{':
-            cf_par = p[3]
-            if cf_par.formula.formula == p[5]:
-                cf_par = SizeFormula(p[5], cf_par.values)
-            comp = p[9]
-            n = p[10]
-            interval = self.problem.get_interval(comp, n)
-            cf = CountingFormula(cf_par, interval)
-            self.problem.add_counting_formula(cf)
+            if not self.parse_domains:
+                cf_par = p[3]
+                if cf_par.formula.name == p[5]:
+                    cf_par = SizeFormula(p[5], cf_par.values)
+                comp = p[9]
+                n = p[10]
+                interval = self.problem.get_interval(comp, n)
+                cf = CountingFormula(cf_par, interval)
+                self.problem.add_counting_formula(cf)
+                p[0] = cf
         else:
             inter = self.problem.get_interval(p[3], p[4])
             set = p[2]
@@ -237,12 +249,12 @@ class Parser(object):
                 if size.values.lower == 0:
                     size.values = size.values.replace(lower=1)
                 self.problem.structure.size = size
-                cf = None
             else:
-                df = self.problem.compute_dom(set)
-                cf = CountingFormula(df, inter)
-                self.problem.add_counting_formula(cf)
-            p[0] = cf
+                if not self.parse_domains:
+                    df = self.problem.compute_dom(set)
+                    cf = CountingFormula(df, inter)
+                    self.problem.add_counting_formula(cf)
+                    p[0] = cf
         
 
 

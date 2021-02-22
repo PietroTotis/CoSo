@@ -3,39 +3,7 @@ import operator
 import copy
 
 from structure import Domain
-from problog.logic import Term
-
-class Not(object):
-    
-    def __init__(self, child):
-        self.child = child
-
-    def __repr__(self):
-        if isinstance(self.child,str):
-            return f"¬{self.child}"
-        else:
-            return f"¬({self.child})"
-class And(object):
-
-    def __init__(self, l, r):
-        self.left = l
-        self.right = r
-    
-    def __repr__(self):
-        l = ("","") if isinstance(self.left, str) else ("(",")")
-        r = ("","") if isinstance(self.right, str) else ("(",")")
-        return f"{l[0]}{self.left}{l[1]} ∧ {r[0]}{self.right}{r[1]}"
-
-class Or(object):
-
-    def __init__(self, l, r):
-        self.left = l
-        self.right = r
-
-    def __repr__(self):
-        l = ("","") if isinstance(self.left, str) else ("(",")")
-        r = ("","") if isinstance(self.right, str) else ("(",")")
-        return f"{l[0]}{self.left}{l[1]} ∨ {r[0]}{self.right}{r[1]}"
+from util import *
 
 class CountingFormula(object):
     """
@@ -88,115 +56,112 @@ class CountingFormula(object):
     def copy(self):
         return CountingFormula(self.formula, self.values)
 
-class DomainFormula(object):
+class DomainFormula(Domain):
     """
     Represents a set by means of intersections/union/complements of the declared sets
 
     Attributes
     ----------
+    name : str/And/Or/Not
+        the description of the set operations to generate the set
+    elems : Interval
+        the corresponding elements
     universe : Domain
         the universe of the problem: each complement is computed w.r.t. it
-    formula : str/And/Or/Not
-        the description of the set operations to generate the set
-    domain : Domain
-        the corresponding elements
     """
 
-    def __init__(self, universe, formula, domain):
+    def __init__(self, formula, elems, universe):
+        self.name = formula
+        self.elements = elems
         self.universe = universe
-        self.formula = formula
-        self.domain = domain
+        self.n_elements = None
+
+    @staticmethod
+    def is_distinguishable(d1, d2):
+        # if e is distinguishable truth value in one domain is d1 and the other d2,
+        # if any of the two elements is distinguishable then keep distinguishing
+        return d1 or d2 
 
     def __and__(self, rhs):
-        dom = self.domain & rhs.domain
-        if dom == self.domain:
-            int_term = self.formula
-        elif dom == rhs.domain:
-            int_term = rhs.formula
+        dom = self.elements.domain() & rhs.elements.domain()
+        comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        elems = comb[dom]
+        if elems == self.elements:
+            f = self.name
+        elif elems == rhs.elements:
+            f = rhs.name
         else:
-            int_term = And(self.formula, rhs.formula)
-        return DomainFormula(self.universe, int_term, dom)
+            f = And(self, rhs)
+        return DomainFormula(f, elems, self.universe)
     
-    def __contains__(self, other):
-        return other.domain in self.domain
-
-    def __eq__(self, rhs):
-        return self.domain == rhs.domain
-
-    def __hash__(self):
-        return hash(self.formula)
-
     def __or__(self, rhs):
-        dom = self.domain | rhs.domain
-        if dom in self.domain:
-            union_term = self.formula
-        elif dom in rhs.domain:
-            union_term = rhs.formula
+        comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        if comb == self.elements:
+            f = self.name
+        elif comb == rhs.elements:
+            f = rhs.name
         else:
-            union_term = Or(self.formula, rhs.formula)
-        return DomainFormula(self.universe, union_term, dom)
-        
-    def __repr__(self):
-        return str(self)
+            f = Or(self, rhs)
+        return DomainFormula(f, comb, self.universe)
 
     def __sub__(self, rhs):
         if self.disjoint(rhs):
-            sub_formula = self.formula
+            f = self.name
         else:
-            sub_formula = And(self.formula, Not(rhs.formula))
-        sub_dom = self.domain - rhs.domain
-        return DomainFormula(self.universe, sub_formula, sub_dom)
-
-    def __str__(self):
-        if self.domain.size() > 0 :
-            str = f"{self.formula} ({self.domain})"
-        else:
-            str = f"{self.formula} (empty)"
-        return str
+            f = And(self, Not(rhs))
+        comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        sub_dom = self.elements.domain - rhs.elems.domain
+        return DomainFormula(f, comb[sub_dom], self.universe)
 
     def copy(self):
-        return DomainFormula(self.universe,self.formula, self.domain)
-
-    def disjoint(self, rhs):
-        return self.domain.disjoint(rhs.domain)
+        return DomainFormula(self.name, self.elements, self.universe)
 
     def neg(self):
-        if isinstance(self.formula, Not):
-            not_term = self.formula.child
+        if isinstance(self.name, Not):
+            f = self.name.child
         else:
-            not_term = Not(self.formula)
-        dom = self.universe - self.domain
-        return DomainFormula(self.universe, not_term, dom)
+            f = Not(self)
+        dom = self.universe.elements.domain() - self.elements.domain()
+        return DomainFormula(f, self.universe.elements[dom], self.universe)
 
-    def take(self, n):
-        c = self.copy()
-        c.domain = self.domain.take(n)
-        return c
+    def indistinguishable_subsets(self, dom_formula=None):
+        df = dom_formula if dom_formula is not None else self
+        f = df.name
+        if isinstance(f, And) or isinstance(f, Or): 
+            ind_l = self.indistinguishable_subsets(f.left)
+            ind_r = self.indistinguishable_subsets(f.right)
+            indist = ind_l.union(ind_r)
+        elif isinstance(f, Not) :
+            indist = self.indistinguishable_subsets(f.child)
+        else: # Domain
+            if [False] == list(df.elements.values()):
+                indist = {df}
+            else:
+                indist = set()
+        return indist
 
-    def size(self):
-        return self.domain.size()
 
-class InFormula(object):
-    """
-    A choice formula for subsets
+# class InFormula(object):
+#     """
+#     A choice formula for subsets
 
-    Attributes
-    ----------
-    struct: str
-        name of the target structure
-    entity : DomainFormula
-        property that should belong to the set
-    """
+#     Attributes
+#     ----------
+#     struct: str
+#         name of the target structure
+#     entity : DomainFormula
+#         property that should belong to the set
+#     """
 
-    def __init__(self, struct, dformula):
-        self.struct = struct
-        self.entity = dformula
+#     def __init__(self, struct, dformula):
+#         self.struct = struct
+#         self.entity = dformula
         
-    def __repr__(self):
-        return str(self)
+#     def __repr__(self):
+#         return str(self)
 
-    def __str__(self):
-        return f"{self.entity} is in {self.struct}"
+#     def __str__(self):
+#         return f"{self.entity} is in {self.struct}"
 
 class PosFormula(object):
     """

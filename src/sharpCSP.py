@@ -363,14 +363,14 @@ class SharpCSP(object):
         return combs_split_class, combs_rest_classes
 
     def count(self, vars=None):
-        if self.type=="sequence":
+        if self.type in ["sequence", "permutation"]:
             count = self.count_sequence(vars)
-        elif self.type=="subset":
+        elif self.type in ["subset", "multisubset"]:
             count = self.count_subsets(vars)
-        elif self.type=="partition":
+        elif self.type in ["partition","composition"]:
             count = self.count_partitions(vars)
         else:
-            pass
+            count = -1
         return count
 
     def get_lbub(self, interval):
@@ -389,10 +389,9 @@ class SharpCSP(object):
         maybe = []
         if isinstance(property, DomainFormula):
             for i, v in enumerate(vars):
-                pdom = property.domain
-                if v.domain in pdom:
+                if v in property:
                     sat.append(i)
-                elif v.domain.disjoint(pdom):
+                elif v.disjoint(property):
                     not_sat.append(i)
                 else:
                     maybe.append(i)
@@ -443,13 +442,12 @@ class SharpCSP(object):
         """
         Given a domain formula dformula and the domain formula case_f of n elements shrinks dformula by (up to) n elements satisfying case_f
         """
-        df = dformula
         for case in cases:
             n = cases[case]
-            inter = df & case
+            inter = dformula & case
             exclude = inter.take(n)
-            if exclude.domain.size()>0:
-                df =  df - exclude
+            if exclude.size()>0:
+                df = dformula - exclude
         return df
 
     def filter_domains(self, cases, variables):
@@ -464,7 +462,7 @@ class SharpCSP(object):
                     if not df.disjoint(case):
                         pool = pool & df
                 exclude = pool.take(n)
-                if exclude.domain.size()>0:
+                if exclude.size()>0:
                     updated_dfs = []
                     for df in dfs:
                         self.log(f"  Filtering {n} {case} out of {df}:")
@@ -514,6 +512,9 @@ class SharpCSP(object):
             yield a[:k + 1]
     
     def integer_k_partitions(self, n, k):
+        """
+        Partitions n in k (possibly 0) integers
+        """
         parts = []
         for p in self.integer_partitions(n):
             if len(p)<k:
@@ -565,13 +566,13 @@ class SharpCSP(object):
         Computes recursively the intersections of relevant cases/domains
         """
         first = rest_classes[0]
-        if first.domain == universe:
+        if first == universe:
             return self.relevant_cases_intersection(universe, rest_classes[1:])
         combinations = [[first, first.neg()]]
         for dom in rest_classes[1:]:
             # if we have other subsets we can ignore the universe since there is no element
             # in not(universe)
-            if not dom.domain == universe:
+            if not dom == universe:
                 comb = [dom, dom.neg()]
                 combinations.append(comb)
         combinations = list(itertools.product(*combinations))
@@ -581,7 +582,7 @@ class SharpCSP(object):
             if len(c) > 1:
                 for dom in c[1:]:
                     dom_base = dom_base & dom
-            if dom_base.domain.size()>0:
+            if dom_base.size()>0:
                 cases.append(dom_base) 
         return cases
 
@@ -701,6 +702,39 @@ class SharpCSP(object):
     #######################
     ## Sequences methods ##
     #######################
+    
+    def count_multisubsets(self, var_list = None):
+        """
+        Select with replacement from a set: if no indistinguishable elements use counting formula
+        Otherwise for each indistinguishable set choose how many of its elements to put in the multisubset
+        """
+        vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
+        n = len(vars)
+        dom = vars[0]
+        indist = dom.elements.find(False)
+        indist_sizes = self.get_sizes_indistinguishable(indist)
+        indist_size = sum(indist_sizes)
+        dist_size = dom.size() - indist_size
+        if indist_size == 0:
+            if len(ex_classes) == 1:
+                count = math.comb(dist_size+n-1,n)
+            else:
+                count = 0
+                for exc in ex_classes:
+                    s = self.count_multisubsets(ex_classes[exc])
+                    count += s.count
+            sol = Solution(count, self.histogram())
+        else:
+            choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+            count = 0
+            for choice in choices:
+                dist_choice = choice[0]
+                n_dist_choices = math.comb(dist_size, dist_choice)
+                arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+                count += n_dist_choices
+            sol = Solution(count, self.histogram())
+        return sol
 
     def count_sequence(self, var_list=None):
         """
@@ -714,14 +748,14 @@ class SharpCSP(object):
         vars = var_list if var_list is not None else self.vars
         if self.type == "sequence":
             self.log("Counting sequences:")
-            sol = self.count_sequence_cartesian(vars)
+            sol = self.count_sequence_any(vars)
         else:
             self.log("Counting permutations:")
             ex_classes = self.exchangeable_classes(vars)
             disjoint_classes = self.disjoint(ex_classes)
             if len(ex_classes) == 1:
                 self.log(f"Exchangeable variables...")
-                sol = self.count_sequence_exchangeable(vars)
+                sol = self.count_permutation_exchangeable(vars)
             # elif disjoint_classes:
             #     self.log("Different classes but disjoint...")
             #     sol = self.count_sequence_cartesian(vars)
@@ -731,35 +765,35 @@ class SharpCSP(object):
                 sol = self.split_inj(scv, rcv, [], [])
         return sol
 
-    def count_sequence_cartesian(self, var_list = None):
+    def count_sequence_any(self, var_list = None):
         """
         When variables are independent, solutions are from the cartesian product of the domain.
         Indistinguishable elements collapse to one in terms of possible choiches 
         """
         vars = var_list if var_list is not None else self.vars
         count = 1
-        for v in vars:
-            indist = v.domain.distinguishable.find(False)
-            indist_sizes = self.get_sizes_indistinguishable(indist)
+        for v in vars: # the available choices are all dist. elems + each distinguishable property
+            indist = v.elements.find(False)
+            indist_sizes = self.get_sizes_indistinguishable(indist) 
             indist_size = len([s for s in indist_sizes if s>0])
-            dist_size = v.domain.size() - sum(indist_sizes)
-            count *= dist_size + indist_size
+            dist_size = v.size() - sum(indist_sizes) # do not count each indistinguishable as a different choice
+            count *= dist_size + indist_size # but each set of indistinguishable counts as one possible choice
         sol = Solution(count, self.histogram())
         self.log(f"\tDomain product: {count}")
         return sol
 
-    def count_sequence_exchangeable(self, var_list = None):
+    def count_permutation_exchangeable(self, var_list = None):
         """
         When all elements belong to the same set in a permutation, apply falling factorial
         However if sets have indistinguishable elements, account for it
         """
         vars = var_list if var_list is not None else self.vars
         n = len(vars)
-        dom = vars[0].domain
+        dom = vars[0]
         size = dom.size()
         extra = size - n
-        if extra >=0:
-            indist = dom.distinguishable.find(False)
+        if extra >=0: # are elements enough to fill the permutation?
+            indist = dom.elements.find(False)
             if indist.empty:
                 count = math.factorial(size) // math.factorial(extra)
                 self.log(f"Falling factorial: {count}")
@@ -768,7 +802,7 @@ class SharpCSP(object):
                 dist_size = size - sum(indist_sizes)
                 choices = self.get_group_choices([dist_size] + indist_sizes, n) 
                 count = 0
-                for choice in choices:
+                for choice in choices: # each combination of choices is a valid disjoint subproblem
                     dist_choice = choice[0]
                     n_dist_choices = math.comb(dist_size, dist_choice)
                     arrange_all = math.factorial(n) # count = n! / n1!*n2!*...*nm!
@@ -783,7 +817,7 @@ class SharpCSP(object):
 
     def count_subsets(self, var_list = None):
         """
-        Look at a sequence problem and figure out what to do:
+        Look at a subset problem and figure out what to do:
         - Subset with repetition: counting rule 
         - Subset with alldiff (no repetition): 
             - Exchangeable: counting rule (binomial coefficient)
@@ -804,36 +838,6 @@ class SharpCSP(object):
                 sol = self.split_inj(scv, rcv, [], [])
         return sol
 
-    def count_multisubsets(self, var_list = None):
-        vars = var_list if var_list is not None else self.vars
-        ex_classes = self.exchangeable_classes(vars)
-        n = len(vars)
-        dom = vars[0].domain
-        indist = dom.distinguishable.find(False)
-        indist_sizes = self.get_sizes_indistinguishable(indist)
-        indist_size = sum(indist_sizes)
-        dist_size = dom.size() - indist_size
-        if indist_size == 0:
-            if len(ex_classes) == 1:
-                count = math.comb(dist_size+n-1,n)
-            else:
-                count = 0
-                for exc in ex_classes:
-                    s = self.count_multisubsets(ex_classes[exc])
-                    count += s.count
-            sol = Solution(count, self.histogram())
-        else:
-            choices = self.get_group_choices([dist_size] + indist_sizes, n) 
-            count = 0
-            for choice in choices:
-                dist_choice = choice[0]
-                n_dist_choices = math.comb(dist_size, dist_choice)
-                arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
-                print(n_dist_choices,arrange_indist_choices)
-                count += n_dist_choices
-            sol = Solution(count, self.histogram())
-        return sol
-
     def count_subsets_exchangeable(self, var_list = None):
         """
         When all elements belong to the same set in a permutation, apply binomial coefficient
@@ -841,11 +845,11 @@ class SharpCSP(object):
         """
         vars = var_list if var_list is not None else self.vars
         n = len(vars)
-        dom = vars[0].domain
+        dom = vars[0]
         size = dom.size()
         extra = size - n
         if extra >=0:
-            indist = dom.distinguishable.find(False)
+            indist = dom.elements.find(False)
             if indist.empty:
                 count = math.comb(size, n)
                 self.log(f"Binomial coefficient: {count}")
@@ -885,8 +889,9 @@ class SharpCSP(object):
 
     def get_group_choices(self, sizes, length):
         """
-        For a sequence of given length, fix any way of picking n elements from each group
-        that go in the sequence (and then count arrangements based on distinguishability)
+        For a sequence of given length, fix any way of picking n elements from each distinguishable property,
+        a distinguishable property is either a distinguishable element (1 choice from it) or a set of
+        indistinguishable elements (#set possible choices)
         sizes: size of each group of elements in the domain: 
                first one is the group of distinguishable, others are groups of indistinguishable
         length: length of the sequence
@@ -896,7 +901,7 @@ class SharpCSP(object):
             upper = min(length, group_size)
             lower = max(0,length-sum(sizes[1:]))
             indist_choices = []
-            for s in range(lower, upper+1):
+            for s in range(lower, upper+1): # for each set we can pick from 0 to #set elements
                 rest_indist_choices = self.get_group_choices(sizes[1:], length-s)
                 indist_choices += [[s] + ric for ric in rest_indist_choices] 
             return indist_choices
@@ -949,79 +954,20 @@ class SharpCSP(object):
 
     def count_exchangeable_class_partitions(self, size, n_elems, n_partitions, formula = "universe"):
         # https://math.stackexchange.com/questions/640558/how-many-ways-can-n-elements-be-partitioned-into-subsets-of-size-k
-        self.log(f"Dividing {n_elems} {formula} in {n_partitions} {self.type} of size {size}")
+        self.log(f"Dividing {n_elems} from {formula} in {n_partitions} {self.type} of size {size}")
         if size == 0:
             return 1
-        if n_partitions == 1:
-            return math.comb(n_elems, size)
-        assert n_elems % size == 0
-        num = math.factorial(n_elems)
-        r = n_elems//size
-        d1 = math.factorial(size)**r
-        d2 = math.factorial(r)
-        count = num//(d1*d2)
+        pick = size*n_partitions
+        pick_choice = math.comb(n_elems, pick)
+        # counting rule
+        d1 = math.factorial(size)**n_partitions
+        d2 = math.factorial(n_partitions)
+        count = math.factorial(pick)//(d1*d2)
+        # se ho indist allora devo aggiustare 
         if self.type == "composition":
             count = count * math.factorial(n_partitions)
-        return count
-
-    def count_partitions(self, var_list=None):
-        """
-        Look at a partition problem and figure out what to do:
-        - If there are no constraints and everything is exchangeable: counting rule (Stirling)
-        - If there are size constraints solve with simpler solving method
-        - If there are counting formulas use the integer constraint solver method
-        """
-        vars = var_list if var_list is not None else self.vars
-        partition = vars[0]
-        n_elems = self.universe.size()
-        ex_classes = self.exchangeable_classes(vars)
-        counting_constraints = False
-        for v in vars:
-            counting_constraints = counting_constraints or len(v.cofs)>0
-        if len(ex_classes) == 1: 
-            max_size = self.universe.size() - self.n_vars + 1
-            unconstrained = SizeFormula("any", P.closed(1, max_size))
-            if not counting_constraints and partition.size == unconstrained:
-                sol = self.stirling(n_elems, len(vars))
-                count = Solution(sol, self.histogram())
-            elif not counting_constraints and partition.size != unconstrained:
-                count = self.count_partitions_by_size(vars)
-            else:
-                count = self.count_partitions_with_cof(ex_classes, vars)
-        elif counting_constraints:
-            count = self.count_partitions_with_cof(ex_classes, vars)
-        else: 
-            count = self.count_partitions_by_size(vars)
-        return count
-
-    def count_partitions_with_cof(self, ex_classes, var_list = None):
-        """
-        Decompose intervals in constraints (size/count) into equalities (accounting for all possible combinations)
-        """
-        vars = var_list if var_list is not None else self.vars
-        fixed = True
-        for v in vars:
-            fixed = fixed & is_singleton(v.size.values)
-            for cof in v.cofs:
-                fixed = fixed & is_singleton(cof.values)
-        if fixed:
-            return self.count_fixed_partitions(vars)
-        else:
-            return self.count_unfixed_partitions(ex_classes, vars)
-
-    def count_partitions_by_size(self, var_list = None):
-        """
-        Counts the number of partitions under the assumption that partitions do not have counting constraints.
-        Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
-        s elements less available to fill the partition.
-        """
-        vars = var_list if var_list is not None else self.vars
-        n_elems = self.universe.size()
-        count = Solution(0,[])
-        for problem in self.feasible_size_partitions(vars):
-            count += self.count_fixed_partitions(problem)
-        return count
-
+        return pick_choice*count
+    
     def count_fixed_partitions(self, var_list = None):
         """
         If everything is fixed, we can count counting formulas like fixed sizes, i.e.
@@ -1032,7 +978,7 @@ class SharpCSP(object):
         ex_classes = self.exchangeable_classes(vars)
         n_elems = self.universe.size()
         count = Solution(1,[])
-        cofs = vars[0].cofs # assume all lifted sets have same cases in cof
+        cofs = vars[0].cofs # assumes all lifted sets have same cases in cof
         case_n_elems = [cof.formula.size() for cof in cofs]
         for ec in ex_classes:
             n = len(ex_classes[ec])
@@ -1040,11 +986,14 @@ class SharpCSP(object):
                 ec_count = 1
                 for i, cof in enumerate(ec.cofs):
                     size = cof.values.lower # fized value i.e. singleton
-                    cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
+                    if cof.formula.all_indistinguishable:
+                        cof_count = 1 # if elements are indistinguishable only one way to choose them
+                    else:
+                        cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
                     case_n_elems[i] -= size
                     ec_count *= cof_count
                 ec_choices = Solution(ec_count, []) 
-            else:
+            else: 
                 size = ec.size.values.lower
                 ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
                 n_elems -= size*n
@@ -1052,22 +1001,141 @@ class SharpCSP(object):
             count *= ec_choices
         return count
 
-    def count_unfixed_partitions(self, ex_classes, var_list = None):
+    # def count_partitions(self, var_list=None):
+    #     """
+    #     Look at a partition problem and figure out what to do:
+    #     - If there are no constraints and everything is exchangeable: counting rule (Stirling)
+    #     - If there are size constraints solve with simpler solving method
+    #     - If there are counting formulas use the integer constraint solver method
+    #     - If there are indistinguishable elements use the integer constraint solver method
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     n_elems = self.universe.size()
+    #     ex_classes = self.exchangeable_classes(vars)
+    #     counting_constraints = False
+    #     for v in vars:
+    #         counting_constraints = counting_constraints or len(v.cofs)>0
+    #     # se gli indistinguishable non sono fixed allora non posso andare su by_size
+    #     if len(ex_classes) == 1: 
+    #         partition = vars[0]
+    #         max_size = self.universe.size() - self.n_vars + 1
+    #         unconstrained = SizeFormula("any", P.closed(1, max_size))
+    #         if not counting_constraints and partition.size == unconstrained:
+    #             sol = self.stirling(n_elems, len(vars))
+    #             count = Solution(sol, self.histogram())
+    #         elif not counting_constraints and partition.size != unconstrained:
+    #             count = self.count_partitions_by_size(vars)
+    #         else:
+    #             count = self.count_partitions_with_cof(vars)
+    #     elif counting_constraints:
+    #         count = self.count_partitions_with_cof(vars)
+    #     else: 
+    #         count = self.count_partitions_by_size(vars)
+    #     return count
+
+    # def count_partitions_with_cof(self, var_list = None):
+    #     """
+    #     Decompose intervals in constraints (size/count) into equalities (accounting for all possible combinations)
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     fixed = True
+    #     for v in vars:
+    #         fixed = fixed & is_singleton(v.size.values)
+    #         for cof in v.cofs:
+    #             fixed = fixed & is_singleton(cof.values)
+    #     if fixed and self.has_fixed_indist(vars):
+    #         return self.count_fixed_partitions(vars)
+    #     else:
+    #         ind_sets = self.universe.indistinguishable_subsets()
+    #         self.fix_indistinguishable(self, vars)
+    #         ex_classes = self.exchangeable_classes(vars)
+    #         return self.count_unfixed_partitions(ex_classes, vars)
+
+    # def count_partitions_by_size(self, var_list = None):
+    #     """
+    #     Counts the number of partitions under the assumption that partitions do not have counting constraints.
+    #     Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
+    #     s elements less available to fill the partition.
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     count = Solution(0,[])
+    #     if self.has_fixed_indist(vars):
+    #         for problem in self.feasible_size_partitions(vars):
+    #             count += self.count_fixed_partitions(problem)
+    #     else:
+    #         ind_sets = self.universe.indistinguishable_subsets()
+    #         self.fix_indistinguishable(self, ind_sets, vars)
+    #         ex_classes = self.histogram()
+    #         count = self.count_unfixed_partitions(ex_classes, vars)
+    #     return count
+
+    def count_partitions(self, var_list=None):
         """
-        When sizes or counting formulas contain intervals, first solve the problem of assigning elements 
-        to partition by satisfying both the quantities to be within the interval and the global partition constraint
-        (all elements have to be distributed across partitions)
+        Look at a partition problem and figure out what to do:
+        - If there are no constraints and everything is exchangeable: counting rule (Stirling)
+        - If there are size constraints solve with simpler solving method
+        - If there are counting formulas use the integer constraint solver method
+        - If there are indistinguishable elements use the integer constraint solver method
+        """
+        vars = var_list if var_list is not None else self.vars
+        n_elems = self.universe.size()
+        ex_classes = self.exchangeable_classes(vars)
+        counting_constraints = False
+        for v in vars:
+            counting_constraints = counting_constraints or len(v.cofs)>0
+        # se gli indistinguishable non sono fixed allora non posso andare su by_size
+        if len(ex_classes) == 1: 
+            partition = vars[0]
+            max_size = self.universe.size() - self.n_vars + 1
+            unconstrained = SizeFormula("any", P.closed(1, max_size))
+            if not counting_constraints and partition.size == unconstrained:
+                sol = self.stirling(n_elems, len(vars))
+                count = Solution(sol, self.histogram())
+            else:
+                count = self.count_constrained_partitions(vars)
+        else:
+            count = self.count_constrained_partitions(vars)
+        return count
+
+    def count_constrained_partitions(self, var_list = None):
+        """
+        If all relevant quantities are fixed then count.
+        Otherwise decompose intervals in constraints into equalities (accounting for all possible combinations)
+        """
+        vars = var_list if var_list is not None else self.vars
+        fixed = True
+        for v in vars:
+            fixed = fixed & is_singleton(v.size.values)
+            for cof in v.cofs:
+                fixed = fixed & is_singleton(cof.values)
+        count = Solution(0,[])
+        if fixed and self.has_fixed_indist(vars):
+            for problem in self.feasible_size_partitions(vars):
+                count += self.count_fixed_partitions(problem)
+        else:
+            ind_sets = self.universe.indistinguishable_subsets()
+            for problem in self.feasible_size_partitions(vars):
+                for ind_assignment in self.fix_indistinguishable(ind_sets, problem):
+                    count += self.count_unfixed_partitions(ind_assignment)
+        return count
+
+    def count_unfixed_partitions(self, var_list = None):
+        """
+        When sizes or counting formulas contain intervals, or there are indistinguishable entities,
+        first solve the problem of assigning elements to partition by satisfying both the quantities to be within 
+        the interval and the global partition constraint (all elements have to be distributed across partitions)
         This boils down to solving a system of linear inequalities: use ortools to generate the solutions (a valid
         choice within the interval of each unfixed constraint) then count the fixed problem recursively (see Solution
         Counter class)
         """
         vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
         valid_size_partitions = self.feasible_size_partitions(vars) # generate valid combinations of sizes
         relevant = set()
         for c in ex_classes:
             relevant = relevant.union(c.relevant())
         relevant = list(relevant)
-        cases = self.relevant_cases(self.universe, relevant)
+        cases = self.relevant_cases_intersection(self.universe, relevant)
         n_cases = len(cases)
         count = Solution(0,[])
         for vsp in valid_size_partitions:
@@ -1142,9 +1210,9 @@ class SharpCSP(object):
         Partitions might not be exchangeable due to counting formulas, so fixing a size for one or another differs.
         Finds all the possible ways of assigning a fixed size to partitions, taking into account exchangeability.
         """
-        if len(ex_parts)==0:
+        if len(ex_parts) == 0: # base case
             return []
-        else:
+        else:               # inductive case
             part, n_sets = ex_parts.popitem()
             valid_sizes = [size for size in ex_sizes if size in part.size.values] # there's valid sizes [2,3,...]
             n_choices = len(valid_sizes)
@@ -1175,6 +1243,47 @@ class SharpCSP(object):
                         else:
                             feasible += [fixed_vars]
             return feasible
+
+    def fix_indistinguishable(self, ind_sets, var_list=None):
+        """
+        When variables are exchangeable then indistinguishable elements can be assigned to any of them,
+        we just need to fix the amount per set, which leads to exchangeable choices
+        Sets of different indistinguishable properties are disjoint
+        """
+        vars = var_list if var_list is not None else self.vars
+        if len(ind_sets) == 0: # base case
+            return [vars]
+        else:               # inductive case
+            ex_classes = self.histogram(vars)
+            n_classes = len(ex_classes)
+            s = ind_sets.pop()
+            class_partitions = self.integer_k_partitions(s.size(), n_classes) # first partition between ex_classes
+            problems = []
+            for class_partition in class_partitions: # many ways to do that, each is a different problem
+                ex_class_distributions = [] # one combination corresponds to a total partition of the (sub)set
+                for i, ex_class in enumerate(ex_classes.keys()):
+                    class_vars = [] 
+                    n_class = class_partition[i]
+                    n_vars_class = ex_classes[ex_class]
+                    var_partitions = self.integer_k_partitions(n_class, n_vars_class) # then whithin class
+                    var_choices = math.factorial(n_vars_class)
+                    for var_partition in var_partitions:    # again, many ways to distribute the given n to the clas between vars
+                        fixed_class_vars = []
+                        for n_vars in var_partition:
+                            cf = CountingFormula(s, P.singleton(n_vars))
+                            fixed = ex_class.add_cof(cf)
+                            fixed_class_vars.append(fixed)
+                        class_vars.append(fixed_class_vars)
+                    ex_class_distributions.append(class_vars)
+                # please I'm so ugly rewrite me
+                if n_classes>1: # testme 
+                    problem = list(itertools.product(ex_class_distributions))
+                else:
+                    problem = ex_class_distributions
+                problems.append(problem)
+                while len(problems) == 1: 
+                    problems = problems[0]
+            return problems 
 
     def propagate_cofs_partitions(self, vars, cofs, choices=1):
         """
@@ -1239,6 +1348,19 @@ class SharpCSP(object):
             count += self.count_partitions(p).with_choices(c)
         return count
 
+    def has_fixed_indist(self, var_list=None):
+        vars = var_list if var_list is not None else self.vars
+        cofs = vars[0].cofs
+        indist_subsets = self.universe.indistinguishable_subsets()
+        indist = len(indist_subsets) > 0
+        fixed = True
+        for i in indist_subsets:
+            fixed_set = False
+            for cof in cofs: # if a cof formula is a subset of i then i is partitioned 
+                fixed_set = fixed_set or (cof.formula in i)
+            fixed = fixed and fixed_set # if all sets are fixed then ok
+        return fixed
+        
 
 class SolutionCounter(cp_model.CpSolverSolutionCallback):
     """
@@ -1269,9 +1391,12 @@ class SolutionCounter(cp_model.CpSolverSolutionCallback):
                 ls.cofs.append(cof)
             var_partitions.append(ls)
         # recursively solve the problem, now with fixed value constraints
-        csp = SharpCSP(var_partitions, self.__type, [], [], False, self.__universe, self.__lvl +1) 
-        sol = csp.solve(True)
-        self.__solution_count += sol
+        try:
+            csp = SharpCSP(var_partitions, self.__type, [], [], self.__universe, self.__lvl +1) 
+            sol = csp.solve(True)
+            self.__solution_count += sol
+        except Exception as e:
+            print(e)
 
     def SolutionCount(self):
         return self.__solution_count
