@@ -220,10 +220,10 @@ class Parser(object):
             df = DomainFormula("anon", set, self.problem.universe)
         else:
             df = self.problem.compute_dom(p[6])
-        p[0] = pf
         if not self.parse_domains:
             pf = PosFormula(arrangement, pos, df)
             self.problem.add_choice_formula(pf)
+            p[0] = pf
 
     def p_size_constraint(self, p):
         """size_constraint : COUNT set comp NUMBER

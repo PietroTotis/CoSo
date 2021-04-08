@@ -2,8 +2,6 @@ import portion as P
 import math 
 import itertools
 
-from problog.logic import Constant
-
 from formulas import *
 from sharpCSP import SharpCSP, Solution
 from structure import Domain, LiftedSet

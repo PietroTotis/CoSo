@@ -9,7 +9,7 @@ import random
 import itertools
 from pathlib import Path
 from parser import Parser
-from formulas import PosFormula, InFormula, And, Or, Not
+from formulas import PosFormula, And, Or, Not
 
 ops = [">","<","<=",">=","!=","="]
 
@@ -94,15 +94,16 @@ def problem2minizinc(problem):
     minizinc = 'include "globals.mzn";\n'
     for dom in problem.domains.values():
         minizinc += f"set of int: {dom.name} = {{"
-        minizinc += ",".join(list(map(str,portion.iterate(dom.elements, step =1))))
+        minizinc += ",".join(list(map(str,portion.iterate(dom.elements.domain(), step =1))))
         minizinc += "};\n"
     length = problem.structure.size.values.lower
     minizinc += f"int: n = {length};\n"
-    sequence = problem.structure.type == "sequence"
-    subset = problem.structure.type == "subset"
+    sequence = problem.structure.type == "sequence" or problem.structure.type == "permutation"
+    subset = problem.structure.type == "subset" or problem.structure.type == "multisubset"
+    alldiff = problem.structure.type == "permutation" or problem.structure.type == "subset"
     if sequence:
         minizinc += f"array[1..n] of var uni: sequence;\n"
-        if problem.structure.spec:
+        if alldiff:
             minizinc += "constraint alldifferent(sequence);\n"
     elif subset:
         minizinc += f"var set of uni: sub;\n"
@@ -110,7 +111,7 @@ def problem2minizinc(problem):
     n = 0
     for chf in problem.choice_formulas:
         if isinstance(chf, PosFormula):
-            aux_doms, dom_f, n  = domf2minizinc(chf.dformula.formula, n)
+            aux_doms, dom_f, n  = domf2minizinc(chf.dformula.name, n)
             minizinc += aux_doms
             minizinc += f"constraint sequence[{chf.pos}] in {dom_f};\n"
         elif isinstance(chf, InFormula):
@@ -132,7 +133,7 @@ def problem2minizinc(problem):
             if not right:
                 upper+= 1
             bounds.append((lower,upper))
-        aux_doms, dom_f, n  = domf2minizinc(cof.formula.formula, n)
+        aux_doms, dom_f, n  = domf2minizinc(cof.formula.name, n)
         for l in aux_doms.split('\n'):
             if l not in minizinc:
                 minizinc += l + "\n"

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     if args.f:
         parser = Parser(args.f)
         parser.parse()
-        # print(parser.problem)
+        print(parser.problem)
         print("Running solver...")
         count = parser.problem.solve(log=args.v)
         print(f"Solution: {count}")

@@ -126,12 +126,12 @@ class SharpCSP(object):
         if isinstance(chf, PosFormula):
             self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.dformula
             self.log("Choice set:", self.vars[chf.pos-1])
-        if isinstance(chf, InFormula):
-            if self.fixed_choices > self.n_vars:
-                raise Unsatisfiable("Too many elements for the subset size!")
-            self.vars[self.fixed_choices] = chf.entity
-            self.fixed_choices += 1
-            self.log(f"Choice n.{self.fixed_choices} set:", self.vars[self.fixed_choices])
+        # if isinstance(chf, InFormula):
+        #     if self.fixed_choices > self.n_vars:
+        #         raise Unsatisfiable("Too many elements for the subset size!")
+        #     self.vars[self.fixed_choices] = chf.entity
+        #     self.fixed_choices += 1
+        #     self.log(f"Choice n.{self.fixed_choices} set:", self.vars[self.fixed_choices])
 
     def apply_count(self, cof, others):
         """
@@ -167,7 +167,7 @@ class SharpCSP(object):
         If vars are exchangeable we can apply a count otherwise we need to split and consider the combinations of count constraints
         """
         ex_classes = self.exchangeable_classes()
-        if self.type in  ["sequence", "subset"]:
+        if self.type in  ["sequence", "permutation", "subset","multisubset"]:
             if len(ex_classes)>1:
                 count = self.count_non_exchangeable(ex_classes)
             else:
@@ -723,15 +723,15 @@ class SharpCSP(object):
                 count = 0
                 for exc in ex_classes:
                     s = self.count_multisubsets(ex_classes[exc])
-                    count += s.count
+                    count *= s.count
             sol = Solution(count, self.histogram())
         else:
             choices = self.get_group_choices([dist_size] + indist_sizes, n) 
             count = 0
             for choice in choices:
                 dist_choice = choice[0]
-                n_dist_choices = math.comb(dist_size, dist_choice)
-                arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+                n_dist_choices = math.comb(dist_size+dist_choice-1, dist_choice)
+                # arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
                 count += n_dist_choices
             sol = Solution(count, self.histogram())
         return sol

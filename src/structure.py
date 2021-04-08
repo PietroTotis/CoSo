@@ -113,7 +113,7 @@ class Domain(object):
             i += 1
         dist = P.IntervalDict()
         dist[subset] = True
-        taken = Domain(f"{n}x {self.name}", subset, dist )
+        taken = Domain(f"{n}x {self.name}", dist)
         return taken
 
 class Structure(object):
