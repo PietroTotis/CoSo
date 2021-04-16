@@ -64,7 +64,7 @@ class DomainFormula(Domain):
     ----------
     name : str/And/Or/Not
         the description of the set operations to generate the set
-    elems : Interval
+    elems : DictInterval
         the corresponding elements
     universe : Domain
         the universe of the problem: each complement is computed w.r.t. it

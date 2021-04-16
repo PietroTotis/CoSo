@@ -169,22 +169,24 @@ class LiftedSet(object):
         the set of which the LiftedSet is subset
     """
 
-    def __init__(self, name, size, cofs=[]):
+    def __init__(self, universe, size, cofs=[]):
         """
         size: portion
         cofs: [CountingFormulas]
         """
-        self.name = name
+        self.name = f"part. of {universe}"
+        self.universe = universe
         self.size = size
         self.cofs = self.compact_cofs(cofs)
+        self.histogram = {}
         self.check_bound()
 
     def __and__(self, rhs):
-        name = f"{self.name} /\ {rhs.name}"
+        # name = f"{self.name} /\ {rhs.name}"
         size = self.size & rhs.size
         cofs = self.cofs + rhs.cofs 
         cofs = self.compact_cofs(cofs)
-        return LiftedSet(name, size, cofs)
+        return LiftedSet(self.universe, size, cofs)
         
     def __contains__(self, constr):
         if hasattr(constr, "formula"):
@@ -220,7 +222,19 @@ class LiftedSet(object):
     
     def add_cof(self, cof):
         cofs = self.cofs + [cof]
-        return LiftedSet(self.name, self.size, cofs)
+        return LiftedSet(self.universe, self.size, cofs)
+
+    def bound(self, rv_set):
+        bound = False
+        if rv_set == self.universe:
+            bound = is_singleton(self.size)
+        else:
+            for cof in self.cofs:
+                if cof.formula == rv_set and is_singleton(cof.values):
+                    self.histogram[rv_set] = cof.values.lower
+                else:
+                    bound = bound or is_singleton(cof.values)
+        return bound
 
     def compact_cofs(self, counts):
         compact = []
@@ -259,7 +273,7 @@ class LiftedSet(object):
     def copy(self):
         size = self.size.copy()
         cofs = self.cofs.copy()
-        return LiftedSet(self.name, size, cofs)
+        return LiftedSet(self.universe, size, cofs)
 
     def disjoint(self, constr):
         if hasattr(constr, "formula"): # counting formula
@@ -273,6 +287,39 @@ class LiftedSet(object):
             disj = (self.size.values & constr.values) == P.empty()
             return disj
 
+    def feasible(self, rv_set, n):
+        if rv_set == self.universe:
+            return n in self.size
+        else:
+            for cof in self.cofs:
+                if rv_set in cof.formula:
+                    if n>cof.values.upper:
+                        return False
+                    n_cof = n
+                    unfixed = []
+                    for rvs in self.histogram:
+                        if rvs in cof.formula and rvs!=rv_set:
+                            if histogram[rvs]!=-1:
+                                unfixed.append(rvs)
+                            else:
+                                n_cof += histogram[rvs]
+                    if len(unfixed) == 0:
+                        if n not in cof.values:
+                            return False
+                    else:
+                        sizes = sum([rvs.size() for rvs in unfixed])
+                        if sizes + n_cof < cof.values.lower:
+                            return False
+            fixed = sum([self.histogram[rvs] for rvs in self.histogram if self.histogram[rvs]>-1]) # respect overall size
+            if fixed+n not in self.size.values:
+                return False
+            return True
+
+    def rv_size(self, relevant):
+        for cof in self.cofs:
+            if cof.formula == relevant:
+                return cof.values
+                
     def size_is_defined(self):
         s = 0
         for e in self.size.values:
@@ -286,7 +333,10 @@ class LiftedSet(object):
         return s == 1
 
     def relevant(self):
-        return set([cof.formula for cof in self.cofs])
+        relevant = set([cof.formula for cof in self.cofs])
+        if len(relevant) == 0:
+            relevant = {self.universe}
+        return relevant
 
     def satisfies(self, constraint):
         sat = None
