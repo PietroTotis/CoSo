@@ -287,13 +287,21 @@ class LiftedSet(object):
             disj = (self.size.values & constr.values) == P.empty()
             return disj
 
-    def feasible(self, rv_set, n):
+    def feasible(self, rv_set, n, n_class=1):
         if rv_set == self.universe:
-            return n in self.size
+            size_class = self.size.replace(
+                upper=lambda v: n_class*v,
+                lower=lambda v: n_class*v
+            )
+            return n in size_class
         else:
             for cof in self.cofs:
                 if rv_set in cof.formula:
-                    if n>cof.values.upper:
+                    cof_class = cof.values.replace(
+                        upper=lambda v: n_class*v,
+                        lower=lambda v: n_class*v
+                    )
+                    if n>cof_class.upper:
                         return False
                     n_cof = n
                     unfixed = []
@@ -304,15 +312,16 @@ class LiftedSet(object):
                             else:
                                 n_cof += histogram[rvs]
                     if len(unfixed) == 0:
-                        if n not in cof.values:
+                        if n*n_class not in cof_class:
                             return False
                     else:
                         sizes = sum([rvs.size() for rvs in unfixed])
-                        if sizes + n_cof < cof.values.lower:
+                        if (sizes + n_cof)*n_class < cof_class.lower:
                             return False
-            fixed = sum([self.histogram[rvs] for rvs in self.histogram if self.histogram[rvs]>-1]) # respect overall size
-            if fixed+n not in self.size.values:
-                return False
+            # if n_class == 1:
+            #     fixed = sum([self.histogram[rvs] for rvs in self.histogram if self.histogram[rvs]>-1]) # respect overall size
+            #     if fixed+n not in self.size.values:
+            #         return False
             return True
 
     def rv_size(self, relevant):

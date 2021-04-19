@@ -968,38 +968,56 @@ class SharpCSP(object):
             count = count * math.factorial(n_partitions)
         return pick_choice*count
     
-    def count_fixed_partitions(self, var_list = None):
+    def count_fixed_partitions(self, relevant, var_list = None):
         """
         If everything is fixed, we can count counting formulas like fixed sizes, i.e.
         for each partition pick the given number of p stated by (#p = n) and remove them from universe
         Account for exchangeability of variables in the process: pick at exchangeable class level
         """
         vars = var_list if var_list is not None else self.vars
-        ex_classes = self.exchangeable_classes(vars)
-        n_elems = self.universe.size()
+        choices = {rvs:rvs.size() for rvs in relevant}
         count = Solution(1,[])
-        cofs = vars[0].cofs # assumes all lifted sets have same cases in cof
-        case_n_elems = [cof.formula.size() for cof in cofs]
-        for ec in ex_classes:
-            n = len(ex_classes[ec])
-            if len(ec.cofs) > 0:
-                ec_count = 1
-                for i, cof in enumerate(ec.cofs):
-                    size = cof.values.lower # fized value i.e. singleton
-                    if cof.formula.all_indistinguishable():
-                        cof_count = 1 # if elements are indistinguishable only one way to choose them
-                    else:
-                        cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
-                    case_n_elems[i] -= size
-                    ec_count *= cof_count
-                ec_choices = Solution(ec_count, []) 
-            else: 
-                size = ec.size.values.lower
-                ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
-                n_elems -= size*n
-                ec_choices = Solution(ec_count, [])
-            count *= ec_choices
+        for v in vars:
+            for rvs in v.histogram:
+                n = choices[rvs]
+                k = v.histogram[rvs]
+                ec_choices = math.comb(n,k)  
+                choices[rvs] = n - k  
+                count = count.with_choices(ec_choices)
         return count
+
+    # def count_fixed_partitions(self, var_list = None):
+    #     """
+    #     If everything is fixed, we can count counting formulas like fixed sizes, i.e.
+    #     for each partition pick the given number of p stated by (#p = n) and remove them from universe
+    #     Account for exchangeability of variables in the process: pick at exchangeable class level
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     ex_classes = self.exchangeable_classes(vars)
+    #     n_elems = self.universe.size()
+    #     count = Solution(1,[])
+    #     cofs = vars[0].cofs # assumes all lifted sets have same cases in cof
+    #     case_n_elems = [cof.formula.size() for cof in cofs]
+    #     for ec in ex_classes:
+    #         n = len(ex_classes[ec])
+    #         if len(ec.cofs) > 0:
+    #             ec_count = 1
+    #             for i, cof in enumerate(ec.cofs):
+    #                 size = cof.values.lower # fized value i.e. singleton
+    #                 if cof.formula.all_indistinguishable():
+    #                     cof_count = 1 # if elements are indistinguishable only one way to choose them
+    #                 else:
+    #                     cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
+    #                 case_n_elems[i] -= size
+    #                 ec_count *= cof_count
+    #             ec_choices = Solution(ec_count, []) 
+    #         else: 
+    #             size = ec.size.values.lower
+    #             ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
+    #             n_elems -= size*n
+    #             ec_choices = Solution(ec_count, [])
+    #         count *= ec_choices
+    #     return count
 
     # def count_partitions(self, var_list=None):
     #     """
@@ -1160,11 +1178,12 @@ class SharpCSP(object):
         ips = self.feasible_relevant_partitions(relevant, n, vars)
         valid = []
         for int_partition in ips:
+            print(int_partition)
             prop_vars = copy.deepcopy(vars)
             for i, v in enumerate(prop_vars):
-                v.histogram[rv_set] = int_partition[i]
-            valid.append(prop_vars)
-        return (e, valid)
+                v.histogram[relevant] = int_partition[i]
+            valid.append((e,prop_vars))
+        return valid
 
     def fix_non_exchangeable_partititons(self, relevant, var_list = None):
         vars = var_list if var_list is not None else self.vars
@@ -1188,27 +1207,28 @@ class SharpCSP(object):
         if len(relevant) == 0:
             return fixed
         else:
-            probs = []
+            props = []
             rv_set = relevant[0]
             for ev, vars in fixed:
                 ex_classes = self.exchangeable_classes(vars)
                 if len(ex_classes) == 1:
-                    e, prop_vars = self.fix_exchangeable_partititons(rv_set, vars)
+                    prop_vars = self.fix_exchangeable_partititons(rv_set, vars)
                 else: 
-                    e, prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
-                for pv in prop_vars:
-                    prop_fix = self.fix_partitions(prop_vars, cases[1:])
-                    probs.append(prop_fix)
-            return probs
+                    prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
+                for e, pv in prop_vars:
+                    prop_fix = self.fix_partitions(prop_vars, relevant[1:])
+                    props += [(e*c, vs) for c,vs in prop_fix]
+            return props
                 
     def count_unfixed_partitions(self, relevant, var_list = None):
         vars = var_list if var_list is not None else self.vars
         fixed = self.fix_partitions([(1,vars)], relevant)
-        count = 0
-        for e, vars in fixed:
-            c = self.count_fixed_partitions(vars)
-            count += e*c
-        return Solution(count, self.histogram)
+        count = Solution(0,[])
+        for fix_vars in fixed:
+            e, prop_vars = fix_vars
+            c_fix = self.count_fixed_partitions(relevant, prop_vars)
+            count += c_fix.with_choices(e)
+        return count
 
 
     # def count_unfixed_partitions(self, var_list = None):
@@ -1304,14 +1324,14 @@ class SharpCSP(object):
         """
         vars = var_list if var_list is not None else self.vars
         int_partitions = self.integer_k_partitions(n, len(vars))
-        fsps = [] 
+        fips = [] 
         for int_partition in int_partitions:
             feasible = True
             for i, v in enumerate(vars):
                 feasible = feasible and v.feasible(rv_set, int_partition[i])
             if feasible:
-                fsps.append(fsp)
-        return fsps
+                fips.append(int_partition)
+        return fips
 
     def feasible_relevant_compositions(self, ex_classes, rv_set):
         k = len(ex_classes)
