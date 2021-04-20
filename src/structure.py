@@ -203,6 +203,8 @@ class LiftedSet(object):
             return False
         elif self.cofs != rhs.cofs:
             return False
+        elif self.histogram != rhs.histogram:
+            return False
         else:
             return True
         
@@ -213,8 +215,11 @@ class LiftedSet(object):
         s = f"{self.name}: {self.size}"
         if len(self.cofs) > 0:
             s += "\n"
-        s+= "\t counting: "
-        s+= ",".join([str(c) for c in self.cofs])
+            s+= "\t counting: "
+            s+= ",".join([str(c) for c in self.cofs])
+        if len(self.histogram) > 0:
+            s+= "\n\t " + str(self.histogram)
+            s+= "\n"
         return s
 
     def __hash__(self):
@@ -273,7 +278,10 @@ class LiftedSet(object):
     def copy(self):
         size = self.size.copy()
         cofs = self.cofs.copy()
-        return LiftedSet(self.universe, size, cofs)
+        hist = self.histogram.copy()
+        ls = LiftedSet(self.universe, size, cofs)
+        ls.histogram = hist
+        return ls
 
     def disjoint(self, constr):
         if hasattr(constr, "formula"): # counting formula
@@ -289,7 +297,7 @@ class LiftedSet(object):
 
     def feasible(self, rv_set, n, n_class=1):
         if rv_set == self.universe:
-            size_class = self.size.replace(
+            size_class = self.size.values.replace(
                 upper=lambda v: n_class*v,
                 lower=lambda v: n_class*v
             )
@@ -318,10 +326,12 @@ class LiftedSet(object):
                         sizes = sum([rvs.size() for rvs in unfixed])
                         if (sizes + n_cof)*n_class < cof_class.lower:
                             return False
-            # if n_class == 1:
-            #     fixed = sum([self.histogram[rvs] for rvs in self.histogram if self.histogram[rvs]>-1]) # respect overall size
-            #     if fixed+n not in self.size.values:
-            #         return False
+            if len(self.histogram) > 1:
+                vals = [n for n in self.histogram.values() if n> -1]
+                if len(vals) == 1: #last relevant set: check size
+                    fixed = sum(vals) # respect overall size
+                    if fixed+n not in self.size.values:
+                        return False
             return True
 
     def rv_size(self, relevant):

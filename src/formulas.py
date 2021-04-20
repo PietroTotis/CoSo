@@ -234,7 +234,7 @@ class SizeFormula(object):
             return f"size in {self.values}"
     
     def copy(self):
-        return SizeFormula(self.name, self.values.copy(), self.universe)
+        return SizeFormula(self.name, self.values)
 
     def neg(self):
         vals = self.universe.difference(self.values)

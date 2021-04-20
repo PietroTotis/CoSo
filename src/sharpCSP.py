@@ -1143,12 +1143,11 @@ class SharpCSP(object):
         Otherwise decompose intervals in constraints into equalities (accounting for all possible combinations)
         """
         vars = var_list if var_list is not None else self.vars
-        relevant = self.universe.indistinguishable_subsets()
+        cases = self.universe.indistinguishable_subsets()
         for v in vars:
-            relevant = relevant.union(v.relevant())    
-        relevant = list(relevant)
-        cases = self.relevant_cases_intersection(self.universe, relevant)
-        print(cases)
+            cases = cases.union(v.relevant())    
+        cases = list(cases)
+        relevant = self.relevant_cases_intersection(self.universe, cases)
         fixed = True
         for v in vars:
             fixed = fixed and is_singleton(v.size.values)
@@ -1171,39 +1170,50 @@ class SharpCSP(object):
             #         count += self.count_unfixed_partitions(ind_assignment)
         return count
 
-    def fix_exchangeable_partititons(self, relevant, var_list = None):
+    def fix_exchangeable_partititons(self, rv_set, n, var_list = None):
         vars = var_list if var_list is not None else self.vars
-        n = len(vars)
         e = math.factorial(n) if self.type == "composition" else 1
-        ips = self.feasible_relevant_partitions(relevant, n, vars)
+        ips = self.feasible_relevant_partitions(rv_set, n, vars)
         valid = []
         for int_partition in ips:
-            print(int_partition)
-            prop_vars = copy.deepcopy(vars)
-            for i, v in enumerate(prop_vars):
-                v.histogram[relevant] = int_partition[i]
-            valid.append((e,prop_vars))
+            prop_vars = []
+            for i, v in enumerate(vars):
+                new_v = v.copy()
+                new_v.histogram[rv_set] = int_partition[i]
+                prop_vars.append(new_v)
+            valid.append((e, prop_vars))
         return valid
 
-    def fix_non_exchangeable_partititons(self, relevant, var_list = None):
+    def fix_non_exchangeable_partititons(self, rv_set, var_list = None):
         vars = var_list if var_list is not None else self.vars
         ex_classes = self.exchangeable_classes(vars)
         k = len(ex_classes)
-        rv_set = relevant[0]
         ics = self.feasible_relevant_compositions(ex_classes, rv_set)
+        print(ics)
+        keys = list(ex_classes.keys())
         dists = []
         for distribution in ics:
             prop_vars = []
             for j, n in enumerate(distribution):
-                class_vars = self.get_vars(ex_classes[j]) 
-                prop_cvars = copy.deepcopy(class_vars)
-                e, valid = self.fix_exchangeable_partititons(rv_set, prop_cvars)
-                prop_vars.append((e,valid))
-            cases = itertools.product(prop_vars)
-            dists.append(cases)
+                class_vars = ex_classes[keys[j]]
+                prop_cvars = [v.copy() for v in class_vars]
+                valid = self.fix_exchangeable_partititons(rv_set, n, prop_cvars)  
+                if len(valid) > 0:                  
+                    prop_vars.append(valid)
+            if len(prop_vars) == k:
+                cases = list(self.product(*prop_vars))
+                dists += cases
         return dists
     
+    def product(self, *args):
+        result = [(1,[])]
+        for pool in args:
+            result = [(ex*ey, x+y) for ex, x in result for ey, y in pool]
+        for prod in result:
+            yield prod
+
     def fix_partitions(self, fixed, relevant):
+        print(relevant)
         if len(relevant) == 0:
             return fixed
         else:
@@ -1212,7 +1222,7 @@ class SharpCSP(object):
             for ev, vars in fixed:
                 ex_classes = self.exchangeable_classes(vars)
                 if len(ex_classes) == 1:
-                    prop_vars = self.fix_exchangeable_partititons(rv_set, vars)
+                    prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), vars)
                 else: 
                     prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
                 for e, pv in prop_vars:
@@ -1335,6 +1345,7 @@ class SharpCSP(object):
 
     def feasible_relevant_compositions(self, ex_classes, rv_set):
         k = len(ex_classes)
+        n = rv_set.size()
         int_partitions = self.integer_k_partitions(n, k)
         int_composition = [list(c) for ip in int_partitions for c in itertools.permutations(ip)]
         return int_composition
