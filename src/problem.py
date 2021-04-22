@@ -18,7 +18,7 @@ class Problem(object):
     """
     
     def __init__(self):
-        self.choice_formulas = []
+        self.pos_formulas = []
         self.universe = None
         self.count_formulas = []
         self.domains = {}
@@ -40,8 +40,8 @@ class Problem(object):
     def add_domain(self, dom):
         self.domains[dom.name] = dom
 
-    def add_choice_formula(self, chf):
-        self.choice_formulas.append(chf)
+    def add_pos_formula(self, chf):
+        self.pos_formulas.append(chf)
         
     def add_counting_formula(self, cof):
         # cformula = self.build_cof(cof)
@@ -171,7 +171,7 @@ class Problem(object):
         return interval
 
     def solve(self, log=True):
-        if self.structure is None:
+        if self.structure is None or len(self.domains) == 0:
             print("empty problem!")
             return 0
         else:
@@ -185,7 +185,7 @@ class Problem(object):
         s = ""
         for d in self.domains.values():
             s += f"{d.name}: {d}\n"
-        for cf in self.choice_formulas:
+        for cf in self.pos_formulas:
             s += f"{cf}\n"
         for f in self.count_formulas:
             s += f"{f}\n"

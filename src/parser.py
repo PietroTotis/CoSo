@@ -87,11 +87,14 @@ class Parser(object):
         with open(self.file, "r") as f:
             data = f.read()
             self.parser.parse(data) # first collect domains/universe
-            self.problem.compute_universe()
-            self.lexer = Lexer()
-            self.parser = yacc.yacc(module=self)
-            self.parse_domains = False # then structure and formula
-            self.parser.parse(data)
+            if len(self.problem.domains) > 0:
+                self.problem.compute_universe()
+                self.lexer = Lexer()
+                self.parser = yacc.yacc(module=self)
+                self.parse_domains = False # then structure and formula
+                self.parser.parse(data)
+            else:
+                print("No sets found")
 
     def p_program(self, p):
         '''program : statement
@@ -207,22 +210,41 @@ class Parser(object):
             self.problem.structure = s
         p[0] = s
 
+    def p_sc_list(self, p):
+        '''sc_list : size_constraint
+                        | size_constraint COMMA entity_list
+        '''
+        if len(p) > 2:
+            p[0] = [p[1]] + p[3]
+        else:
+            p[0] = [p[1]]
+        print(p[0])
 
     def p_pos_constraint(self, p):
         '''pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity 
                         | LABEL LSPAR NUMBER RSPAR EQUALS set
                         | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+                        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR sc_list SLASH LABEL IN LABEL LSPAR NUMBER RSPAR RPAR
         '''
         arrangement = p[1]
         pos = p[3]
-        if p[6] == '{':
-            set = self.list_to_set(p[7])
-            df = DomainFormula("anon", set, self.problem.universe)
-        else:
-            df = self.problem.compute_dom(p[6])
         if not self.parse_domains:
+            if p[6] == '{':
+                if p[8] == '}':
+                    set = self.list_to_set(p[7])
+                    df = DomainFormula("anon", set, self.problem.universe)
+                else:
+                    size = SizeFormula("", portion.closed(1, self.problem.universe.size()-1 ))
+                    df = LiftedSet(self.problem.universe, size)
+                    for sc in p[7]:
+                        if isinstance(sc.formula.name, str):
+                            df.size = SizeFormula("", sc.values)
+                        else:
+                            df.cofs.append(sc)
+            else:
+                df = self.problem.compute_dom(p[6])
             pf = PosFormula(arrangement, pos, df)
-            self.problem.add_choice_formula(pf)
+            self.problem.add_pos_formula(pf)
             p[0] = pf
 
     def p_size_constraint(self, p):
@@ -255,7 +277,7 @@ class Parser(object):
                     cf = CountingFormula(df, inter)
                     self.problem.add_counting_formula(cf)
                     p[0] = cf
-        
+            
 
 
     # def p_count_constraint(self, p):

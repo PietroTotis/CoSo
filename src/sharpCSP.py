@@ -985,10 +985,11 @@ class SharpCSP(object):
                 ec_choices = math.comb(n,k)  
                 choices[rvs] = n - k  
                 count = count.with_choices(ec_choices)
-        part_histograms = [frozenset(v.histogram.items()) for v in vars]
-        ex_hists = self.histogram(part_histograms)
-        for hc in ex_hists: # account for overcounting exchangeable choices (ugly)
-            count.count = int(count.count/math.factorial(ex_hists[hc]))
+        if self.type=="partition":
+            part_histograms = [frozenset(v.histogram.items()) for v in vars]
+            ex_hists = self.histogram(part_histograms)
+            for hc in ex_hists: # account for overcounting exchangeable choices (ugly)
+                count.count = int(count.count/math.factorial(ex_hists[hc]))
         self.log(f"\tcount = {count}")
         return count
 
@@ -1161,20 +1162,25 @@ class SharpCSP(object):
             relevant = self.relevant_cases_intersection(self.universe, cases)
         self.log(f"Relevant partitions: {relevant}")
         fixed = True
-        for v in vars:
-            fixed = fixed and is_singleton(v.size.values)
+        for v in vars: 
+            fixed_size = is_singleton(v.size.values)
+            fixed = fixed and fixed_size
             v.histogram = {rv_set: -1 for rv_set in relevant}
-            for rv_set in relevant:
-                for cof in v.cofs:
-                    single = is_singleton(cof.values)
-                    if rv_set == cof.formula and single:
-                        v.histogram[rv_set] = cof.values.lower
-                    else:
-                        fixed = fixed and single
+            if len(v.histogram) == 1 and fixed_size: # register fix from size
+                v.histogram[self.universe] = v.size.values.lower
+            else: # register fix from constraints
+                for rv_set in relevant:
+                    for cof in v.cofs:
+                        single = is_singleton(cof.values)
+                        if rv_set == cof.formula and single:
+                            v.histogram[rv_set] = cof.values.lower
+                        else:
+                            fixed = fixed and single
         count = Solution(0,[])
         if fixed:
-            for problem in self.feasible_size_partitions(vars):
-                count += self.count_fixed_partitions(problem)
+            count = self.count_fixed_partitions(relevant, vars)
+            # for problem in self.feasible_size_partitions(vars):
+            #     count += self.count_fixed_partitions(problem)
         else:
             count = self.count_unfixed_partitions(relevant, vars)
             # for problem in self.feasible_size_partitions(vars):
