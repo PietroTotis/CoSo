@@ -109,7 +109,7 @@ class Problem(object):
         else: # base cases: universe, arrangement, user-defined, single element
             if sformula in self.domains:
                 domain = self.domains[sformula]
-            elif sformula == "universe" or sformula == self.structure.name:
+            elif sformula == "universe" or self.structure is not None and sformula == self.structure.name:
                 domain = self.universe
             else:
                 id = self.get_entity(sformula)
@@ -136,7 +136,6 @@ class Problem(object):
         if self.structure.df is None:
             self.structure.df  = universe
         self.universe = universe
-
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
