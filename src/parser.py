@@ -144,21 +144,44 @@ class Parser(object):
         else:
             p[0] = p[1]
 
+    def p_base_set(self, p):
+        '''base_set : LABEL
+               | LABEL LSPAR NUMBER RSPAR
+               | UNIVERSE
+        '''
+        if len(p) == 2: p[0] = p[1]
+        elif not self.parse_domains:
+            # need more elegant way to pass number of lifted set
+            p[0] = LiftedSet(self.problem.universe, SizeFormula(p[3], portion.closed(1,portion.inf)))
 
     def p_set(self, p):
-        '''set : LABEL
-               | UNIVERSE
+        '''set : base_set
                | LRPAR set RRPAR
                | NOT set
                | set INTER set
                | set UNION set
         '''
         if len(p) == 2: p[0] = p[1]
-        else:
-            if p[1] == '(': p[0] = p[2]
-            elif p[1] == '¬': p[0] = Not(p[2])
-            elif p[2] == '&': p[0] = And(p[1],p[3])
-            else: p[0] = Or(p[1],p[3])
+        elif p[1] == '(': p[0] = p[2]
+        elif p[1] == '¬': 
+            if isinstance(p[1], LiftedSet):
+                raise Exception("Cannot negate partition")
+            else:
+                p[0] = Not(p[2])
+        elif p[2] == '&': 
+            if isinstance(p[1], LiftedSet):
+                p[1].cofs = [CountingFormula(p[3], portion.open(0,portion.inf))]
+                p[0] = p[1] 
+            elif isinstance(p[3], LiftedSet):
+                p[3].cofs = [CountingFormula(p[1], portion.open(0,portion.inf))]
+                p[0] = p[1] 
+            else:
+                p[0] = And(p[1],p[3])
+        elif p[2] == '|': 
+            if isinstance(p[1], LiftedSet):
+                raise Exception("Cannot or partition")
+            else:
+                p[0] = Or(p[1],p[3])
 
     def p_declare_set(self, p):
         '''declare_set : INDIST LABEL EQUALS LPAR entity_list RPAR 
@@ -252,7 +275,7 @@ class Parser(object):
                             | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
         """
         p[0] = None
-        if p[2] == '{':
+        if isinstance(p[2], str) and p[2] == '{':
             if not self.parse_domains:
                 cf_par = p[3]
                 if cf_par.formula.name == p[5]:
@@ -264,19 +287,28 @@ class Parser(object):
                 self.problem.add_counting_formula(cf)
                 p[0] = cf
         else:
-            inter = self.problem.get_interval(p[3], p[4])
             set = p[2]
+            inter = self.problem.get_interval(p[3], p[4])
             size = SizeFormula(set, inter)
-            if set == self.problem.structure.name:
-                if size.values.lower == 0:
-                    size.values = size.values.replace(lower=1)
-                self.problem.structure.size = size
+            if not self.parse_domains and isinstance(set, LiftedSet):
+                pos = set.size.name # yep this is ugly
+                if len(set.cofs) == 0:
+                    set.size = size
+                else:
+                    set.cofs[0].values = size
+                pf = PosFormula(self.problem.structure, pos, set)
+                self.problem.add_pos_formula(pf)
             else:
-                if not self.parse_domains:
-                    df = self.problem.compute_dom(set)
-                    cf = CountingFormula(df, inter)
-                    self.problem.add_counting_formula(cf)
-                    p[0] = cf
+                if set == self.problem.structure.name:
+                    if size.values.lower == 0:
+                        size.values = size.values.replace(lower=1)
+                    self.problem.structure.size = size
+                else:
+                    if not self.parse_domains:
+                        df = self.problem.compute_dom(set)
+                        cf = CountingFormula(df, inter)
+                        self.problem.add_counting_formula(cf)
+                        p[0] = cf
             
 
 
