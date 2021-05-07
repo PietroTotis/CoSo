@@ -67,10 +67,14 @@ class Domain(object):
         return str(self)
     
     def __str__(self):
-        if self.size() > 0 :
-            str = f"{self.name} ({self.elements.domain()})"
+        if self.all_indistinguishable():
+            str = "indist. "
         else:
-            str = f"{self.name} (none)"
+            str = ""
+        if self.size() > 0 :
+            str += f"{self.name} ({self.elements.domain()})"
+        else:
+            str += f"{self.name} (none)"
         return str
 
     def all_indistinguishable(self):

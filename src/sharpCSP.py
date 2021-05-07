@@ -980,11 +980,12 @@ class SharpCSP(object):
         count = Solution(1,[])
         for v in vars:
             for rvs in v.histogram:
-                n = choices[rvs]
-                k = v.histogram[rvs]
-                ec_choices = math.comb(n,k)  
-                choices[rvs] = n - k  
-                count = count.with_choices(ec_choices)
+                if not rvs.all_indistinguishable():
+                    n = choices[rvs]
+                    k = v.histogram[rvs]
+                    ec_choices = math.comb(n,k)  
+                    choices[rvs] = n - k  
+                    count = count.with_choices(ec_choices)
         if self.type=="partition":
             part_histograms = [frozenset(v.histogram.items()) for v in vars]
             ex_hists = self.histogram(part_histograms)
