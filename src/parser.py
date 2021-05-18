@@ -241,7 +241,6 @@ class Parser(object):
             p[0] = [p[1]] + p[3]
         else:
             p[0] = [p[1]]
-        print(p[0])
 
     def p_pos_constraint(self, p):
         '''pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity 

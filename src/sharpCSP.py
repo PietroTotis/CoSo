@@ -994,107 +994,6 @@ class SharpCSP(object):
         self.log(f"\tcount = {count}")
         return count
 
-    # def count_fixed_partitions(self, var_list = None):
-    #     """
-    #     If everything is fixed, we can count counting formulas like fixed sizes, i.e.
-    #     for each partition pick the given number of p stated by (#p = n) and remove them from universe
-    #     Account for exchangeability of variables in the process: pick at exchangeable class level
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     ex_classes = self.exchangeable_classes(vars)
-    #     n_elems = self.universe.size()
-    #     count = Solution(1,[])
-    #     cofs = vars[0].cofs # assumes all lifted sets have same cases in cof
-    #     case_n_elems = [cof.formula.size() for cof in cofs]
-    #     for ec in ex_classes:
-    #         n = len(ex_classes[ec])
-    #         if len(ec.cofs) > 0:
-    #             ec_count = 1
-    #             for i, cof in enumerate(ec.cofs):
-    #                 size = cof.values.lower # fized value i.e. singleton
-    #                 if cof.formula.all_indistinguishable():
-    #                     cof_count = 1 # if elements are indistinguishable only one way to choose them
-    #                 else:
-    #                     cof_count = self.count_exchangeable_class_partitions(size, case_n_elems[i], n, cof.formula)
-    #                 case_n_elems[i] -= size
-    #                 ec_count *= cof_count
-    #             ec_choices = Solution(ec_count, []) 
-    #         else: 
-    #             size = ec.size.values.lower
-    #             ec_count = self.count_exchangeable_class_partitions(size, n_elems, n)
-    #             n_elems -= size*n
-    #             ec_choices = Solution(ec_count, [])
-    #         count *= ec_choices
-    #     return count
-
-    # def count_partitions(self, var_list=None):
-    #     """
-    #     Look at a partition problem and figure out what to do:
-    #     - If there are no constraints and everything is exchangeable: counting rule (Stirling)
-    #     - If there are size constraints solve with simpler solving method
-    #     - If there are counting formulas use the integer constraint solver method
-    #     - If there are indistinguishable elements use the integer constraint solver method
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     n_elems = self.universe.size()
-    #     ex_classes = self.exchangeable_classes(vars)
-    #     counting_constraints = False
-    #     for v in vars:
-    #         counting_constraints = counting_constraints or len(v.cofs)>0
-    #     # se gli indistinguishable non sono fixed allora non posso andare su by_size
-    #     if len(ex_classes) == 1: 
-    #         partition = vars[0]
-    #         max_size = self.universe.size() - self.n_vars + 1
-    #         unconstrained = SizeFormula("any", P.closed(1, max_size))
-    #         if not counting_constraints and partition.size == unconstrained:
-    #             sol = self.stirling(n_elems, len(vars))
-    #             count = Solution(sol, self.histogram())
-    #         elif not counting_constraints and partition.size != unconstrained:
-    #             count = self.count_partitions_by_size(vars)
-    #         else:
-    #             count = self.count_partitions_with_cof(vars)
-    #     elif counting_constraints:
-    #         count = self.count_partitions_with_cof(vars)
-    #     else: 
-    #         count = self.count_partitions_by_size(vars)
-    #     return count
-
-    # def count_partitions_with_cof(self, var_list = None):
-    #     """
-    #     Decompose intervals in constraints (size/count) into equalities (accounting for all possible combinations)
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     fixed = True
-    #     for v in vars:
-    #         fixed = fixed & is_singleton(v.size.values)
-    #         for cof in v.cofs:
-    #             fixed = fixed & is_singleton(cof.values)
-    #     if fixed and self.has_fixed_indist(vars):
-    #         return self.count_fixed_partitions(vars)
-    #     else:
-    #         ind_sets = self.universe.indistinguishable_subsets()
-    #         self.fix_indistinguishable(self, vars)
-    #         ex_classes = self.exchangeable_classes(vars)
-    #         return self.count_unfixed_partitions(ex_classes, vars)
-
-    # def count_partitions_by_size(self, var_list = None):
-    #     """
-    #     Counts the number of partitions under the assumption that partitions do not have counting constraints.
-    #     Fixes a size s of the subset, then recursively solves the problem on the other subsets where there are
-    #     s elements less available to fill the partition.
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     count = Solution(0,[])
-    #     if self.has_fixed_indist(vars):
-    #         for problem in self.feasible_size_partitions(vars):
-    #             count += self.count_fixed_partitions(problem)
-    #     else:
-    #         ind_sets = self.universe.indistinguishable_subsets()
-    #         self.fix_indistinguishable(self, ind_sets, vars)
-    #         ex_classes = self.histogram()
-    #         count = self.count_unfixed_partitions(ex_classes, vars)
-    #     return count
-
     def count_partitions(self, var_list=None):
         """
         Look at a partition problem and figure out what to do:
@@ -1124,28 +1023,6 @@ class SharpCSP(object):
         else:
             count = self.count_constrained_partitions(vars)
         return count
-
-    # def count_constrained_partitions(self, var_list = None):
-    #     """
-    #     If all relevant quantities are fixed then count.
-    #     Otherwise decompose intervals in constraints into equalities (accounting for all possible combinations)
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     fixed = True
-    #     for v in vars:
-    #         fixed = fixed & is_singleton(v.size.values)
-    #         for cof in v.cofs:
-    #             fixed = fixed & is_singleton(cof.values)
-    #     count = Solution(0,[])
-    #     if fixed and self.has_fixed_indist(vars):
-    #         for problem in self.feasible_size_partitions(vars):
-    #             count += self.count_fixed_partitions(problem)
-    #     else:
-    #         count = self.count_unfixed_partitions(vars)
-    #         # for problem in self.feasible_size_partitions(vars):
-    #         #     for ind_assignment in self.fix_indistinguishable(ind_sets, problem):
-    #         #         count += self.count_unfixed_partitions(ind_assignment)
-    #     return count
 
     def count_constrained_partitions(self, var_list = None):
         """
@@ -1180,13 +1057,8 @@ class SharpCSP(object):
         count = Solution(0,[])
         if fixed:
             count = self.count_fixed_partitions(relevant, vars)
-            # for problem in self.feasible_size_partitions(vars):
-            #     count += self.count_fixed_partitions(problem)
         else:
             count = self.count_unfixed_partitions(relevant, vars)
-            # for problem in self.feasible_size_partitions(vars):
-            #     for ind_assignment in self.fix_indistinguishable(ind_sets, problem):
-            #         count += self.count_unfixed_partitions(ind_assignment)
         return count
 
     def fix_exchangeable_partititons(self, rv_set, n, var_list = None):
@@ -1194,7 +1066,6 @@ class SharpCSP(object):
         self.lvl += 1
         vars = var_list if var_list is not None else self.vars
         k = len(vars)
-        e = math.factorial(k) if self.type == "composition" else 1
         ips = self.feasible_relevant_partitions(rv_set, n, vars)
         valid = []
         for int_partition in ips:
@@ -1204,6 +1075,8 @@ class SharpCSP(object):
                 new_v.histogram[rv_set] = int_partition[i]
                 prop_vars.append(new_v)
             if len(prop_vars) == k:
+                n_perm = self.n_int_perms(int_partition)
+                e = n_perm if self.type == "composition" else 1
                 self.log(f"{e} exchangeable {int_partition}")
                 valid.append((e, prop_vars))
         self.lvl -= 1
@@ -1214,7 +1087,6 @@ class SharpCSP(object):
         self.lvl += 1
         vars = var_list if var_list is not None else self.vars
         ex_classes = self.exchangeable_classes(vars)
-        k = len(ex_classes)
         ics = self.feasible_relevant_compositions(ex_classes, rv_set)
         keys = list(ex_classes.keys())
         dists = []
@@ -1226,8 +1098,8 @@ class SharpCSP(object):
                 valid = self.fix_exchangeable_partititons(rv_set, n, prop_cvars)  
                 if len(valid) > 0:                  
                     prop_vars.append(valid)
-            if len(prop_vars) == k:
-                self.log(f"Distribution for {k} classes: {distribution}")
+            if len(prop_vars) == len(ex_classes):
+                self.log(f"Distribution for {len(ex_classes)} classes: {distribution}")
                 cases = list(self.product(*prop_vars))
                 dists += cases
         self.lvl -= 1
@@ -1252,7 +1124,7 @@ class SharpCSP(object):
                     prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), vars)
                 else: 
                     prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
-                for e, pv in prop_vars:
+                for e, _ in prop_vars:
                     prop_fix = self.fix_partitions(prop_vars, relevant[1:])
                     props += [(e*c, vs) for c,vs in prop_fix]
             return props
@@ -1266,93 +1138,6 @@ class SharpCSP(object):
             c_fix = self.count_fixed_partitions(relevant, prop_vars)
             count += c_fix.with_choices(e)
         return count
-
-
-    # def count_unfixed_partitions(self, var_list = None):
-    #     """
-    #     When sizes or counting formulas contain intervals, or there are indistinguishable entities,
-    #     first solve the problem of assigning elements to partition by satisfying both the quantities to be within 
-    #     the interval and the global partition constraint (all elements have to be distributed across partitions)
-    #     This boils down to solving a system of linear inequalities: use ortools to generate the solutions (a valid
-    #     choice within the interval of each unfixed constraint) then count the fixed problem recursively (see Solution
-    #     Counter class)
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     ex_classes = self.exchangeable_classes(vars)
-    #     valid_size_partitions = self.feasible_size_partitions(vars) # generate valid combinations of sizes
-    #     relevant = set()
-    #     for c in ex_classes:
-    #         relevant = relevant.union(c.relevant())
-    #     relevant = list(relevant)
-    #     cases = self.relevant_cases_intersection(self.universe, relevant)
-    #     n_cases = len(cases)
-    #     count = Solution(0,[])
-    #     for vsp in valid_size_partitions:
-    #         p_model =  cp_model.CpModel()
-    #         # decision variables
-    #         case_vars = []
-    #         for i, v in enumerate(vsp): # each relevant case gets a variable
-    #             cvs = []
-    #             for j,c in enumerate(cases):
-    #                 cvs += [p_model.NewIntVar(0, c.size() ,f"c{i}{j}")]
-    #             case_vars.append(cvs)
-    #         # sizes of partitions of a case sum up to the size of the case
-    #         # e.g. |A| = |A/\B| + |A/\¬B|
-    #         for i,c in enumerate(cases):
-    #             ith_case_vars = [cv[i] for cv in case_vars]
-    #             p_model.Add(sum(ith_case_vars) == c.size())
-    #         # local constraints
-    #         for i,v in enumerate(vsp):
-    #             shatter_vars = case_vars[i]
-    #             part_size = v.size.values.lower # size should be fixed to singleton
-    #             # the sizes of the cases that shatter the partition sum up to its size
-    #             p_model.Add(sum(shatter_vars) == part_size)
-    #             # counting constraints
-    #             for cof in v.cofs:
-    #                 # the sum of the cases that shatter a property p sum up to the given number of elems with p
-    #                 subcases = [j for j,c in enumerate(cases) if c in cof.formula]
-    #                 cof_vars = [shatter_vars[s] for s in subcases]
-    #                 if cof.values.atomic:
-    #                     lb, ub = self.get_lbub(cof.values)
-    #                     p_model.Add(sum(cof_vars) >= lb)
-    #                     p_model.Add(sum(cof_vars) <= ub)
-    #                 else:
-    #                     for vals_interval in cof.values:
-    #                         lb, ub = self.get_lbub(vals_interval)
-    #                         p_model.Add(sum(cof_vars) >= lb)
-    #                         p_model.Add(sum(cof_vars) <= ub)
-    #         solver = cp_model.CpSolver()
-    #         solution_counter = SolutionCounter(self.type, case_vars, cases, self.universe, self.lvl)
-    #         status = solver.SearchForAllSolutions(p_model, solution_counter)
-    #         count += solution_counter.SolutionCount()
-    #     return count
-
-    # def feasible_size_partitions(self, relevant, n, var_list = None):
-    #     """
-    #     Given a list of variables LiftedSet, checks if the size of partitions are compatible with the size constraint.
-    #     Similarly, given a case of a counting formula, check if there is some obvious constraint unsatisfiable
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     bound = [v for v in vars if is_singleton(v.size.values)] 
-    #     b_sizes = [v.size.values for v in bound]
-    #     free = [v for v in vars if not is_singleton(v.size.values)]
-    #     # decide how to partition elements over partitions with variable sizes
-    #     n_elems = self.universe.size()- sum([b.lower for b in b_sizes]) 
-    #     size_partitions = self.integer_k_partitions(n_elems, len(free))
-    #     non_empty = [sp for sp in size_partitions if 0 not in sp]
-    #     if len(free) > 1:
-    #         fsps = []
-    #         for size_partition in non_empty:
-    #             ex_sizes = self.histogram(size_partition)
-    #             ex_parts = self.histogram(free)
-    #             fsps += bound + self.fix_size(ex_sizes, ex_parts)
-    #     else: # if there is one free size then it must have the remaining elems
-    #         fsp = [bound]
-    #         f = free[0]
-    #         f.size.values = f.size.values and P.singleton(n_elems)
-    #         fsp[0].append(f)
-    #         fsps = [fsp]
-    #     return fsp
 
     def feasible_relevant_partitions(self, rv_set, n, var_list = None):
         """
@@ -1384,94 +1169,13 @@ class SharpCSP(object):
             if feasible:
                 fics.append(int_composition)
         return fics
-        # fsps = [] 
-        # for int_partition in int_partitions:
-        #     feasible = True
-        #     for i, v in enumerate(vars):
-        #         feasible = feasible and v.feasible(rv_set, int_partition[i])
-        #     if feasible:
-        #         fsps.append(fsp)
-        # return fsps
 
-    # def fix_size(self, ex_sizes, ex_parts):
-    #     """
-    #     Partitions might not be exchangeable due to counting formulas, so fixing a size for one or another differs.
-    #     Finds all the possible ways of assigning a fixed size to partitions, taking into account exchangeability.
-    #     """
-    #     if len(ex_parts) == 0: # base case
-    #         return []
-    #     else:               # inductive case
-    #         part, n_sets = ex_parts.popitem()
-    #         valid_sizes = [size for size in ex_sizes if size in part.size.values] # there's valid sizes [2,3,...]
-    #         n_choices = len(valid_sizes)
-    #         size_distr = self.integer_k_partitions(n_sets, n_choices) # how many vays of having different sizes
-    #         feasible = []
-    #         for sd in size_distr:
-    #             sizes_cases = set(itertools.permutations(sd)) # is the first/second/... size assigned to n partitions?
-    #             for sc in sizes_cases:
-    #                 fixed_vars = []
-    #                 ex_s = copy.deepcopy(ex_sizes)
-    #                 ex_p = copy.deepcopy(ex_parts)
-    #                 i = 0
-    #                 n = sc[0]
-    #                 size = valid_sizes[0]
-    #                 while ex_s[size] >= n and i<len(sc):
-    #                     fixed_part = copy.deepcopy(part)
-    #                     fixed_part.size.values = fixed_part.size.values and P.singleton(size)
-    #                     ex_s[size] -= n
-    #                     fixed_vars += [fixed_part]*n
-    #                     i += 1
-    #                     if i<len(sc):
-    #                         size = valid_sizes[i]
-    #                         n = sc[i]
-    #                 if i == len(sc):
-    #                     others = self.fix_size(ex_s, ex_p)
-    #                     if len(others) > 0:
-    #                         feasible += [fixed_vars + o for o in others]
-    #                     else:
-    #                         feasible += [fixed_vars]
-    #         return feasible
-
-    # def fix_indistinguishable(self, ind_sets, var_list=None):
-    #     """
-    #     When variables are exchangeable then indistinguishable elements can be assigned to any of them,
-    #     we just need to fix the amount per set, which leads to exchangeable choices
-    #     Sets of different indistinguishable properties are disjoint
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     if len(ind_sets) == 0: # base case
-    #         return [vars]
-    #     else:               # inductive case
-    #         ex_classes = self.histogram(vars)
-    #         n_classes = len(ex_classes)
-    #         s = ind_sets.pop()
-    #         class_partitions = self.integer_k_partitions(s.size(), n_classes) # first partition between ex_classes
-    #         problems = []
-    #         for class_partition in class_partitions: # many ways to do that, each is a different problem
-    #             ex_class_distributions = [] # one combination corresponds to a total partition of the (sub)set
-    #             for i, ex_class in enumerate(ex_classes.keys()):
-    #                 class_vars = [] 
-    #                 n_class = class_partition[i]
-    #                 n_vars_class = ex_classes[ex_class]
-    #                 var_partitions = self.integer_k_partitions(n_class, n_vars_class) # then whithin class
-    #                 var_choices = math.factorial(n_vars_class)
-    #                 for var_partition in var_partitions:    # again, many ways to distribute the given n to the clas between vars
-    #                     fixed_class_vars = []
-    #                     for n_vars in var_partition:
-    #                         cf = CountingFormula(s, P.singleton(n_vars))
-    #                         fixed = ex_class.add_cof(cf)
-    #                         fixed_class_vars.append(fixed)
-    #                     class_vars.append(fixed_class_vars)
-    #                 ex_class_distributions.append(class_vars)
-    #             # please I'm so ugly rewrite me
-    #             if n_classes>1: # testme 
-    #                 problem = list(itertools.product(ex_class_distributions))
-    #             else:
-    #                 problem = ex_class_distributions
-    #             problems.append(problem)
-    #             while len(problems) == 1: 
-    #                 problems = problems[0]
-    #         return problems 
+    def n_int_perms(self, int_partition):
+        # given the int partition returns the n!/n1!*n2!*...*nk! different permutations
+        hst = self.histogram(int_partition)
+        n = math.factorial(len(int_partition))
+        p_classes = math.prod([math.factorial(hst[c]) for c in hst])
+        return n // p_classes
 
     def propagate_cofs_partitions(self, vars, cofs, choices=1):
         """
@@ -1489,15 +1193,16 @@ class SharpCSP(object):
                 for i in P.iterate(cof.values, step = 1):
                     i_vars = vars.copy()
                     cof_eq = CountingFormula(cof.formula, P.singleton(i))
+                    dl = self.dolog
                     try:
                         self.dolog = False
                         c_prop, p_vars = self.propagate_cof(cof_eq, i_vars) # propagate one constraint
                         shatter = self.propagate_cofs_partitions(p_vars, cofs[1:], c_prop) # shatter otheers
                         cases += shatter
-                        self.dolog = True
+                        self.dolog = dl
                         self.lvl -= 1
                     except Unsatisfiable:
-                        self.dolog = True
+                        self.dolog = dl
                         self.lvl -= 1
                 return cases
             else: # shatter constraints
@@ -1548,7 +1253,7 @@ class SharpCSP(object):
                 fixed_set = fixed_set or (cof.formula in i)
             fixed = fixed and fixed_set # if all sets are fixed then ok
         return fixed
-        
+    
 
 class SolutionCounter(cp_model.CpSolverSolutionCallback):
     """

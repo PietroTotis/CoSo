@@ -9,7 +9,7 @@ dutch = {s1,s2,s3,s4,s5,s6};
 % dutch = [1,6]}.
 % french = [4,11]}.
 
-parts in partitions(universe);
+parts in compositions(universe);
 % #parts = 2;
 % #{#p=3 | p in parts} = 2;
 % #{#d>0 | p in parts} = 2;

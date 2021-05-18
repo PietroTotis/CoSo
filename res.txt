@@ -1,0 +1,235 @@
+h730: distinguishable position
+0,128
+h730: indistinguishable position
+0,113
+h830: distinguishable position
+0,093
+h830: indistinguishable position
+0,093
+l305: distinguishable position
+0,093
+l305: indistinguishable position
+0,091
+
+Testing domain sizes...
+
+h730: domain size 1x
+0,113
+h730: domain size 10x
+0,113
+h730: domain size 100x
+0,116
+h730: domain size 1000x
+0,133
+h730: domain size 10000x
+0,332
+h830: domain size 1x
+0,093
+h830: domain size 10x
+0,093
+h830: domain size 100x
+0,092
+h830: domain size 1000x
+0,100
+h830: domain size 10000x
+0,152
+l305: domain size 1x
+0,094
+l305: domain size 10x
+0,094
+l305: domain size 100x
+0,100
+l305: domain size 1000x
+0,124
+l305: domain size 10000x
+0,392
+END TEST
+
+h730: distinguishable position
+0,154
+h730: indistinguishable position
+0,116
+h830: distinguishable position
+0,094
+h830: indistinguishable position
+0,092
+l305: distinguishable position
+0,092
+l305: indistinguishable position
+0,092
+
+Testing domain sizes...
+
+h730: domain size 1x
+0,112
+h730: domain size 10x
+0,114
+h730: domain size 100x
+0,116
+h730: domain size 1000x
+0,133
+h730: domain size 10000x
+0,320
+h830: domain size 1x
+0,092
+h830: domain size 10x
+0,094
+h830: domain size 100x
+0,093
+h830: domain size 1000x
+0,098
+h830: domain size 10000x
+0,151
+l305: domain size 1x
+0,095
+l305: domain size 10x
+0,095
+l305: domain size 100x
+0,101
+l305: domain size 1000x
+0,123
+l305: domain size 10000x
+0,391
+END TEST
+
+h730: distinguishable position
+0,126
+h730: indistinguishable position
+0,118
+h830: distinguishable position
+0,094
+h830: indistinguishable position
+0,093
+l305: distinguishable position
+0,095
+l305: indistinguishable position
+0,094
+
+Testing domain sizes...
+
+h730: domain size 1x
+0,115
+h730: domain size 10x
+0,116
+h730: domain size 100x
+0,117
+h730: domain size 1000x
+0,135
+h730: domain size 10000x
+0,325
+h830: domain size 1x
+0,095
+h830: domain size 10x
+0,094
+h830: domain size 100x
+0,095
+h830: domain size 1000x
+0,100
+h830: domain size 10000x
+0,151
+l305: domain size 1x
+0,098
+l305: domain size 10x
+0,096
+l305: domain size 100x
+0,101
+l305: domain size 1000x
+0,126
+l305: domain size 10000x
+0,389
+END TEST
+
+h730: distinguishable position
+0,127
+h730: indistinguishable position
+0,116
+h830: distinguishable position
+0,094
+h830: indistinguishable position
+0,092
+l305: distinguishable position
+0,093
+l305: indistinguishable position
+0,094
+
+Testing domain sizes...
+
+h730: domain size 1x
+0,114
+h730: domain size 10x
+0,114
+h730: domain size 100x
+0,115
+h730: domain size 1000x
+0,132
+h730: domain size 10000x
+0,320
+h830: domain size 1x
+0,095
+h830: domain size 10x
+0,093
+h830: domain size 100x
+0,093
+h830: domain size 1000x
+0,098
+h830: domain size 10000x
+0,148
+l305: domain size 1x
+0,094
+l305: domain size 10x
+0,094
+l305: domain size 100x
+0,101
+l305: domain size 1000x
+0,124
+l305: domain size 10000x
+0,386
+END TEST
+
+h730: distinguishable position
+0,157
+h730: indistinguishable position
+0,118
+h830: distinguishable position
+0,095
+h830: indistinguishable position
+0,095
+l305: distinguishable position
+0,095
+l305: indistinguishable position
+0,097
+
+Testing domain sizes...
+
+h730: domain size 1x
+0,115
+h730: domain size 10x
+0,115
+h730: domain size 100x
+0,116
+h730: domain size 1000x
+0,133
+h730: domain size 10000x
+0,324
+h830: domain size 1x
+0,090
+h830: domain size 10x
+0,091
+h830: domain size 100x
+0,092
+h830: domain size 1000x
+0,099
+h830: domain size 10000x
+0,153
+l305: domain size 1x
+0,095
+l305: domain size 10x
+0,097
+l305: domain size 100x
+0,100
+l305: domain size 1000x
+0,124
+l305: domain size 10000x
+0,387
+END TEST
+
