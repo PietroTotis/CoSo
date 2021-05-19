@@ -28,6 +28,6 @@ class Solver(object):
                 ub_size = self.universe.size() - n + 1
                 size = SizeFormula("universe", P.closed(1,ub_size))
                 vars = [LiftedSet(self.universe, size)]*n
-            csp = SharpCSP(vars, self.type, self.problem.pos_formulas, self.problem.count_formulas, self.universe)
+            csp = SharpCSP(vars, self.type, self.problem.agg_formulas, self.problem.pos_formulas, self.problem.count_formulas, self.universe)
             count += csp.solve(log)
         return count

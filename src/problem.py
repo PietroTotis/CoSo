@@ -18,8 +18,9 @@ class Problem(object):
     """
     
     def __init__(self):
-        self.pos_formulas = []
         self.universe = None
+        self.agg_formulas = []
+        self.pos_formulas = []
         self.count_formulas = []
         self.domains = {}
         self.entity_map = {}
@@ -42,6 +43,10 @@ class Problem(object):
 
     def add_pos_formula(self, chf):
         self.pos_formulas.append(chf)
+
+    
+    def add_agg_formula(self, chf):
+        self.agg_formulas.append(chf)
         
     def add_counting_formula(self, cof):
         # cformula = self.build_cof(cof)
@@ -187,6 +192,8 @@ class Problem(object):
         for cf in self.pos_formulas:
             s += f"{cf}\n"
         for f in self.count_formulas:
+            s += f"{f}\n"
+        for f in self.agg_formulas:
             s += f"{f}\n"
         s += f"{self.structure}\n"
         return s

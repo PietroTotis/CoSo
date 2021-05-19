@@ -5,6 +5,37 @@ import copy
 from structure import Domain
 from util import *
 
+class AggFormula(object):
+    """
+    Attributes
+    ----------
+    set : DomainFOrmula
+        set on which the constraint holds
+    op : function {int} -> int
+        aggregate operator
+    values : Interval
+        admissible values
+    """
+
+    def __init__(self, set, op, interval):
+        self.set = set
+        self.op = op
+        self.values = interval
+    #     self.fix_bound()
+
+    # def fix_bound(self):
+    #     if self.op == min and self.values.upper>self.set.elems.upper:
+    #         self.values.replace(upper = self.set.elems.upper)
+
+    def __repr__(self):
+        if self.op == min:
+            s = "min"
+        elif self.op == max:
+            s = "max"
+        else:
+            s = "sum"
+        return f"{s} of {self.set} in {self.values}"
+
 class CountingFormula(object):
     """
     Attributes
@@ -191,7 +222,7 @@ class PosFormula(object):
 
 class SizeFormula(object):
     """
-    Container for allowed cardinalities of lifted sets
+    Container for valid cardinalities of lifted sets
 
     Attributes
     ----------

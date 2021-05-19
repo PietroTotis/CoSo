@@ -1,6 +1,5 @@
-import argparse
 import portion
-import operator, functools
+import functools
 from problem import *
 from formulas import *
 
@@ -18,6 +17,9 @@ class Lexer(object):
         'universe' : 'UNIVERSE',
         'partitions' : 'PARTITIONS',
         'compositions' : 'COMPOSITIONS', 
+        'sum' : 'SUM',
+        'min' : 'MIN',
+        'max' : 'MAX',
     }
 
     # Tokens
@@ -103,12 +105,11 @@ class Parser(object):
 
     def p_statement(self, p):
         '''statement : declare_set SEMI
-                | replace SEMI
                 | arrangement SEMI
+                | aggcmp SEMI
                 | pos_constraint SEMI
                 | size_constraint SEMI
         '''
-
 
     def p_entity(self, p):
         '''entity : NUMBER
@@ -235,12 +236,35 @@ class Parser(object):
 
     def p_sc_list(self, p):
         '''sc_list : size_constraint
-                        | size_constraint COMMA entity_list
+                    | size_constraint COMMA entity_list
         '''
         if len(p) > 2:
             p[0] = [p[1]] + p[3]
         else:
             p[0] = [p[1]]
+    
+    def p_math_op(self, p):
+        ''' math_op : SUM 
+                    | MIN 
+                    | MAX
+        '''
+        p[0] = p[1]
+
+    def p_aggcmp(self, p):
+        ''' aggcmp  : math_op LRPAR set RRPAR comp NUMBER
+        '''
+        set = p[3]
+        comp = p[5]
+        n = p[6]
+        interval = self.problem.get_interval(comp, n)
+        if p[1] == 'sum':
+            p[0] = AggFormula(set, sum, interval)
+        elif p[1] == 'min':
+            p[0] = AggFormula(set, min, interval)
+        else:
+            p[0] = AggFormula(set, max, interval)
+        if not self.parse_domains:
+            self.problem.add_agg_formula(p[0])
 
     def p_pos_constraint(self, p):
         '''pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity 

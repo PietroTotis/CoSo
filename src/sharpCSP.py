@@ -1,7 +1,6 @@
 import portion as P
 import math 
 import itertools
-import operator
 from ortools.sat.python import cp_model
 
 from formulas import *
@@ -46,7 +45,18 @@ class Solution(object):
         prod.count = self.count * rhs.count
         prod.histograms = histograms
         return prod
-    
+
+    def __sub__(self, rhs):
+        if self.count == 0:
+            # better not to come here
+            return Solution(-rhs.count, rhs.histogram)
+        elif rhs.count == 0:
+            return self
+        else:
+            self.count -= rhs.count
+            # self.histograms -= rhs.histograms
+            return self
+
     def __repr__(self):
         return str(self)
     
@@ -94,7 +104,8 @@ class SharpCSP(object):
         nesting level for logging 
     """
 
-    def __init__(self, vars, type, choice_f, count_f, universe=None, lvl=0):
+    def __init__(self, vars, type, agg_f, choice_f, count_f, universe=None, lvl=0):
+        self.agg_f = agg_f
         self.choice_f = choice_f
         self.count_f = count_f
         self.fixed_choices = 0
@@ -116,8 +127,41 @@ class SharpCSP(object):
         str += "Count constraints:\n"
         for c in self.count_f:
             str += f"\t{c}\n"
+        str += "Aggregate constraints:\n"
+        for c in self.agg_f:
+            str += f"\t{c}\n"
         str += "----------"
         return str
+
+    def apply_aggs(self):
+        agg = self.agg_f[0]
+        others = self.agg_f[1:]
+        return self.propagate_agg(agg, others)
+    #     """
+    #     Break inequalities into set of equalities
+    #     """
+    #     self.log("Propagating ", agg)
+    #     self.lvl += 1
+    #     lb = agg.values.lower
+    #     ub = agg.values.upper
+    #     if ub == P.inf:
+    #         agg.values = agg.values.replace(upper = self.n_vars+1)
+    #     count = Solution(0,[])
+    #     if lb == ub:
+    #         try:
+    #             choices, prop_vars = self.propagate_agg(agg)
+    #             self.vars = prop_vars
+    #             count = self.split_on_constraints(choices, others)
+    #         except Unsatisfiable:
+    #             pass
+    #     else:
+    #         self.log(f"Expanding bounds {agg.values}...")
+    #         for i in P.iterate(agg.values, step = 1):
+    #             agg_eq = AggFormula(agg.formula, P.singleton(i))
+    #             count_case = self.solve_subproblem(self.vars, self.type, [agg_eq] + others, [], [])
+    #             count += count_case
+    #     self.lvl -=1
+    #     return count
 
     def apply_choice(self, chf):
         """
@@ -157,7 +201,7 @@ class SharpCSP(object):
             self.log(f"Expanding bounds {cof.values}...")
             for i in P.iterate(cof.values, step = 1):
                 cof_eq = CountingFormula(cof.formula, P.singleton(i))
-                count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others)
+                count_case = self.solve_subproblem(self.vars, self.type,self.agg_f, {}, [cof_eq] + others)
                 count += count_case
         self.lvl -=1
         return count
@@ -233,50 +277,6 @@ class SharpCSP(object):
         final =  len(remove) == 0
         result = compact if final else self.compact_cofs(compact)
         return result
-
-    def propagate_cof(self, cof, var_list = None):
-        """
-        Given a set of exchangeable variables, propagate one counting formula.
-        Assumes count is == n, i.e. size is singleton
-        - Check how many vars already satisfy, can satisfy, cannot satisfy the property
-        - If there is no var that can satisfy, either is already sat or not
-        - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
-        return the number of exchangeable choices the propagation requires 
-        """
-        vars = var_list if var_list is not None else self.vars
-        satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
-        goal = cof.values.lower
-        diff = goal - len(satisfied)
-        var_maybe = [vars[v] for v in maybe]
-        ex_classes = self.exchangeable_classes(var_maybe)
-        if diff == 0 and len(maybe) == 0:
-            self.log(cof, " already satisfied")
-            return 1, vars
-        elif len(maybe) == 0:
-            self.log(cof, " is unsat here")
-            raise Unsatisfiable("Unsat!")
-        else: 
-            v = var_maybe[0]
-            self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
-            if self.type == "subset" or self.type=="partition":
-                n_choices = 1
-            else:
-                n_choices = math.comb(len(maybe), abs(diff))
-            sat_f = self.propagate(v, cof.formula)
-            not_sat_f = self.propagate(v, cof.formula.neg())
-            for i in maybe:
-                if diff<0:
-                    vars[i]  = not_sat_f
-                    diff += 1
-                elif diff>0:
-                    vars[i] = sat_f
-                    diff -= 1
-                else:
-                    vars[i]  = not_sat_f
-            if diff != 0:
-                raise Unsatisfiable("Unsat!")
-            else:
-                return n_choices, vars
 
     def count_exchangeable(self):
         """
@@ -561,6 +561,104 @@ class SharpCSP(object):
         else:
             raise Exception(f"unexpected property type {property}: {type(property)}")
     
+    def propagate_cof(self, cof, var_list = None):
+        """
+        Given a set of exchangeable variables, propagate one counting formula.
+        Assumes count is == n, i.e. size is singleton
+        - Check how many vars already satisfy, can satisfy, cannot satisfy the property
+        - If there is no var that can satisfy, either is already sat or not
+        - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
+        return the number of exchangeable choices the propagation requires 
+        """
+        vars = var_list if var_list is not None else self.vars
+        satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
+        goal = cof.values.lower
+        diff = goal - len(satisfied)
+        var_maybe = [vars[v] for v in maybe]
+        ex_classes = self.exchangeable_classes(var_maybe)
+        if diff == 0 and len(maybe) == 0:
+            self.log(cof, " already satisfied")
+            return 1, vars
+        elif len(maybe) == 0:
+            self.log(cof, " is unsat here")
+            raise Unsatisfiable("Unsat!")
+        else: 
+            v = var_maybe[0]
+            self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
+            if self.type == "subset" or self.type=="partition":
+                n_choices = 1
+            else:
+                n_choices = math.comb(len(maybe), abs(diff))
+            sat_f = self.propagate(v, cof.formula)
+            not_sat_f = self.propagate(v, cof.formula.neg())
+            for i in maybe:
+                if diff<0:
+                    vars[i]  = not_sat_f
+                    diff += 1
+                elif diff>0:
+                    vars[i] = sat_f
+                    diff -= 1
+                else:
+                    vars[i]  = not_sat_f
+            if diff != 0:
+                raise Unsatisfiable("Unsat!")
+            else:
+                return n_choices, vars
+
+    def propagate_agg(self, agg, others):
+        if agg.op == min:
+            return self.propagate_min(agg, others)
+        elif agg.op == max:
+            return self.propagate_max(agg, others)
+        else:
+            return self.propagate_sum(agg, others)
+
+    def propagate_max(self, agg, others, var_list = None):
+        """
+        lower bound: unconstrained - problems where min>upper
+        upper bound: remove ints>max from domains
+        """
+        vars = var_list if var_list is not None else self.vars
+        if agg.values.lower == 0:
+            out = P.openclosed(agg.values.upper, self.universe.elements.domain().upper)
+            out_nums = P.IntervalDict()
+            out_nums[out] = True
+            out_dom = DomainFormula("max", out_nums, self.universe)
+            prop = []
+            for v in vars:
+                prop.append(v - out_dom)
+            count = self.solve_subproblem(prop, self.type, others, [], [])
+        else:
+            complement = AggFormula(agg.set, max, P.closedopen(0, agg.values.lower))
+            self.log(f"Sol = unconstrained problem - problem with {complement}")
+            count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
+            count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
+            count = count_unconstr - count_complement
+        return count
+
+    def propagate_min(self, agg, others, var_list = None):
+        """
+        lower bound: remove ints<min from domains
+        upper bound: unconstrained - problems where min>upper
+        """
+        vars = var_list if var_list is not None else self.vars
+        if agg.values.upper == P.inf:
+            out = P.closedopen(0, agg.values.lower)
+            out_nums = P.IntervalDict()
+            out_nums[out] = True
+            out_dom = DomainFormula("min", out_nums, self.universe)
+            prop = []
+            for v in vars:
+                prop.append(v - out_dom)
+            count = self.solve_subproblem(prop, self.type, others, [], [])
+        else:
+            complement = AggFormula(agg.set, min, P.open(agg.values.upper, P.inf))
+            self.log(f"Sol = unconstrained problem - {complement}")
+            count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
+            count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
+            count = count_unconstr - count_complement
+        return count
+        
     def relevant_cases_intersection(self, universe, rest_classes):
         """
         Computes recursively the intersections of relevant cases/domains
@@ -614,8 +712,10 @@ class SharpCSP(object):
             self.count_f = self.compact_cofs(self.count_f)
         except Unsatisfiable:
             return 0
-        if len(self.count_f) !=0:
+        if len(self.count_f) > 0:
             count = self.apply_counts()
+        elif len(self.agg_f) > 0:
+            count = self.apply_aggs()
         else:
             count = self.count()
         self.log("=========")
@@ -627,18 +727,18 @@ class SharpCSP(object):
         rcv = [v.copy() for v in rest_classes_vars]
         self.log(f"Split class :")
         count = Solution(0, self.histogram())
-        split_class_count = self.solve_subproblem(scv, self.type, [], split_class_cofs)
+        split_class_count = self.solve_subproblem(scv, self.type, split_agg_f, [], split_class_cofs)
         if split_class_count != 0:
             self.log("Rest class: ")
-            rest_classes_count = self.solve_subproblem(rcv, self.type, [], rest_classes_cofs)
+            rest_classes_count = self.solve_subproblem(rcv, self.type, rest_agg_f, rest_classes_cofs)
             count = split_class_count * rest_classes_count
             self.log("==========")
         return count
 
-    def solve_subproblem(self, vars, type, choice_constr, count_constr):
+    def solve_subproblem(self, vars, type, agg_constr, choice_constr, count_constr):
         self.log(f"\tSubproblem ({type}):")
         vars = [v.copy() for v in vars]
-        subproblem = SharpCSP(vars, type, choice_constr, count_constr, self.universe, self.lvl+1)
+        subproblem = SharpCSP(vars, type, agg_constr, choice_constr, count_constr, self.universe, self.lvl+1)
         try:
             count = subproblem.solve(self.dolog)
             return count
@@ -652,7 +752,7 @@ class SharpCSP(object):
             self.log("... no other constraints")
             count = self.count()
         else:
-            count = self.solve_subproblem(self.vars, self.type, [], others)
+            count = self.solve_subproblem(self.vars, self.type, self.agg_f, [], others)
         return count.with_choices(n_choices)
         
     def split_ex_classes(self, ex_classes):
