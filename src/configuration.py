@@ -80,6 +80,12 @@ class Domain(object):
     def all_indistinguishable(self):
         return not (True in self.elements.values())
 
+    def max(self):
+        return self.elements.domain().upper
+
+    def min(self):
+        return self.elements.domain().lower
+
     def disjoint(self, rhs):
         inter = self & rhs
         return inter.elements.domain().empty
@@ -122,7 +128,7 @@ class Domain(object):
 
 class Structure(object):
     """
-    Represents a target structure
+    Represents a target configuration
 
     Attributes
     ----------

@@ -1,5 +1,5 @@
 import portion as P
-from structure import *
+from configuration import *
 from solver import Solver
 from formulas import *
 from util import *
@@ -7,7 +7,7 @@ from util import *
 
 class Problem(object):
     """
-    Represents a problem as a collection of domains, a target structure, a set of choice formulas and a set of constraint formulas.
+    Represents a problem as a collection of domains, a target configuration, a set of choice formulas and a set of constraint formulas.
 
     Attributes
     ----------
@@ -24,7 +24,7 @@ class Problem(object):
         self.count_formulas = []
         self.domains = {}
         self.entity_map = {}
-        self.structure = None
+        self.configuration = None
 
     # def add_choice_formula(self, head, body):
     #     struct_name = head.args[0]
@@ -34,7 +34,7 @@ class Problem(object):
     #         pos = head.args[1]
     #         c = PosFormula(struct_name, pos, df)
     #     if head.functor == "in":
-    #         c = InFormula(self.structure.name, df)
+    #         c = InFormula(self.configuration.name, df)
     #     self.choice_formulas.append(c)
 
 
@@ -50,7 +50,7 @@ class Problem(object):
         
     def add_counting_formula(self, cof):
         # cformula = self.build_cof(cof)
-        subsets = self.structure.type in ["partition","composition"]
+        subsets = self.configuration.type in ["partition","composition"]
         count_prop = isinstance(cof.formula, DomainFormula)
         # ignore recursive parsing of counting formulas
         if not (subsets and count_prop):
@@ -72,10 +72,10 @@ class Problem(object):
     #     op = sf.args[1]
     #     formula = sf.args[2]
     #     s = self.build_size(name,op,formula)
-    #     self.structure.size = s
+    #     self.configuration.size = s
 
-    # def add_structure(self, struct):
-    #     self.structure = struct
+    # def add_configuration(self, struct):
+    #     self.configuration = struct
 
     # def build_cof(self, cof):
     #     struct_name = cof.args[0]
@@ -114,19 +114,19 @@ class Problem(object):
         else: # base cases: universe, arrangement, user-defined, single element
             if sformula in self.domains:
                 domain = self.domains[sformula]
-            elif sformula == "universe" or self.structure is not None and sformula == self.structure.name:
+            elif sformula == "universe" or self.configuration is not None and sformula == self.configuration.name:
                 domain = self.universe
             else:
                 id = self.get_entity(sformula)
                 if id is None:
                     id = sformula # dummy
-                    single = portion.singleton(-1)
+                    single = portion.closed(0,P.inf)
                     # raise Exception(f"Unknown constant {sformula}")
                 else:
                     single = portion.singleton(id)
                 dist = portion.IntervalDict()
                 dist[single] = True
-                domain = DomainFormula(id, dist, None)
+                domain = DomainFormula(id, dist, self.universe)
         return domain
 
     def compute_universe(self):
@@ -138,9 +138,14 @@ class Problem(object):
         dom_iter = iter(self.domains.values())
         for d in dom_iter:
             d.universe = universe
-        if self.structure.df is None:
-            self.structure.df  = universe
+        if self.configuration.df is None:
+            self.configuration.df  = universe
+        for pf in self.pos_formulas:
+            pf.formula.universe = universe
+        for cof in self.count_formulas:
+            cof.formula.universe = universe
         self.universe = universe
+        self.universe.universe = universe
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -175,13 +180,15 @@ class Problem(object):
         return interval
 
     def solve(self, log=True):
-        if self.structure is None or len(self.domains) == 0:
+        for f in self.count_formulas:
+            print("£££££££££", f.formula.universe)
+        if self.configuration is None or len(self.domains) == 0:
             print("empty problem!")
             return 0
         else:
-            if self.structure.size is None:
+            if self.configuration.size is None:
                 vals = portion.closed(1, self.universe.size())
-                self.structure.size = SizeFormula("unconstrained", vals)
+                self.configuration.size = SizeFormula("unconstrained", vals)
             s = Solver(self)
             return s.solve(log)
 
@@ -192,8 +199,8 @@ class Problem(object):
         for cf in self.pos_formulas:
             s += f"{cf}\n"
         for f in self.count_formulas:
-            s += f"{f}\n"
+            s += f"{f}\n" 
         for f in self.agg_formulas:
             s += f"{f}\n"
-        s += f"{self.structure}\n"
+        s += f"{self.configuration}\n"
         return s

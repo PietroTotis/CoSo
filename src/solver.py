@@ -4,7 +4,7 @@ import itertools
 
 from formulas import *
 from sharpCSP import SharpCSP, Solution
-from structure import Domain, LiftedSet
+from configuration import Domain, LiftedSet
 
 class Solver(object):
     """
@@ -12,12 +12,12 @@ class Solver(object):
     """
     def __init__(self,problem):
         self.problem = problem
-        self.universe = problem.structure.df
-        self.size  = problem.structure.size
+        self.universe = problem.configuration.df
+        self.size  = problem.configuration.size
         if self.size.values.upper == P.inf:
             n = self.universe.size()
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
-        self.type = problem.structure.type
+        self.type = problem.configuration.type
 
     def solve(self, log=True):
         count = Solution(0,[])
@@ -28,6 +28,6 @@ class Solver(object):
                 ub_size = self.universe.size() - n + 1
                 size = SizeFormula("universe", P.closed(1,ub_size))
                 vars = [LiftedSet(self.universe, size)]*n
-            csp = SharpCSP(vars, self.type, self.problem.agg_formulas, self.problem.pos_formulas, self.problem.count_formulas, self.universe)
+            csp = SharpCSP(vars, self.type, self.problem.pos_formulas, self.problem.count_formulas, self.universe)
             count += csp.solve(log)
         return count

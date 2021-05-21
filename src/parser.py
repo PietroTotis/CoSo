@@ -93,7 +93,7 @@ class Parser(object):
                 self.problem.compute_universe()
                 self.lexer = Lexer()
                 self.parser = yacc.yacc(module=self)
-                self.parse_domains = False # then structure and formula
+                self.parse_domains = False # then configuration and formula
                 self.parser.parse(data)
             else:
                 print("No sets found")
@@ -231,7 +231,7 @@ class Parser(object):
         dom = self.problem.compute_dom(set)
         s = Structure(name, type, dom)
         if self.parse_domains:
-            self.problem.structure = s
+            self.problem.configuration = s
         p[0] = s
 
     def p_sc_list(self, p):
@@ -319,16 +319,17 @@ class Parser(object):
                     set.size = size
                 else:
                     set.cofs[0].values = size
-                pf = PosFormula(self.problem.structure, pos, set)
+                pf = PosFormula(self.problem.configuration, pos, set)
                 self.problem.add_pos_formula(pf)
             else:
-                if set == self.problem.structure.name:
+                if set == self.problem.configuration.name:
                     if size.values.lower == 0:
                         size.values = size.values.replace(lower=1)
-                    self.problem.structure.size = size
+                    self.problem.configuration.size = size
                 else:
                     if not self.parse_domains:
                         df = self.problem.compute_dom(set)
+                        print("%%%%%%%%", df.universe, self.problem.universe)
                         cf = CountingFormula(df, inter)
                         self.problem.add_counting_formula(cf)
                         p[0] = cf

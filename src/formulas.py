@@ -2,7 +2,7 @@ import portion
 import operator
 import copy
 
-from structure import Domain
+from configuration import Domain
 from util import *
 
 class AggFormula(object):
@@ -49,6 +49,7 @@ class CountingFormula(object):
     def __init__(self, formula, interval):
         self.formula = formula
         self.values = interval
+        print(self, self.formula.universe)
 
     def __eq__(self, rhs):
         return self.formula == rhs.formula and self.values == rhs.values
@@ -152,11 +153,8 @@ class DomainFormula(Domain):
             f = self.name.child
         else:
             f = Not(self)
-        if self.universe is None: # this set is universe
-            dom = P.IntervalDict()
-        else:
-            els = self.universe.elements.domain() - self.elements.domain()
-            dom = self.universe.elements[els]
+        els = self.universe.elements.domain() - self.elements.domain()
+        dom = self.universe.elements[els]
         return DomainFormula(f, dom, self.universe)
 
     def indistinguishable_subsets(self, dom_formula=None):
@@ -183,7 +181,7 @@ class DomainFormula(Domain):
 #     Attributes
 #     ----------
 #     struct: str
-#         name of the target structure
+#         name of the target configuration
 #     entity : DomainFormula
 #         property that should belong to the set
 #     """
@@ -203,7 +201,7 @@ class PosFormula(object):
     Attributes
     ----------
     struct : str
-        name of the target structure
+        name of the target configuration
     pos : int
         position where the property holds
     dformula: DomainFormula
