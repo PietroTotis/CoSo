@@ -49,7 +49,6 @@ class CountingFormula(object):
     def __init__(self, formula, interval):
         self.formula = formula
         self.values = interval
-        print(self, self.formula.universe)
 
     def __eq__(self, rhs):
         return self.formula == rhs.formula and self.values == rhs.values

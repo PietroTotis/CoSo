@@ -1048,17 +1048,18 @@ class SharpCSP(object):
         for each partition pick the given number of p stated by (#p = n) and remove them from universe
         Account for exchangeability of variables in the process: pick at exchangeable class level
         """
-        self.log("\tCounting fixed partitions...")
+        self.log("Counting fixed partitions...")
         vars = var_list if var_list is not None else self.vars
         choices = {rvs:rvs.size() for rvs in relevant}
         count = Solution(1,[])
         for v in vars:
             for rvs in v.histogram:
                 if not rvs.all_indistinguishable():
-                    n = choices[rvs]
+                    n = choices.get(rvs,1)
                     k = v.histogram[rvs]
-                    ec_choices = math.comb(n,k)  
-                    choices[rvs] = n - k  
+                    ec_choices = math.comb(n,k) 
+                    if rvs in choices: 
+                        choices[rvs] = n - k  
                     count = count.with_choices(ec_choices)
         if self.type=="partition":
             part_histograms = [frozenset(v.histogram.items()) for v in vars]
@@ -1088,6 +1089,7 @@ class SharpCSP(object):
             max_size = self.universe.size() - self.n_vars + 1
             unconstrained = SizeFormula("any", P.closed(1, max_size))
             if not counting_constraints and partition.size == unconstrained:
+                self.log("Exchangeable variables and no constraints: Stirling numbers 2nd kind")
                 sol = self.stirling(n_elems, len(vars))
                 if self.type == "composition":
                     sol *= math.factorial(len(vars))
@@ -1103,6 +1105,7 @@ class SharpCSP(object):
         If all relevant quantities are fixed then count.
         Otherwise decompose intervals in constraints into equalities (accounting for all possible combinations)
         """
+        self.log("There are constraints: consider relevant sets")
         vars = var_list if var_list is not None else self.vars
         cases = self.universe.indistinguishable_subsets()
         for v in vars:
@@ -1136,10 +1139,11 @@ class SharpCSP(object):
         return count
 
     def fix_exchangeable_partititons(self, rv_set, n, var_list = None):
-        self.log(f"Fixing exchangeable partitions for {rv_set}")
-        self.lvl += 1
         vars = var_list if var_list is not None else self.vars
         k = len(vars)
+        self.log(f"Fixing {n} of {rv_set} on {k} exchangeable")
+        self.log(f" {vars[0]}")
+        self.lvl += 1
         ips = self.feasible_relevant_partitions(rv_set, n, vars)
         valid = []
         for int_partition in ips:
@@ -1149,15 +1153,14 @@ class SharpCSP(object):
                 new_v.histogram[rv_set] = int_partition[i]
                 prop_vars.append(new_v)
             if len(prop_vars) == k:
-                n_perm = self.n_int_perms(int_partition)
-                e = n_perm if self.type == "composition" else 1
+                e = self.n_int_perms(int_partition) if self.type == "composition" else 1
                 self.log(f"{e} exchangeable {int_partition}")
                 valid.append((e, prop_vars))
         self.lvl -= 1
         return valid
 
     def fix_non_exchangeable_partititons(self, rv_set, var_list = None):
-        self.log(f"Fixing non-exchangeable partitions for {rv_set}")
+        self.log(f"Fixing {rv_set} entities on non-exchangeable partitions:")
         self.lvl += 1
         vars = var_list if var_list is not None else self.vars
         ex_classes = self.exchangeable_classes(vars)
@@ -1166,14 +1169,16 @@ class SharpCSP(object):
         dists = []
         for distribution in ics:
             prop_vars = []
+            self.log(f"Distribution for {len(ex_classes)} classes: {distribution}")
             for j, n in enumerate(distribution):
                 class_vars = ex_classes[keys[j]]
                 prop_cvars = [v.copy() for v in class_vars]
+                self.lvl += 1
                 valid = self.fix_exchangeable_partititons(rv_set, n, prop_cvars)  
+                self.lvl -= 1
                 if len(valid) > 0:                  
                     prop_vars.append(valid)
-            if len(prop_vars) == len(ex_classes):
-                self.log(f"Distribution for {len(ex_classes)} classes: {distribution}")
+            if len(prop_vars) == len(ex_classes): # otherwise something was unsat
                 cases = list(self.product(*prop_vars))
                 dists += cases
         self.lvl -= 1
@@ -1191,15 +1196,15 @@ class SharpCSP(object):
             return [(1,vs) for e, vs in fixed] # no more choices to account for
         else:
             props = []
-            rv_set = relevant[0]
+            rv_set = relevant[0] # propagate one
             for ev, vars in fixed:
                 ex_classes = self.exchangeable_classes(vars)
                 if len(ex_classes) == 1:
                     prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), vars)
                 else: 
                     prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
-                for e, _ in prop_vars:
-                    prop_fix = self.fix_partitions(prop_vars, relevant[1:])
+                prop_fix = self.fix_partitions(prop_vars, relevant[1:]) # propagate other relevants
+                for e, vars in prop_vars:
                     props += [(e*c, vs) for c,vs in prop_fix]
             return props
                 
@@ -1233,13 +1238,14 @@ class SharpCSP(object):
         k = len(ex_classes)
         n = rv_set.size()
         int_partitions = self.integer_k_partitions(n, k)
-        int_composition = [list(c) for ip in int_partitions for c in itertools.permutations(ip)]
+        int_compositions = [list(c) for ip in int_partitions for c in set(itertools.permutations(ip))]
         fics = []
-        for int_composition in int_composition:
+        for int_composition in int_compositions:
             feasible = True
             for i, v in enumerate(ex_classes.keys()):
                 n_class = len(ex_classes[v])
-                feasible = feasible and v.feasible(rv_set, int_composition[i], n_class )
+                f = v.feasible(rv_set, int_composition[i], n_class)
+                feasible = feasible and f
             if feasible:
                 fics.append(int_composition)
         return fics
@@ -1318,8 +1324,13 @@ class SharpCSP(object):
         else:
             problems = [(1, vars)]  
         count = Solution(0, [])
+        self.log(f"SIze constraints shattered, solving combinations...")
         for c, p in problems:
+            self.log(f"------------")
+            self.lvl += 1
             count += self.count_partitions(p).with_choices(c)
+            self.lvl -= 1
+            self.log("------------")
         return count
 
     def has_fixed_indist(self, var_list=None):

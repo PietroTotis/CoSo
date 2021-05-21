@@ -180,8 +180,6 @@ class Problem(object):
         return interval
 
     def solve(self, log=True):
-        for f in self.count_formulas:
-            print("£££££££££", f.formula.universe)
         if self.configuration is None or len(self.domains) == 0:
             print("empty problem!")
             return 0

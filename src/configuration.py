@@ -228,8 +228,7 @@ class LiftedSet(object):
             s+= "\t counting: "
             s+= ",".join([str(c) for c in self.cofs])
         if len(self.histogram) > 0:
-            s+= "\n\t " + str(self.histogram)
-            s+= "\n"
+            s+= "\n\t histogram:" + str(self.histogram)
         return s
 
     def __hash__(self):
@@ -306,6 +305,9 @@ class LiftedSet(object):
             return disj
 
     def feasible(self, rv_set, n, n_class=1):
+        # if n == 4:
+        #     print("HHHHHHHHHH")
+        #     print(self, rv_set, n, n_class)
         if rv_set == self.universe:
             size_class = self.size.values.replace(
                 upper=lambda v: n_class*v,
@@ -338,9 +340,9 @@ class LiftedSet(object):
                             return False
             if len(self.histogram) > 1:
                 vals = [n for n in self.histogram.values() if n> -1]
-                if len(vals) == 1: #last relevant set: check size
+                if len(vals) == len(self.histogram)-1: #last relevant set: check size
                     fixed = sum(vals) # respect overall size
-                    if fixed+n not in self.size.values:
+                    if fixed+(n/n_class) not in self.size.values:
                         return False
             return True
 

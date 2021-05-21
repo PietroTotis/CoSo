@@ -329,12 +329,9 @@ class Parser(object):
                 else:
                     if not self.parse_domains:
                         df = self.problem.compute_dom(set)
-                        print("%%%%%%%%", df.universe, self.problem.universe)
                         cf = CountingFormula(df, inter)
                         self.problem.add_counting_formula(cf)
                         p[0] = cf
-            
-
 
     # def p_count_constraint(self, p):
     #     '''count_constraint : COUNT set IN LABEL comp NUMBER
