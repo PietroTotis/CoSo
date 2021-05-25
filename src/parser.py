@@ -178,7 +178,7 @@ class Parser(object):
                 p[0] = p[1] 
             else:
                 p[0] = And(p[1],p[3])
-        elif p[2] == '|': 
+        elif p[2] == '+': 
             if isinstance(p[1], LiftedSet):
                 raise Exception("Cannot or partition")
             else:
@@ -228,11 +228,11 @@ class Parser(object):
             type = "permutation"
         if type == "subset" and p[4] == 2:
             type = "multisubset"
-        dom = self.problem.compute_dom(set)
-        s = Structure(name, type, dom)
-        if self.parse_domains:
+        if not self.parse_domains:
+            dom = self.problem.compute_dom(set)
+            s = Structure(name, type, dom)
             self.problem.configuration = s
-        p[0] = s
+            p[0] = s
 
     def p_sc_list(self, p):
         '''sc_list : size_constraint
@@ -321,17 +321,16 @@ class Parser(object):
                     set.cofs[0].values = size
                 pf = PosFormula(self.problem.configuration, pos, set)
                 self.problem.add_pos_formula(pf)
-            else:
+            elif not self.parse_domains:
                 if set == self.problem.configuration.name:
                     if size.values.lower == 0:
                         size.values = size.values.replace(lower=1)
                     self.problem.configuration.size = size
                 else:
-                    if not self.parse_domains:
-                        df = self.problem.compute_dom(set)
-                        cf = CountingFormula(df, inter)
-                        self.problem.add_counting_formula(cf)
-                        p[0] = cf
+                    df = self.problem.compute_dom(set)
+                    cf = CountingFormula(df, inter)
+                    self.problem.add_counting_formula(cf)
+                    p[0] = cf
 
     # def p_count_constraint(self, p):
     #     '''count_constraint : COUNT set IN LABEL comp NUMBER

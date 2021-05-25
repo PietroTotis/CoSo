@@ -138,8 +138,8 @@ class Problem(object):
         dom_iter = iter(self.domains.values())
         for d in dom_iter:
             d.universe = universe
-        if self.configuration.df is None:
-            self.configuration.df  = universe
+        # if self.configuration.df is None:
+        #     self.configuration.df  = universe
         for pf in self.pos_formulas:
             pf.formula.universe = universe
         for cof in self.count_formulas:

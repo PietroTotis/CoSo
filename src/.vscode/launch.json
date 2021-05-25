@@ -11,9 +11,9 @@
             "program": "launcher.py",
             "console": "integratedTerminal",
             // "args": ["-v", "-f", "../tests/bug"]
-            // "args": ["-v", "-f", "../tests/examples/h849.pl"]
+            "args": ["-v", "-f", "../tests/examples/m651.pl"]
             // "args": ["-v", "-f", "../tests/experiments/ind_h273.pl"]
-            "args": ["-v", "-f", "../tests/old/t2.pl"]
+            // "args": ["-v", "-f", "../tests/old/t2.pl"]
             // "args": ["-v", "-f", "../tests/old/relevant.pl"]
         }
     ]

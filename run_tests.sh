@@ -3,6 +3,9 @@
 
 py="pyenv/bin/python3.8"
 source pyenv/bin/activate
+
+$py src/tester.py --test-folder tests/examples
+
 echo "h730: distinguishable positions"
 time "$py" src/tester.py -f tests/experiments/dist_h730.pl
 echo "h730: indistinguishable positions"
