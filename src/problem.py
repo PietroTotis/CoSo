@@ -43,7 +43,6 @@ class Problem(object):
 
     def add_pos_formula(self, chf):
         self.pos_formulas.append(chf)
-
     
     def add_agg_formula(self, chf):
         self.agg_formulas.append(chf)

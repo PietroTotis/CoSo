@@ -91,6 +91,15 @@ class Parser(object):
             self.parser.parse(data) # first collect domains/universe
             if len(self.problem.domains) > 0:
                 self.problem.compute_universe()
+                names = list(self.problem.domains)
+                for i, d1 in enumerate(names):
+                    for d2 in names[i:]:
+                        dom1 = self.problem.domains[d1]
+                        dom2 = self.problem.domains[d2]
+                        if dom1.elements.domain() in dom2.elements.domain():
+                            dom1.elements.combine(dom2.elements, how=DomainFormula.is_distinguishable) #update indistinguishable 
+                        if dom2.elements.domain() in dom1.elements.domain():
+                            self.problem.domains[d1] = dom1 | dom2
                 self.lexer = Lexer()
                 self.parser = yacc.yacc(module=self)
                 self.parse_domains = False # then configuration and formula
@@ -162,19 +171,23 @@ class Parser(object):
                | set INTER set
                | set UNION set
         '''
+        
         if len(p) == 2: p[0] = p[1]
-        elif p[1] == '(': p[0] = p[2]
-        elif p[1] == '¬': 
-            if isinstance(p[1], LiftedSet):
+        elif isinstance(p[1],str) and p[1] == '(': 
+            p[0] = p[2]
+        elif isinstance(p[1],str) and p[1] == '¬': 
+            if isinstance(p[2], LiftedSet):
                 raise Exception("Cannot negate partition")
             else:
                 p[0] = Not(p[2])
         elif p[2] == '&': 
             if isinstance(p[1], LiftedSet):
-                p[1].cofs = [CountingFormula(p[3], portion.open(0,portion.inf))]
+                d = self.problem.compute_dom(p[3])
+                p[1].cofs = [CountingFormula(d, portion.open(0,portion.inf))]
                 p[0] = p[1] 
             elif isinstance(p[3], LiftedSet):
-                p[3].cofs = [CountingFormula(p[1], portion.open(0,portion.inf))]
+                d = self.problem.compute_dom(p[1])
+                p[3].cofs = [CountingFormula(d, portion.open(0,portion.inf))]
                 p[0] = p[1] 
             else:
                 p[0] = And(p[1],p[3])
@@ -297,7 +310,6 @@ class Parser(object):
         """size_constraint : COUNT set comp NUMBER
                             | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
         """
-        p[0] = None
         if isinstance(p[2], str) and p[2] == '{':
             if not self.parse_domains:
                 cf_par = p[3]
@@ -314,11 +326,13 @@ class Parser(object):
             inter = self.problem.get_interval(p[3], p[4])
             size = SizeFormula(set, inter)
             if not self.parse_domains and isinstance(set, LiftedSet):
+                # create a lifted set for each position and later conjoin with 
+                # variable
                 pos = set.size.name # yep this is ugly
                 if len(set.cofs) == 0:
                     set.size = size
                 else:
-                    set.cofs[0].values = size
+                    set.cofs[0].values = inter
                 pf = PosFormula(self.problem.configuration, pos, set)
                 self.problem.add_pos_formula(pf)
             elif not self.parse_domains:
@@ -331,27 +345,6 @@ class Parser(object):
                     cf = CountingFormula(df, inter)
                     self.problem.add_counting_formula(cf)
                     p[0] = cf
-
-    # def p_count_constraint(self, p):
-    #     '''count_constraint : COUNT set IN LABEL comp NUMBER
-    #                         | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
-    #                         | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
-    #     '''
-    #     if p[2] == '{':
-    #         cf_par = p[3]
-    #         comp = p[9]
-    #         n = p[10]
-    #         interval = self.problem.get_interval(comp, n)
-    #         cf = CountingFormula(cf_par, interval)
-    #     else:
-    #         set = p[2]
-    #         comp = p[5]
-    #         n = p[6]
-    #         interval = self.problem.get_interval(comp, n)
-    #         df = self.problem.compute_dom(set)
-    #         cf = CountingFormula(df, interval)
-    #     self.problem.add_counting_formula(cf)
-    #     p[0] = cf
 
     def p_error(self, p):
         if p == None:

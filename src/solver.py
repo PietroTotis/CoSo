@@ -4,7 +4,7 @@ import itertools
 
 from formulas import *
 from sharpCSP import SharpCSP, Solution
-from configuration import Domain, LiftedSet
+from configuration import LiftedSet
 
 class Solver(object):
     """

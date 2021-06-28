@@ -127,9 +127,9 @@ class DomainFormula(Domain):
     
     def __or__(self, rhs):
         comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
-        if comb == self.elements:
+        if comb.domain() in self.elements.domain():
             f = self.name
-        elif comb == rhs.elements:
+        elif comb.domain() in rhs.elements.domain():
             f = rhs.name
         else:
             f = Or(self, rhs)

@@ -21,11 +21,11 @@ class Domain(object):
         self.elements = elems
         self.n_elements = None
 
-    # @staticmethod
-    # def is_distinguishable(d1, d2):
-    #     # if e is distinguishable truth value in one domain is d1 and the other d2,
-    #     # if any of the two elements is distinguishable then keep distinguishing
-    #     return d1 or d2 
+    @staticmethod
+    def is_distinguishable(d1, d2):
+        # if e is distinguishable truth value in one domain is d1 and the other d2,
+        # if any of the two elements is distinguishable then keep distinguishing
+        return d1 or d2 
 
     # def __and__(self, rhs):
     #     if self.elements in rhs.elements:
@@ -57,11 +57,10 @@ class Domain(object):
     #     dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)  
     #     return Domain(u_name, u_elem, dist)
     
-    def __sub__(self, rhs):
-        c_name = f"({self.name} - {rhs.name})"
-        diff =  self.elements - rhs.elements
-        dist = self.distinguishable # if distinguishability is different makes no sense
-        return Domain(c_name, diff, dist)
+    # def __sub__(self, rhs):
+    #     c_name = f"({self.name} - {rhs.name})"
+    #     diff =  self.elements - rhs.elements
+    #     return Domain(c_name, diff)
         
     def __repr__(self):
         return str(self)
@@ -72,7 +71,7 @@ class Domain(object):
         else:
             str = ""
         if self.size() > 0 :
-            str += f"{self.name} ({self.elements.domain()})"
+            str += f"{self.name} ({self.elements})"
         else:
             str += f"{self.name} (none)"
         return str
@@ -94,6 +93,8 @@ class Domain(object):
         if self.n_elements is None:
             s = 0
             for e in self.elements.domain():
+                if e.upper == P.inf:
+                    return -1
                 if not e.empty:
                     if e.left == P.CLOSED and e.right == P.CLOSED:
                         s += e.upper - e.lower +1
@@ -206,7 +207,6 @@ class LiftedSet(object):
             return False
         else:
             return self.size.values in constr.values
-        return constr.domain in self.domain
 
     def __eq__(self, rhs):
         if self.size != rhs.size:
@@ -305,9 +305,8 @@ class LiftedSet(object):
             return disj
 
     def feasible(self, rv_set, n, n_class=1):
-        # if n == 4:
-        #     print("HHHHHHHHHH")
-        #     print(self, rv_set, n, n_class)
+        # print("-----")
+        # print(self, rv_set, n, n_class)
         if rv_set == self.universe:
             size_class = self.size.values.replace(
                 upper=lambda v: n_class*v,
@@ -327,10 +326,10 @@ class LiftedSet(object):
                     unfixed = []
                     for rvs in self.histogram:
                         if rvs in cof.formula and rvs!=rv_set:
-                            if histogram[rvs]!=-1:
+                            if self.histogram[rvs]!=-1:
                                 unfixed.append(rvs)
                             else:
-                                n_cof += histogram[rvs]
+                                n_cof += self.histogram[rvs]
                     if len(unfixed) == 0:
                         if n*n_class not in cof_class:
                             return False
@@ -340,7 +339,7 @@ class LiftedSet(object):
                             return False
             if len(self.histogram) > 1:
                 vals = [n for n in self.histogram.values() if n> -1]
-                if len(vals) == len(self.histogram)-1: #last relevant set: check size
+                if len(vals) == len(self.histogram)-1 and self.histogram[rv_set] == -1: #last relevant set: check size
                     fixed = sum(vals) # respect overall size
                     if fixed+(n/n_class) not in self.size.values:
                         return False
