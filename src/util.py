@@ -1,4 +1,10 @@
 import portion as P
+from portion.dict import IntervalDict
+
+def is_distinguishable(d1, d2):
+    # if e is distinguishable truth value in one domain is d1 and the other d2,
+    # if any of the two elements is distinguishable then keep distinguishing
+    return d1 or d2 
 
 def is_singleton(interval):
     if interval.left == P.CLOSED and interval.right == P.CLOSED:
@@ -10,12 +16,74 @@ def is_singleton(interval):
     if interval.left == P.OPEN and interval.right == P.OPEN:
         return interval.lower +1 == interval.upper -1
 
+def combine(l, r):
+    # update indistinguishability when and/or domains
+    s_dom = l.elements.domain()
+    r_int = r.elements.domain()
+    if not s_dom.overlaps(r_int):
+        return l + r
+    else:
+        comb = IntervalDict()
+        l_keys = l.elements.keys()
+        r_keys = r.elements.keys()
+        # print(l,"//", r, "   ")
+        l_n = 0
+        r_n = 0
+        while l_n < len(l_keys) or r_n < len(r_keys):
+            # iterate partitions on left/right 
+            # print(l_n, "----", r_n )
+            if l_n == len(l_keys):  # add non-overlapping left 
+                r_int = r_keys[r_n]
+                comb = comb.combine(r.elements[r_int], how=is_distinguishable)
+                r_n += 1
+            elif r_n == len(r_keys): # add non-overlapping right 
+                l_int = l_keys[l_n]
+                comb = comb.combine(l.elements[l_int], how=is_distinguishable)
+                l_n += 1
+            else: # left and right partition share elements
+                l_int = l_keys[l_n]
+                r_int = r_keys[r_n]
+                # print("l:", l_int, "r:", r_int)
+                if l_int<r_int:
+                    comb = comb.combine(l.elements[l_int], how=is_distinguishable)
+                    l_n += 1
+                elif r_int<l_int:
+                    comb = comb.combine(r.elements[r_int], how=is_distinguishable)
+                    comb[r_int] = r.elements[r_int]
+                    r_n += 1
+                else:
+                    # print(l_int,"--",r_int)
+                    l_out = l_int - r_int
+                    inter = l_int & r_int
+                    r_out = r_int - l_int
+                    # print("vals", l_out,inter,r_out)
+                    if not l_out.empty:
+                        if is_singleton(l_out):
+                            comb[l_out] = True
+                        else: # partiton of size 1 is always distinguishable
+                            comb = comb.combine(l.elements[l_out], how=is_distinguishable)
+                    if not r_out.empty:
+                        if is_singleton(r_out):
+                            comb[r_out] = True
+                        else:
+                            comb = comb.combine(r.elements[r_out], how=is_distinguishable)
+                    if not inter.empty:
+                        if is_singleton(inter):
+                            comb[inter] = True
+                        else:
+                            comb = comb.combine(l.elements[inter], how=is_distinguishable)
+                            comb = comb.combine(r.elements[inter], how=is_distinguishable)
+                    l_n += 1
+                    r_n += 1
+        return comb
+
+
 class Not(object):
     
     def __init__(self, child):
         self.child = child
 
-    def __hash(self):
+    def __hash__(self):
         return hash(str(self))
 
     def __repr__(self):
@@ -30,7 +98,7 @@ class And(object):
         self.left = l
         self.right = r
 
-    def __hash(self):
+    def __hash__(self):
         return hash(str(self))
     
     def __repr__(self):
@@ -44,7 +112,7 @@ class Or(object):
         self.left = l
         self.right = r
     
-    def __hash(self):
+    def __hash__(self):
         return hash(str(self))
         
     def __repr__(self):

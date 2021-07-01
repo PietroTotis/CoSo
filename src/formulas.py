@@ -2,6 +2,8 @@ import portion
 import operator
 import copy
 
+from portion.dict import IntervalDict
+
 from configuration import Domain
 from util import *
 
@@ -107,15 +109,13 @@ class DomainFormula(Domain):
         self.universe = universe
         self.n_elements = None
 
-    @staticmethod
-    def is_distinguishable(d1, d2):
-        # if e is distinguishable truth value in one domain is d1 and the other d2,
-        # if any of the two elements is distinguishable then keep distinguishing
-        return d1 or d2 
+    def __add__(self, rhs):
+        return self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
 
     def __and__(self, rhs):
         dom = self.elements.domain() & rhs.elements.domain()
-        comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        # comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        comb = combine(self, rhs)
         elems = comb[dom]
         if elems == self.elements:
             f = self.name
@@ -126,7 +126,7 @@ class DomainFormula(Domain):
         return DomainFormula(f, elems, self.universe)
     
     def __or__(self, rhs):
-        comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
+        comb = combine(self, rhs)
         if comb.domain() in self.elements.domain():
             f = self.name
         elif comb.domain() in rhs.elements.domain():

@@ -866,7 +866,7 @@ class SharpCSP(object):
         dom = vars[0]
         size = dom.size()
         extra = size - n
-        if extra >=0: # are elements enough to fill the permutation?
+        if extra >=0: # are there enough elements to fill the permutation?
             indist = dom.elements.find(False)
             if indist.empty:
                 count = math.factorial(size) // math.factorial(extra)
@@ -874,7 +874,7 @@ class SharpCSP(object):
             else:
                 indist_sizes = self.get_sizes_indistinguishable(indist)
                 dist_size = size - sum(indist_sizes)
-                choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+                choices = self.get_group_choices([dist_size] + indist_sizes, n)
                 count = 0
                 for choice in choices: # each combination of choices is a valid disjoint subproblem
                     dist_choice = choice[0]

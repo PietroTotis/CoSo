@@ -145,6 +145,7 @@ class Problem(object):
             cof.formula.universe = universe
         self.universe = universe
         self.universe.universe = universe
+        # print(self.universe.elements)
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
