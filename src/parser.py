@@ -2,6 +2,7 @@ import portion
 import functools
 from problem import *
 from formulas import *
+from venn import *
 
 import ply.ply.lex as lex
 import ply.ply.yacc as yacc
@@ -17,6 +18,8 @@ class Lexer(object):
         'universe' : 'UNIVERSE',
         'partitions' : 'PARTITIONS',
         'compositions' : 'COMPOSITIONS', 
+        'set' : 'SET', 
+        'of' : 'OF', 
         'sum' : 'SUM',
         'min' : 'MIN',
         'max' : 'MAX',
@@ -83,7 +86,9 @@ class Parser(object):
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self)
         self.parse_domains = True 
+        self.sizes = {}
         self.problem = Problem()
+        self.venn = Venn()
 
     def parse(self):
         with open(self.file, "r") as f:
@@ -104,6 +109,10 @@ class Parser(object):
                 self.parser = yacc.yacc(module=self)
                 self.parse_domains = False # then configuration and formula
                 self.parser.parse(data)
+            elif len(self.venn.base_sets)>0:
+                for set in self.sizes:
+                    self.venn.add_set(set, self.sizes[set])
+                print(self.venn)
             else:
                 print("No sets found")
 
@@ -118,6 +127,7 @@ class Parser(object):
                 | aggcmp SEMI
                 | pos_constraint SEMI
                 | size_constraint SEMI
+                | count_constraint SEMI
         '''
 
     def p_entity(self, p):
@@ -202,23 +212,30 @@ class Parser(object):
                 | LABEL EQUALS LPAR entity_list RPAR 
                 | INDIST LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
                 | LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
+                | SET OF LABEL
+                | SET OF INDIST LABEL
         '''
-        indist = p[1]=="indist"
-        label = p[2] if indist else p[1]
-        if ':' in p:
-            lb = p[5] if indist else p[4]
-            ub = p[7] if indist else p[6]
-            elems = [n for n in range(lb, ub+1)]
+        if p[1] == "set":
+            indist = p[3]=="indist"
+            label = p[4] if indist else p[3]
+            self.venn.add_base_set(label, indist)            
         else:
-            elems = p[5] if indist else p[4]
-        ivs = self.list_to_set(elems)
-        dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
-        dist = P.IntervalDict()
-        dist[dom] = not indist
-        d = DomainFormula(label, dist, self.problem.universe)
-        if self.parse_domains:
-            self.problem.add_domain(d)
-        p[0] = d
+            indist = p[1]=="indist"
+            label = p[2] if indist else p[1]
+            if ':' in p:
+                lb = p[5] if indist else p[4]
+                ub = p[7] if indist else p[6]
+                elems = [n for n in range(lb, ub+1)]
+            else:
+                elems = p[5] if indist else p[4]
+            ivs = self.list_to_set(elems)
+            dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+            dist = P.IntervalDict()
+            dist[dom] = not indist
+            d = DomainFormula(label, dist, self.problem.universe)
+            if self.parse_domains:
+                self.problem.add_domain(d)
+            p[0] = d
 
     def p_arrangement(self, p):
         '''arrangement : LABEL IN LPAR replace set RPAR 
@@ -243,7 +260,7 @@ class Parser(object):
             type = "multisubset"
         if not self.parse_domains:
             dom = self.problem.compute_dom(set)
-            s = Structure(name, type, dom)
+            s = Configuration(name, type, dom)
             self.problem.configuration = s
             p[0] = s
 
@@ -306,9 +323,17 @@ class Parser(object):
             self.problem.add_pos_formula(pf)
             p[0] = pf
 
-    def p_size_constraint(self, p):
-        """size_constraint : COUNT set comp NUMBER
-                            | COUNT LPAR size_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+    def p_size_constraint(self,p):
+        """size_constraint : SLASH set SLASH EQUALS NUMBER
+        """
+        set = p[2]
+        n = int(p[5])
+        self.sizes[set] = n
+
+    def p_count_constraint(self, p):
+        """count_constraint : COUNT set comp NUMBER
+                            | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+                            | SLASH set SLASH EQUALS NUMBER
         """
         if isinstance(p[2], str) and p[2] == '{':
             if not self.parse_domains:

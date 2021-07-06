@@ -90,7 +90,7 @@ class SharpCSP(object):
     vars : [DomainFormula]
         the variables representing the problem configuration
     type : str
-        configuration type (same as Structure)
+        configuration type (same as Configuration)
     # agg_f : [AggFormula]
     #     aggrgate constraints on integers 
     choice_f : [PosFormula]
@@ -1048,11 +1048,13 @@ class SharpCSP(object):
         for each partition pick the given number of p stated by (#p = n) and remove them from universe
         Account for exchangeability of variables in the process: pick at exchangeable class level
         """
-        self.log("Counting fixed partitions...")
         vars = var_list if var_list is not None else self.vars
+        self.log("Counting fixed partitions on histogram ", [k for k in vars[0].histogram.keys()])
         choices = {rvs:rvs.size() for rvs in relevant}
         count = Solution(1,[])
-        for v in vars:
+        self.lvl += 1
+        for i,v in enumerate(vars):
+            self.log(f"Histogram V{i+1} = {[val for val in v.histogram.values()]}")
             for rvs in v.histogram:
                 if not rvs.all_indistinguishable():
                     n = choices.get(rvs,1)
@@ -1061,11 +1063,12 @@ class SharpCSP(object):
                     if rvs in choices: 
                         choices[rvs] = n - k  
                     count = count.with_choices(ec_choices)
+        self.lvl -= 1
         if self.type=="partition":
             part_histograms = [frozenset(v.histogram.items()) for v in vars]
             ex_hists = self.histogram(part_histograms)
             for hc in ex_hists: # account for overcounting exchangeable choices (ugly)
-                count.count = int(count.count/math.factorial(ex_hists[hc]))
+                count.count = count.count // math.factorial(ex_hists[hc]) #should be int anyways
         self.log(f"\tcount = {count}")
         return count
 
@@ -1138,7 +1141,7 @@ class SharpCSP(object):
             count = self.count_unfixed_partitions(relevant, vars)
         return count
 
-    def fix_exchangeable_partititons(self, rv_set, n, var_list = None):
+    def fix_exchangeable_partititons(self, rv_set, n, prev_e=1,  var_list = None):
         vars = var_list if var_list is not None else self.vars
         k = len(vars)
         self.log(f"Fixing {n} of {rv_set} on {k} exchangeable")
@@ -1155,11 +1158,11 @@ class SharpCSP(object):
             if len(prop_vars) == k:
                 e = self.n_int_perms(int_partition) if self.type == "composition" else 1
                 self.log(f"{e} exchangeable {int_partition}")
-                valid.append((e, prop_vars))
+                valid.append((e*prev_e, prop_vars))
         self.lvl -= 1
         return valid
 
-    def fix_non_exchangeable_partititons(self, rv_set, var_list = None):
+    def fix_non_exchangeable_partititons(self, rv_set, prev_e=1, var_list = None):
         self.log(f"Fixing {rv_set} entities on non-exchangeable partitions:")
         self.lvl += 1
         vars = var_list if var_list is not None else self.vars
@@ -1174,7 +1177,7 @@ class SharpCSP(object):
                 class_vars = ex_classes[keys[j]]
                 prop_cvars = [v.copy() for v in class_vars]
                 self.lvl += 1
-                valid = self.fix_exchangeable_partititons(rv_set, n, prop_cvars)  
+                valid = self.fix_exchangeable_partititons(rv_set, n, prev_e, prop_cvars)  
                 self.lvl -= 1
                 if len(valid) > 0:                  
                     prop_vars.append(valid)
@@ -1192,25 +1195,26 @@ class SharpCSP(object):
             yield prod
 
     def fix_partitions(self, fixed, relevant):
+        # fixed::(exchangeability constant, vars)
         if len(relevant) == 0:
-            return [(1,vs) for e, vs in fixed] # no more choices to account for
+            return [fixed] # no more choices to account for
         else:
             props = []
+            e, vars = fixed
             rv_set = relevant[0] # propagate one
-            for ev, vars in fixed:
-                ex_classes = self.exchangeable_classes(vars)
-                if len(ex_classes) == 1:
-                    prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), vars)
-                else: 
-                    prop_vars = self.fix_non_exchangeable_partititons(rv_set, vars)
-                prop_fix = self.fix_partitions(prop_vars, relevant[1:]) # propagate other relevants
-                for e, vars in prop_vars:
-                    props += [(e*c, vs) for c,vs in prop_fix]
-            return props
+            ex_classes = self.exchangeable_classes(vars)
+            if len(ex_classes) == 1:
+                prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), e, vars)
+            else: 
+                prop_vars = self.fix_non_exchangeable_partititons(rv_set, e, vars)
+            for pvs in prop_vars:
+                prop_fix = self.fix_partitions(pvs, relevant[1:]) # propagate other relevants
+                props += prop_fix
+        return props
                 
     def count_unfixed_partitions(self, relevant, var_list = None):
         vars = var_list if var_list is not None else self.vars
-        fixed = self.fix_partitions([(1,vars)], relevant)
+        fixed = self.fix_partitions( (1, vars), relevant)
         count = Solution(0,[])
         for fix_vars in fixed:
             e, prop_vars = fix_vars

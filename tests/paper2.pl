@@ -4,7 +4,7 @@ indist red = {r1,r2};
 indist blue = {b1,b2};
 indist green = {g1,g2,g3};
 
-parts in partitions(red+green+blue);
-
-#parts = 3;
-#{ #p & green = 3 | p in parts } =1;
+perm in [|universe];
+#perm = 4;
+perm[2] = green;
+#squares&perm =2;

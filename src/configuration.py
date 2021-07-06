@@ -70,10 +70,11 @@ class Domain(object):
             str = "indist. "
         else:
             str = ""
-        if self.size() > 0 :
-            str += f"{self.name} ({self.elements})"
-        else:
-            str += f"{self.name} (none)"
+        str += f"{self.name}"
+        # if self.size() > 0 :
+        #     str += f"{self.name} ({self.elements})"
+        # else:
+        #     str += f"{self.name} (none)"
         return str
 
     def all_indistinguishable(self):
@@ -127,7 +128,7 @@ class Domain(object):
         taken = Domain(f"{n}x {self.name}", dist)
         return taken
 
-class Structure(object):
+class Configuration(object):
     """
     Represents a target configuration
 

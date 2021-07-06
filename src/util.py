@@ -7,6 +7,8 @@ def is_distinguishable(d1, d2):
     return d1 or d2 
 
 def is_singleton(interval):
+    if interval.lower == P.inf or interval.upper==P.inf:
+        return False
     if interval.left == P.CLOSED and interval.right == P.CLOSED:
         return interval.lower == interval.upper
     if interval.left == P.OPEN and interval.right == P.CLOSED:
@@ -83,6 +85,12 @@ class Not(object):
     def __init__(self, child):
         self.child = child
 
+    def __eq__(self, rhs):
+        if isinstance(rhs, Not):
+            return self.child==rhs.child
+        else:
+            return False
+
     def __hash__(self):
         return hash(str(self))
 
@@ -98,10 +106,23 @@ class And(object):
         self.left = l
         self.right = r
 
+    def __eq__(self, rhs):
+        if isinstance(rhs, And):
+            same = self.left == rhs.left and self.right == rhs.right
+            inverted = self.right == rhs.left and self.left == rhs.right
+            return same or inverted
+        else:
+            return False
+
     def __hash__(self):
         return hash(str(self))
     
     def __repr__(self):
+        # if self.left.name == "":
+        #     return str(self.right)
+        # elif self.right.name == "":
+        #     return str(self.left)
+        # else:
         l = ("","") if isinstance(self.left, str) else ("(",")")
         r = ("","") if isinstance(self.right, str) else ("(",")")
         return f"{l[0]}{self.left}{l[1]} ∧ {r[0]}{self.right}{r[1]}"
@@ -115,7 +136,16 @@ class Or(object):
     def __hash__(self):
         return hash(str(self))
         
+    def __eq__(self, rhs):
+        if isinstance(rhs, Or):
+            same = self.left == rhs.left and self.right == rhs.right
+            inverted = self.right == rhs.left and self.left == rhs.right
+            return same or inverted
+        else:
+            return False
+
     def __repr__(self):
         l = ("","") if isinstance(self.left, str) else ("(",")")
         r = ("","") if isinstance(self.right, str) else ("(",")")
         return f"{l[0]}{self.left}{l[1]} ∨ {r[0]}{self.right}{r[1]}"
+

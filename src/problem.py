@@ -118,7 +118,7 @@ class Problem(object):
             else:
                 id = self.get_entity(sformula)
                 if id is None:
-                    id = sformula # dummy
+                    id = "" #sformula # dummy
                     single = portion.closed(0,P.inf)
                     # raise Exception(f"Unknown constant {sformula}")
                 else:

@@ -1,8 +1,4 @@
 import portion
-import operator
-import copy
-
-from portion.dict import IntervalDict
 
 from configuration import Domain
 from util import *
