@@ -149,3 +149,63 @@ class Or(object):
         r = ("","") if isinstance(self.right, str) else ("(",")")
         return f"{l[0]}{self.left}{l[1]} ∨ {r[0]}{self.right}{r[1]}"
 
+def dnfy(set):
+        """
+        Transform a set formula into dnf
+        """
+        if isinstance(set, str):
+            return set
+        if isinstance(set, Or):
+            ldnfy = dnfy(set.left)
+            rdnfy = dnfy(set.right)
+            return Or(ldnfy, rdnfy)
+        elif isinstance(set, Not):
+            if isinstance(set.child, Not):
+                return dnfy(set.child.child)
+            elif isinstance(set.child, And):
+                ldnfy = dnfy(Not(set.child.left))
+                rdnfy = dnfy(Not(set.child.right))
+                return Or(ldnfy,rdnfy)
+            elif isinstance(set.child, Or):
+                ldnfy = dnfy(Not(set.child.left))
+                rdnfy = dnfy(Not(set.child.right))
+                return And(ldnfy,rdnfy)
+            else:
+                return set
+        else: #isinstance(set, And):
+            if isinstance(set.right, Or):
+                rdnfy = dnfy(set.right)
+                return Or(And(set.right.left, rdnfy), And(set.right.left, rdnfy))
+            elif isinstance(set.right,Or):
+                ldnfy = dnfy(set.left)
+                return Or(And(set.right.left, ldnfy), And(set.right.left, ldnfy))
+            else:
+                return set
+
+def flatten(op, a):
+    """
+    Flatten conjunction or disjunction from binary tree to list
+    op : And/Or
+    a : And/Or/Not/str
+    """
+    if isinstance(a, str) or isinstance(a, Not):
+        return [a]
+    if isinstance(a, op) and (isinstance(a.left, str) or isinstance(a.left, Not)):
+        return [a.left] + flatten(op, a.right)
+    elif isinstance(a, op) and (isinstance(a.right, str) or isinstance(a.right, Not)):
+        return [a.right] + flatten(op, a.left)
+    elif isinstance(a, op) and isinstance(a.left, op) and isinstance(a.right, op):
+        return flatten(op, a.left) + flatten(op, a.right)
+    else: # flattening And (Or) but both children are Or (And)
+        return a 
+
+def nest(op, l):
+    """
+    Turn a list l into a conjunction or disjunction binary tree
+    op : And/Or
+    l : list of str
+    """
+    if len(l)==1:
+        return l[0]
+    else:
+        return op(l[0], nest(op, l[1:]))

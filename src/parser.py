@@ -107,12 +107,13 @@ class Parser(object):
                             self.problem.domains[d1] = dom1 | dom2
                 self.lexer = Lexer()
                 self.parser = yacc.yacc(module=self)
-                self.parse_domains = False # then configuration and formula
-                self.parser.parse(data)
+                self.parse_domains = False 
+                self.parser.parse(data)     # then configuration and formula
             elif len(self.venn.base_sets)>0:
                 for set in self.sizes:
                     self.venn.add_set(set, self.sizes[set])
                 print(self.venn)
+                self.venn.infer()
             else:
                 print("No sets found")
 
