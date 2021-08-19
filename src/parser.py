@@ -23,6 +23,7 @@ class Lexer(object):
         'sum' : 'SUM',
         'min' : 'MIN',
         'max' : 'MAX',
+        'part' : 'PART'
     }
 
     # Tokens
@@ -178,6 +179,7 @@ class Parser(object):
 
     def p_set(self, p):
         '''set : base_set
+               | PART
                | LRPAR set RRPAR
                | NOT set
                | set INTER set
@@ -334,16 +336,16 @@ class Parser(object):
 
     def p_count_constraint(self, p):
         """count_constraint : COUNT set comp NUMBER
-                            | COUNT LPAR count_constraint SLASH LABEL IN LABEL RPAR comp NUMBER
+                            | COUNT LPAR count_constraint RPAR comp NUMBER
                             | SLASH set SLASH EQUALS NUMBER
         """
         if isinstance(p[2], str) and p[2] == '{':
             if not self.parse_domains:
                 cf_par = p[3]
-                if cf_par.formula.name == p[5]:
+                if cf_par.formula.name == self.problem.universe.name:
                     cf_par = SizeFormula(p[5], cf_par.values)
-                comp = p[9]
-                n = p[10]
+                comp = p[5]
+                n = p[6]
                 interval = self.problem.get_interval(comp, n)
                 cf = CountingFormula(cf_par, interval)
                 self.problem.add_counting_formula(cf)

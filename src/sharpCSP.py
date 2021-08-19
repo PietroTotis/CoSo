@@ -1328,7 +1328,7 @@ class SharpCSP(object):
         else:
             problems = [(1, vars)]  
         count = Solution(0, [])
-        self.log(f"SIze constraints shattered, solving combinations...")
+        self.log(f"Size constraints shattered, solving combinations...")
         for c, p in problems:
             self.log(f"------------")
             self.lvl += 1

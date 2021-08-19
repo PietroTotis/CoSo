@@ -113,7 +113,7 @@ class Problem(object):
         else: # base cases: universe, arrangement, user-defined, single element
             if sformula in self.domains:
                 domain = self.domains[sformula]
-            elif sformula == "universe" or self.configuration is not None and sformula == self.configuration.name:
+            elif sformula == "universe" or sformula== "part" or self.configuration is not None and sformula == self.configuration.name:
                 domain = self.universe
             else:
                 id = self.get_entity(sformula)
