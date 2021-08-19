@@ -114,15 +114,16 @@ class Venn(object):
             self.sizes[tuple(part)] = size
 
     def subsets(self):
-        for set in self.sizes:
+        sets = list(self.sizes.keys())+[self.formula2area(b) for b in self.base_sets]
+        for set in sets:
             subs = self.get_subsets(set)
             if len(subs) > 0:
                 name = self.area2formula(set)
                 if name not in self.unions:
-                    u = Union(name, self.sizes[set], subs)
+                    u = Union(name, self.sizes.get(set,None), subs)
                     self.unions[name] = u
                 else:
-                    self.unions[name].subsets += subs
+                    self.unions[name].subsets |= subs
             else:
                 self.parts.append(set)
                 
@@ -154,8 +155,22 @@ class Venn(object):
         return subset
 
     def infer_union_size(self, u):
+        # missing the case where both #A and #B are unknown but #A u B is known  
         if u.size is None:
-            u.size = sum([self.sizes(part) for part in u.subsets])
+            u.size = sum([self.sizes[part] for part in u.subsets])
+        else:
+            known = [p for p in u.subsets if p in self.sizes]
+            unknown = [p for p in u.subsets if p not in self.sizes]
+            known_size = sum([self.sizes[p] for p in known])
+            if len(unknown) == 0:
+                if u.size != known_size:
+                    raise Exception(f"Inconsistent size of {u.formula} (expected {u.size}, got {known_size}")
+            elif len(unknown) == 1:
+                self.sizes[unknown[0]] = known_size
+            else:
+                if len(known) > 0:
+                    u_formula = nest([self.area2formula(p) for p in unknown])
+                    u = Union(u_formula, u.size-known_size, unknown)
 
     def infer_indistinguishability(self):
         for p in self.parts:
@@ -167,17 +182,15 @@ class Venn(object):
 
     def infer(self):
         self.subsets()
-        for u in self.unions:
-            print(self.unions[u])
+        # for u in self.unions:
+        #     print(self.unions[u])
         self.infer_indistinguishability()
-        print("parts: ", [self.area2formula(p) for p in self.parts])
-        for set in self.indist:
-            if isinstance(set, tuple):
-                print(self.area2formula(set), self.indist[set])
+        # print("parts: ", [self.area2formula(p) for p in self.parts])
+        # for set in self.indist:
+        #     if isinstance(set, tuple):
+        #         print(self.area2formula(set), self.indist[set])
         for set in self.unions:
             self.infer_union_size(self.unions[set])
-        # if u.size != sum(parts) -> phantom rest part
-        # u.size = sum(parts)
 
     def area2formula(self, area):
         bsets = []
@@ -201,7 +214,7 @@ class Venn(object):
             else:
                 i = self.base_sets.index(s)
                 part[i] = 1
-        return part
+        return tuple(part)
 
     # def add_set(self, set, size):
     #     if isinstance(set, str) and not set in self.subsets:

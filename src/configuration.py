@@ -72,9 +72,9 @@ class Domain(object):
             str = ""
         str += f"{self.name}"
         # if self.size() > 0 :
-        #     str += f"{self.name} ({self.elements})"
+        #     str += f"({list(self.elements.keys())})=|{self.n_elements}|"
         # else:
-        #     str += f"{self.name} (none)"
+        #     str += f"(none)"
         return str
 
     def all_indistinguishable(self):

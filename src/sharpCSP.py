@@ -953,7 +953,7 @@ class SharpCSP(object):
             if not left:
                 lower+= 1
             if not right:
-                upper+= 1
+                upper-= 1
             if upper > lower:
                 size = upper-lower+1
             else:

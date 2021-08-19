@@ -94,6 +94,12 @@ class Parser(object):
         with open(self.file, "r") as f:
             data = f.read()
             self.parser.parse(data) # first collect domains/universe
+            if len(self.venn.base_sets)>0:
+                for set in self.sizes:
+                    self.venn.add_set(set, self.sizes[set])
+                # print(self.venn)
+                self.venn.infer()
+                self.venn2domains()
             if len(self.problem.domains) > 0:
                 self.problem.compute_universe()
                 names = list(self.problem.domains)
@@ -105,17 +111,12 @@ class Parser(object):
                             dom1.elements.combine(dom2.elements, how=DomainFormula.is_distinguishable) #update indistinguishable 
                         if dom2.elements.domain() in dom1.elements.domain():
                             self.problem.domains[d1] = dom1 | dom2
-                self.lexer = Lexer()
-                self.parser = yacc.yacc(module=self)
-                self.parse_domains = False 
-                self.parser.parse(data)     # then configuration and formula
-            elif len(self.venn.base_sets)>0:
-                for set in self.sizes:
-                    self.venn.add_set(set, self.sizes[set])
-                print(self.venn)
-                self.venn.infer()
             else:
-                print("No sets found")
+                raise Exception("No sets found!")
+            self.lexer = Lexer()
+            self.parser = yacc.yacc(module=self)
+            self.parse_domains = False 
+            self.parser.parse(data)     # then configuration and formula
 
     def p_program(self, p):
         '''program : statement
@@ -229,7 +230,7 @@ class Parser(object):
                 elems = [n for n in range(lb, ub+1)]
             else:
                 elems = p[5] if indist else p[4]
-            ivs = self.list_to_set(elems)
+            ivs = self.list2interval(elems)
             dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
             dist = P.IntervalDict()
             dist[dom] = not indist
@@ -308,7 +309,7 @@ class Parser(object):
         if not self.parse_domains:
             if p[6] == '{':
                 if p[8] == '}':
-                    set = self.list_to_set(p[7])
+                    set = self.list2interval(p[7])
                     df = DomainFormula("anon", set, self.problem.universe)
                 else:
                     size = SizeFormula("", portion.closed(1, self.problem.universe.size()-1 ))
@@ -381,7 +382,7 @@ class Parser(object):
             if p.type != 'PROPERTY':
                 print(f"Syntax error: Unexpected {token}")
 
-    def list_to_set(self, elems):
+    def list2interval(self, elems):
         entities = [self.problem.add_entity(e) for e in elems]
         entities.sort()
         ivs = []
@@ -396,3 +397,25 @@ class Parser(object):
                 ivs.append(portion.singleton(low))
             i += 1
         return ivs
+
+    def venn2domains(self):
+        """
+        Convert a Venn diagram into domains with the correct intersections
+        """
+        entities = {p:[] for p in self.venn.parts}
+        for i, part in enumerate(self.venn.parts):
+            for n in range(0,self.venn.sizes[part]):
+                e = f"p_{i}_{n}"
+                entities[part].append(e)
+        for set in self.venn.base_sets:
+            elems = []
+            parts = self.venn.unions[set].subsets
+            for part in parts:
+                elems += entities[part]
+            ivs = self.list2interval(elems)
+            dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+            dist = portion.IntervalDict()
+            dist[dom] = not self.venn.indist[set]
+            d = DomainFormula(set, dist, self.problem.universe)
+            self.problem.add_domain(d)
+            # print(set, ivs)

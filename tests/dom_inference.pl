@@ -11,8 +11,8 @@ set of indist blue;
 |blue&triangles| = 1;
 set of indist green;
 |green&triangles| = 3;
-|¬(red + blue)| =3;
-set of marked;
-|marked&red&squares| = 1;
 
-perm in [| squares+triangles];
+perm in [|universe];
+#perm = 4;
+perm[2] = green;
+#squares&perm =2;
