@@ -162,6 +162,7 @@ class DomainFormula(Domain):
         elif isinstance(f, Not) :
             indist = self.indistinguishable_subsets(f.child)
         else: # Domain
+            df = df & self.universe # update indistinguishability from universe
             if [False] == list(df.elements.values()):
                 indist = {df}
             else:

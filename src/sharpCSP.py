@@ -2,6 +2,7 @@ import portion as P
 import math 
 import itertools
 from ortools.sat.python import cp_model
+from portion.interval import singleton
 
 from formulas import *
 from configuration import Domain, LiftedSet, is_singleton
@@ -148,8 +149,9 @@ class SharpCSP(object):
         Sets variables according to the choice constraints
         """
         if isinstance(chf, PosFormula):
-            self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.dformula
-            self.log("Choice set:", self.vars[chf.pos-1])
+            if chf.pos-1<self.n_vars:
+                self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.dformula
+                self.log("Choice set:", self.vars[chf.pos-1])
         # if isinstance(chf, InFormula):
         #     if self.fixed_choices > self.n_vars:
         #         raise Unsatisfiable("Too many elements for the subset size!")
@@ -165,10 +167,19 @@ class SharpCSP(object):
         """
         self.log("Propagating ", cof)
         self.lvl += 1
-        lb = cof.values.lower
-        ub = cof.values.upper
-        if ub == P.inf:
-            cof.values = cof.values.replace(upper = self.n_vars+1)
+        # count = Solution(0,[])
+        # try:
+        #     choices, prop_vars = self.propagate_cof(cof)
+        #     self.vars = prop_vars
+        #     count = self.split_on_constraints(choices, others)
+        # except Unsatisfiable:
+        #     pass
+        # dom_size = cof.formula.size()+1 # n entities is the max count (open interval:+1)
+        # if cof.values.upper == P.inf:
+        #     # cof.values = cof.values.replace(upper = self.n_vars+1)
+        #     cof.values = cof.values.replace(upper = dom_size)
+        max_entities = min(self.n_vars,cof.formula.size())
+        lb, ub = interval_closed(cof.values, ub_default=max_entities)
         count = Solution(0,[])
         if lb == ub:
             try:
@@ -177,12 +188,21 @@ class SharpCSP(object):
                 count = self.split_on_constraints(choices, others)
             except Unsatisfiable:
                 pass
+        elif lb==1:
+            # ignore and then remove the all unsat case
+            self.log(f"Satisfy at least 1 {cof.formula} by any-exactly 0...")
+            count_ignore = self.split_on_constraints(1, others)
+            not_cof = CountingFormula(cof.formula, singleton(0))
+            count_not = self.split_on_constraints(1, [not_cof] + others)
+            count = count_ignore - count_not         
         else:
             self.log(f"Expanding bounds {cof.values}...")
-            for i in P.iterate(cof.values, step = 1):
+            values = cof.values.replace(upper=ub,right=P.CLOSED)
+            for i in P.iterate(values, step = 1):
                 cof_eq = CountingFormula(cof.formula, P.singleton(i))
                 count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others)
                 count += count_case
+            self.log(f"Propagate lower bound #{cof.formula}={lb}...")
         self.lvl -=1
         return count
     
@@ -509,15 +529,17 @@ class SharpCSP(object):
         Checks if we ask to observe more properties than available variables
         Or things that split_class_var cannot satisfy
         """
-        if scof.values.lower > n_split:
+        slb, sub =  interval_closed(scof.values, ub_default=n_split)
+        rlb, rub =  interval_closed(scof.values, ub_default=n_rest)
+        if slb > n_split:
             return False
-        if rcof.values.lower > n_rest:
+        if rlb > n_rest:
             return False
         disjoint = split_class_var.disjoint(scof.formula)
         included = scof.formula in split_class_var
-        if disjoint and scof.values.lower > 0:
+        if disjoint and slb > 0:
             return False
-        if included and scof.values.upper < n_split:
+        if included and sub < n_split:
             return False
         return True
     
@@ -544,18 +566,16 @@ class SharpCSP(object):
     def propagate_cof(self, cof, var_list = None):
         """
         Given a set of exchangeable variables, propagate one size constraint.
-        Assumes count is == n, i.e. size is singleton
         - Check how many vars already satisfy, can satisfy, cannot satisfy the property
         - If there is no var that can satisfy, either is already sat or not
-        - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, set the others to not satisfy.
+        - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, if set the others to not satisfy.
         return the number of exchangeable choices the propagation requires 
         """
         vars = var_list if var_list is not None else self.vars
+        lb, ub = interval_closed(cof.values, ub_default=len(vars))
         satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
-        goal = cof.values.lower
-        diff = goal - len(satisfied)
+        diff = lb - len(satisfied)
         var_maybe = [vars[v] for v in maybe]
-        ex_classes = self.exchangeable_classes(var_maybe)
         if diff == 0 and len(maybe) == 0:
             self.log(cof, " already satisfied")
             return 1, vars
@@ -585,51 +605,98 @@ class SharpCSP(object):
             else:
                 return n_choices, vars
 
-    def propagate_max(self, agg, others, var_list = None):
-        """
-        lower bound: unconstrained - problems where min>upper
-        upper bound: remove ints>max from domains
-        """
-        vars = var_list if var_list is not None else self.vars
-        if agg.values.lower == 0:
-            out = P.openclosed(agg.values.upper, self.universe.elements.domain().upper)
-            out_nums = P.IntervalDict()
-            out_nums[out] = True
-            out_dom = DomainFormula("max", out_nums, self.universe)
-            prop = []
-            for v in vars:
-                prop.append(v - out_dom)
-            count = self.solve_subproblem(prop, self.type, others, [], [])
-        else:
-            complement = AggFormula(agg.set, max, P.closedopen(0, agg.values.lower))
-            self.log(f"Sol = unconstrained problem - problem with {complement}")
-            count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
-            count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
-            count = count_unconstr - count_complement
-        return count
+    # def propagate_cof_atleast(self, cof, var_list = None): #works but leads to choices accounting issues
+    #     """
+    #     Given a set of exchangeable variables, propagate one size constraint.
+    #     - Check how many vars already satisfy, can satisfy, cannot satisfy the property
+    #     - If there is no var that can satisfy, either is already sat or not
+    #     - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, if set the others to not satisfy.
+    #     return the number of exchangeable choices the propagation requires 
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     lb, ub = interval_closed(cof.values, ub_default=len(vars))
+    #     satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
+    #     lb_diff = lb - len(satisfied)
+    #     ub_diff = (len(vars) - ub) - len(not_satisfied)
+    #     var_maybe = [vars[v] for v in maybe]
+    #     # ex_classes = self.exchangeable_classes(var_maybe)
+    #     if len(maybe) == 0:
+    #         if lb_diff <= 0 and ub_diff <= 0:
+    #             self.log(cof, "already satisfied")
+    #             return 1, vars
+    #         else:
+    #             self.log(cof, " is unsat here")
+    #             raise Unsatisfiable("Unsat!")
+    #     else: 
+    #         v = var_maybe[0]
+    #         self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
+    #         if self.type == "subset" or self.type=="partition":
+    #             n_choices = 1
+    #         else:
+    #             lb_n_choices = math.comb(len(maybe), abs(lb_diff))
+    #             ub_n_choices = math.comb(len(maybe)-lb_diff, abs(ub_diff))
+    #             n_choices = lb_n_choices * ub_n_choices
+    #         sat_f = self.propagate(v, cof.formula)
+    #         not_sat_f = self.propagate(v, cof.formula.neg())
+    #         for i in maybe:
+    #             if lb_diff >0:
+    #                 vars[i]  = sat_f
+    #                 lb_diff -= 1
+    #             elif ub_diff >0:
+    #                 vars[i]  = not_sat_f
+    #                 ub_diff -= 1
+    #             else:
+    #                 pass
+    #         if lb_diff > 0 or ub_diff > 0: #should never happen
+    #             raise Unsatisfiable("Unsat!")
+    #         else:
+    #             return n_choices, vars
 
-    def propagate_min(self, agg, others, var_list = None):
-        """
-        lower bound: remove ints<min from domains
-        upper bound: unconstrained - problems where min>upper
-        """
-        vars = var_list if var_list is not None else self.vars
-        if agg.values.upper == P.inf:
-            out = P.closedopen(0, agg.values.lower)
-            out_nums = P.IntervalDict()
-            out_nums[out] = True
-            out_dom = DomainFormula("min", out_nums, self.universe)
-            prop = []
-            for v in vars:
-                prop.append(v - out_dom)
-            count = self.solve_subproblem(prop, self.type, others, [], [])
-        else:
-            complement = AggFormula(agg.set, min, P.open(agg.values.upper, P.inf))
-            self.log(f"Sol = unconstrained problem - {complement}")
-            count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
-            count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
-            count = count_unconstr - count_complement
-        return count
+    # def propagate_max(self, agg, others, var_list = None):
+    #     """
+    #     lower bound: unconstrained - problems where min>upper
+    #     upper bound: remove ints>max from domains
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     if agg.values.lower == 0:
+    #         out = P.openclosed(agg.values.upper, self.universe.elements.domain().upper)
+    #         out_nums = P.IntervalDict()
+    #         out_nums[out] = True
+    #         out_dom = DomainFormula("max", out_nums, self.universe)
+    #         prop = []
+    #         for v in vars:
+    #             prop.append(v - out_dom)
+    #         count = self.solve_subproblem(prop, self.type, others, [], [])
+    #     else:
+    #         complement = AggFormula(agg.set, max, P.closedopen(0, agg.values.lower))
+    #         self.log(f"Sol = unconstrained problem - problem with {complement}")
+    #         count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
+    #         count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
+    #         count = count_unconstr - count_complement
+    #     return count
+
+    # def propagate_min(self, agg, others, var_list = None):
+    #     """
+    #     lower bound: remove ints<min from domains
+    #     upper bound: unconstrained - problems where min>upper
+    #     """
+    #     vars = var_list if var_list is not None else self.vars
+    #     if agg.values.upper == P.inf:
+    #         out = P.closedopen(0, agg.values.lower)
+    #         out_nums = P.IntervalDict()
+    #         out_nums[out] = True
+    #         out_dom = DomainFormula("min", out_nums, self.universe)
+    #         prop = []
+    #         for v in vars:
+    #             prop.append(v - out_dom)
+    #         count = self.solve_subproblem(prop, self.type, others, [], [])
+    #     else:
+    #         complement = AggFormula(agg.set, min, P.open(agg.values.upper, P.inf))
+    #         self.log(f"Sol = unconstrained problem - {complement}")
+    #         count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
+    #         count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
+    #         count = count_unconstr - count_complement
+    #     return count
 
     def relevant_cases_intersection(self, universe, rest_classes):
         """
@@ -685,7 +752,7 @@ class SharpCSP(object):
         try:
             self.count_f = self.compact_cofs(self.count_f)
         except Unsatisfiable:
-            return 0
+            return Solution(0,[])
         if len(self.count_f) > 0:
             count = self.apply_counts()
         # elif len(self.agg_f) > 0:
@@ -712,7 +779,12 @@ class SharpCSP(object):
     def solve_subproblem(self, vars, type, choice_constr, count_constr):
         self.log(f"\tSubproblem ({type}):")
         vars = [v.copy() for v in vars]
-        subproblem = SharpCSP(vars, type, choice_constr, count_constr, self.universe, self.lvl+1)
+        ex_classes = self.exchangeable_classes(var_list=vars)
+        if len(ex_classes) == 1:
+            u = vars[0]
+        else:
+            u = self.universe
+        subproblem = SharpCSP(vars, type, choice_constr, count_constr, u, self.lvl+1)
         try:
             count = subproblem.solve(self.dolog)
             return count
@@ -1118,7 +1190,7 @@ class SharpCSP(object):
             relevant = cases
         else:
             relevant = self.relevant_cases_intersection(self.universe, cases)
-        self.log(f"Relevant partitions: {relevant}")
+        self.log(f"Relevant parts: {relevant}")
         fixed = True
         for v in vars: 
             fixed_size = is_singleton(v.size.values)

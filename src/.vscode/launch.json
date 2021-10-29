@@ -10,10 +10,12 @@
             "request": "launch",
             "program": "launcher.py",
             "console": "integratedTerminal",
+            // "args": ["-v", "-f", "../tests/at_least.pl"]
+            "args": ["-v", "-f", "../tests/examples/h612.pl"]
             // "args": ["-v", "-f", "../tests/dom_inference.pl"]
             // "args": ["-v", "-f", "../tests/part.pl"]
             // "args": ["-v", "-f", "../tests/paper2.pl"]
-            "args": ["-v", "-f", "../tests/examples/m722.pl"]
+            // "args": ["-v", "-f", "../tests/examples/m722.pl"]
             // "args": ["-v", "-f", "../tests/experiments/ind_h273.pl"]
             // "args": ["-v", "-f", "../tests/old/t3.pl"]
             // "args": ["-v", "-f", "../tests/old/relevant.pl"]

@@ -130,7 +130,7 @@ class Venn(object):
 
     def get_subsets(self, set1):
         """
-        Infer from sizes which sets are union of other subsets
+        Infer from self.sizes which sets are union of other subsets
         """
         sets = list(self.sizes.keys())
         subsets = set()

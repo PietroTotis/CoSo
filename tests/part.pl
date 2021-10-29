@@ -7,4 +7,4 @@ indist green = {g1,g2,g3};
 parts in partitions(red+green+blue);
 
 #parts = 3;
-#{ #p & green = 3 | p in parts } =1;
+#{ #part & green = 3 } =1;

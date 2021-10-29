@@ -6,6 +6,18 @@ def is_distinguishable(d1, d2):
     # if any of the two elements is distinguishable then keep distinguishing
     return d1 or d2 
 
+def interval_closed(interval, lb_default=0, ub_default=P.inf):
+    if interval.lower != P.inf and interval.upper!=P.inf:
+        lb = interval.lower if interval.left == P.CLOSED else interval.lower +1
+        ub = interval.upper if interval.right == P.CLOSED else interval.lower -1
+        return (lb,ub)
+    elif interval.lower != P.inf:
+        lb = interval.lower if interval.left == P.CLOSED else interval.lower +1
+        return (lb,ub_default)
+    else:
+        ub = interval.upper if interval.right == P.CLOSED else interval.lower -1
+        return (lb_default,ub)
+
 def is_singleton(interval):
     if interval.lower == P.inf or interval.upper==P.inf:
         return False

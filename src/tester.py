@@ -8,7 +8,7 @@ import signal
 import random
 import itertools
 from pathlib import Path
-from parser import Parser
+from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 
 ops = [">","<","<=",">=","!=","="]
@@ -354,15 +354,20 @@ def test_folder(folder, aproblog, minizinc):
         if filename.endswith(".test") or filename.endswith(".pl"):
             print(f"Test {filename}:")
             parser = Parser(os.path.join(folder,filename))
-            parser.parse()
-            problem = parser.problem
-            if minizinc:
-                compare2minizinc(problem, os.path.join(folder,filename))
-            if aproblog:
-                compare2aproblog(problem,  os.path.join(folder,filename))
-            if not minizinc and not aproblog:
-                sol = problem.solve(log=False)
-                print(f"Count: {sol}") 
+            try:
+                parser.parse()
+                problem = parser.problem
+                if minizinc:
+                    compare2minizinc(problem, os.path.join(folder,filename))
+                if aproblog:
+                    compare2aproblog(problem,  os.path.join(folder,filename))
+                if not minizinc and not aproblog:
+                    start = time.time()
+                    sol = problem.solve(log=False)
+                    finish = time.time()
+                    print(f"Solver: {sol} in {finish-start:.3f}s")
+            except EmptyException:
+                print("Empty: skipping")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

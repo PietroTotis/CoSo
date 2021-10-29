@@ -7,6 +7,12 @@ from venn import *
 import ply.ply.lex as lex
 import ply.ply.yacc as yacc
 
+class EmptyException(Exception):
+
+     def __init__(self):
+        self.message ="No sets found!"
+        super().__init__(self.message)
+
 class Lexer(object):
 
     def __init__(self):
@@ -113,7 +119,7 @@ class Parser(object):
                         if dom2.elements.domain() in dom1.elements.domain():
                             self.problem.domains[d1] = dom1 | dom2
             else:
-                raise Exception("No sets found!")
+                raise EmptyException
             self.lexer = Lexer()
             self.parser = yacc.yacc(module=self)
             self.parse_domains = False 

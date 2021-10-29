@@ -71,6 +71,7 @@ class Domain(object):
         else:
             str = ""
         str += f"{self.name}"
+        # ok for debug, not for log
         # if self.size() > 0 :
         #     str += f"({list(self.elements.keys())})=|{self.n_elements}|"
         # else:
