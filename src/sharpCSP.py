@@ -21,9 +21,10 @@ class Solution(object):
     An histogram is used to keep track of used variables for injectivity constraint.
     For each histogram keep track of the corresponding number of (partial) solutions.
     """
-    def __init__(self, count, histogram):
+    def __init__(self, count, histogram, subproblems =1):
         self.count = count
         self.histograms = [[count,histogram]]
+        self.subproblems = subproblems
     
     def __add__(self, rhs):
         if self.count == 0:
@@ -33,6 +34,7 @@ class Solution(object):
         else:
             self.count += rhs.count
             self.histograms += rhs.histograms
+            self.subproblems += rhs.subproblems
             return self
 
     def __mul__(self, rhs):
@@ -45,6 +47,7 @@ class Solution(object):
         prod = Solution(0,[])
         prod.count = self.count * rhs.count
         prod.histograms = histograms
+        prod.subproblems = self.subproblems + rhs.subproblems
         return prod
 
     def __sub__(self, rhs):
@@ -53,13 +56,14 @@ class Solution(object):
         else:
             self.count -= rhs.count
             # self.histograms -= rhs.histograms
+            self.subproblems += rhs.subproblems
             return self
 
     def __repr__(self):
         return str(self)
     
     def __str__(self):
-        return str(self.count)
+        return f"{self.count} ({self.subproblems} subproblems)"
     
     def add_histograms(self, h1, h2):
         sum = {}
@@ -846,7 +850,7 @@ class SharpCSP(object):
         return stirling_aux(n,k)
 
     #######################
-    ## Sequences methods ##
+    ## Level 1 methods ##
     #######################
     
     def count_multisubsets(self, var_list = None):
@@ -1095,7 +1099,7 @@ class SharpCSP(object):
         return count
 
     #########################
-    ##  partitions methods ##
+    ##  Level 2 methods ##
     #########################
 
     def count_exchangeable_class_partitions(self, size, n_elems, n_partitions, formula = "universe"):

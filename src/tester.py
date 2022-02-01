@@ -43,33 +43,77 @@ def get_random_complex_dom(n_domains):
             dom = f"({dom_left}+{dom_right})"
     return dom
 
-def generate_problem(n_domains,u_size,is_sequence,struct_size,spec,choice_constraints,counting_constraints):
-    random.seed(4) #just less random problems with 0 solutions
+def generate_problem(structure,domains_upto,u_size,struct_size,choice_constraints,counting_constraints):
+    """Generate a CoLa problem
+
+    Args:
+        structure (str): structure type, one of: sequence, permutation, subset, multisubset, partition, composition
+        domains_upto (int): upper bound to the number of domain to be generated
+        u_size (int): upper bounds to the number of elements in each domain
+        struct_size (int): [description]
+        choice_constraints (bool): [description]
+        counting_constraints (bool): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    random.seed(1234)
     problem = ""
     universe_size = u_size
-    problem += f"uni = [1:{universe_size}];\n"
+    n_domains = random.randint(2, domains_upto)
+    problem += f"set of indist uni = [1:{universe_size}];\n"
     for i in range(1,n_domains):
         base = random.randint(1,universe_size-1)
         upper = random.randint(base+1,universe_size)
-        problem+= f"dom{i} = [{base}:{upper}];\n"
-    if is_sequence:
-        problem += f"a in [{spec} uni];\n"
+        indist = random.randint(0,1) == 1
+        if indist:
+            problem+= f"set of indist dom{i} = [{base}:{upper}];\n"
+        else:
+            problem+= f"set of dom{i} = [{base}:{upper}];\n"
+    if structure in ["partition", "composition"]:
+        problem += f"a in {structure}s(uni);\n"
+    elif structure == "sequence":
+        problem += f"a in [|| uni];\n"
+    elif structure == "permutation":
+        problem += f"a in [| uni];\n"
+    elif structure == "multisubset":
+        problem += f"a in {{|| uni}};\n"
+    elif structure == "subset":
+        problem += f"a in {{| uni}};\n"
     else:
-        problem += f"a in {{{spec} uni}};\n"
-    problem += f"#a = {struct_size};\n"
-    if choice_constraints and is_sequence:
-        n_constr = random.randint(1,struct_size // 2)
-        for i in range(1,n_constr):
+        raise Exception(f"Unknown structure {structure}")
+    struct_op = random.randint(0,5)
+    problem += f"#a {ops[struct_op]} {struct_size};\n"
+
+    if structure in ["partition", "composition"]:
+        if choice_constraints and structure == "composition":
             pos = random.randint(1,struct_size)
-            dom = get_random_complex_dom(n_domains-1)
-            problem += f"a[{pos}] = {dom};\n"
-    if counting_constraints:
-        n_constr = random.randint(1,struct_size // 2)
-        for i in range(1,n_constr):
-            n = random.randint(1,struct_size)
-            dom = get_random_complex_dom(n_domains-1)
+            n = random.randint(1,universe_size)
             op = ops[random.randint(0,5)]
-            problem += f"#{dom} {op} {n};\n"
+            dom = get_random_complex_dom(n_domains-1)
+            problem += f"#a[{pos}] & {dom} {op} {n} ;\n"
+        if counting_constraints:
+            n1 = random.randint(1,struct_size)
+            op1 = ops[random.randint(0,5)]
+            n2 = random.randint(1,universe_size)
+            op2 = ops[random.randint(0,5)]
+            dom = get_random_complex_dom(n_domains-1)
+            problem += f"#(#{dom} {op2} {n2}) {op1} {n1} ;\n"
+            pass
+    else:
+        if choice_constraints and structure in {"permutation", "sequence"}:
+            n_constr = random.randint(1,struct_size // 2)
+            for i in range(1,n_constr):
+                pos = random.randint(1,struct_size)
+                dom = get_random_complex_dom(n_domains-1)
+                problem += f"a[{pos}] = {dom};\n"
+        if counting_constraints:
+            n_constr = random.randint(1,struct_size // 2)
+            for i in range(1,n_constr):
+                n = random.randint(1,struct_size)
+                dom = get_random_complex_dom(n_domains-1)
+                op = ops[random.randint(0,5)]
+                problem += f"#{dom}&a {op} {n};\n"
     return problem
 
 def domf2minizinc(df,n):
@@ -257,50 +301,50 @@ def count_sols(filename):
     f.close()
     return n
 
-def compare2minizinc(problem, name):
-    minizinc = problem2minizinc(problem)
-    mininame = name[:-5] + "_mini.mzn"
-    minifile = open(mininame, "w")
-    minifile.write(minizinc)
-    minifile.close()
-    print("Running Solver...")
-    start = time.time()
-    sol = problem.solve(log=False)
-    count = sol.count
-    finish = time.time()
-    print(f"Solver: {count} in {finish-start:.2f}s")
-    print("Running Minizinc...")
-    start = time.time()
-    timeout = 240000
-    p = subprocess.Popen(
-		["minizinc/bin/minizinc", "--time-limit", str(timeout), mininame, "-s", "-a"], 
-		stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-    try:
-        stdout, stderr = p.communicate()
-        finish = time.time()
-        if stderr != "":
-            lines = stdout.decode('utf-8').split("\n")
-            init_time = float(lines[-12].split('=')[1])
-            solve_time = float(lines[-11].split('=')[1])
-            tot_time = init_time + solve_time
-            minicount = int(lines[-10].split('=')[1])
-        else:
-            minicount = 0
-            tot_time = start - finish
-        print(f"Minizinc: {minicount} in {tot_time:.2f}s")
-        if minicount == count and finish-start < (timeout-0.1*timeout)/1000:
-            print("\t OK")
-        else:
-            if finish-start > (timeout-0.1*timeout)/1000:
-                print("\t TIMEOUT")
-            else:
-                print("\t FAIL")
-    except subprocess.TimeoutExpired:
-	    print("FAIL")
-	    p.terminate()
-	    p.kill()
-	    os.killpg(p.pid, signal.SIGINT)
-	    print("KILLED")
+# def compare2minizinc(problem, name):
+#     minizinc = problem2minizinc(problem)
+#     mininame = name[:-5] + "_mini.mzn"
+#     minifile = open(mininame, "w")
+#     minifile.write(minizinc)
+#     minifile.close()
+#     print("Running Solver...")
+#     start = time.time()
+#     sol = problem.solve(log=False)
+#     count = sol.count
+#     finish = time.time()
+#     print(f"Solver: {count} in {finish-start:.2f}s")
+#     print("Running Minizinc...")
+#     start = time.time()
+#     timeout = 240000
+#     p = subprocess.Popen(
+# 		["minizinc/bin/minizinc", "--time-limit", str(timeout), mininame, "-s", "-a"], 
+# 		stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+#     try:
+#         stdout, stderr = p.communicate()
+#         finish = time.time()
+#         if stderr != "":
+#             lines = stdout.decode('utf-8').split("\n")
+#             init_time = float(lines[-12].split('=')[1])
+#             solve_time = float(lines[-11].split('=')[1])
+#             tot_time = init_time + solve_time
+#             minicount = int(lines[-10].split('=')[1])
+#         else:
+#             minicount = 0
+#             tot_time = start - finish
+#         print(f"Minizinc: {minicount} in {tot_time:.2f}s")
+#         if minicount == count and finish-start < (timeout-0.1*timeout)/1000:
+#             print("\t OK")
+#         else:
+#             if finish-start > (timeout-0.1*timeout)/1000:
+#                 print("\t TIMEOUT")
+#             else:
+#                 print("\t FAIL")
+#     except subprocess.TimeoutExpired:
+# 	    print("FAIL")
+#         p.terminate()
+#         p.kill()
+#         os.killpg(p.pid, signal.SIGINT)
+#         print("KILLED")
 
 # def generate_unconstrained():
 #     size_domain = [4,9,14]
@@ -320,20 +364,22 @@ def compare2minizinc(problem, name):
 #                     file.write(problem)
 #                     file.close()
 
-def generate_constrained(folder):
+def generate_constrained(folder, pconstr, cconstr):
     size_domain = [10,15,20]
     size_struct = [5,10,15]
-    cases = [("sequence", True, "||"), ("permutation", True, "|"), ("subset", False, "|")]
+    domains_upto = 10
+    cases = ["sequence", "permutation", "subset", "multisubset", "partition", "composition"]
     for d in size_domain:
         for s in size_struct:
-            for c in cases:
+            for case in cases:
+                case_path = os.path.join(folder,case)
+                os.makedirs(case_path, exist_ok=True)
                 if d>s:
-                    name, seq, spec = c 
-                    print(f"{name}, size domain={d}, size structure={s}")
-                    problem = generate_problem(3,d,seq,s,spec,True,True)
+                    # print(f"{name}, size domain={d}, size structure={s}")
+                    problem = generate_problem(case, domains_upto, d, s, pconstr, cconstr)
                     print(problem)
-                    filename = f"{name}_{d}_{s}.test"
-                    path = os.path.join(folder,filename)
+                    filename = f"{case}_{d}_{s}.test"
+                    path = os.path.join(case_path, filename)
                     file = open(path, "w")
                     file.write(problem)
                     file.close()
@@ -376,7 +422,10 @@ if __name__ == '__main__':
     parser.add_argument('-m', default="minizinc", help='Minizinc directory')    
     parser.add_argument('--test-folder', help='Run tool comparison on files in folder')
     parser.add_argument('--minizinc', action='store_true', help="Compare with 'minizinc'")
+    parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
+    parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
+    print(args)
     if args.f:
         parser = Parser(args.f)
         parser.parse()
@@ -387,7 +436,7 @@ if __name__ == '__main__':
             sol = parser.problem.solve(log=False)
             print(f"Count: {sol}")
     elif args.g:
-        generate_constrained(args.g)
+        generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.test_folder:
         # ap = 'aproblog' in args.compare
         test_folder(args.test_folder, False,  args.minizinc)

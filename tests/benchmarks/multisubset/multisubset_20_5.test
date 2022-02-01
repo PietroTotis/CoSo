@@ -1,0 +1,11 @@
+set of indist uni = [1:20];
+set of dom1 = [4:5];
+set of dom2 = [19:20];
+set of dom3 = [4:16];
+set of dom4 = [1:2];
+set of indist dom5 = [12:20];
+set of dom6 = [5:7];
+set of indist dom7 = [4:5];
+set of indist dom8 = [8:10];
+a in {|| uni};
+#a > 5;

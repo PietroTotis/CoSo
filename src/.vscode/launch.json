@@ -8,10 +8,13 @@
             "name": "CoSo",
             "type": "python",
             "request": "launch",
+            // "program": "tester.py",
             "program": "launcher.py",
             "console": "integratedTerminal",
-            // "args": ["-v", "-f", "../tests/at_least.pl"]
-            "args": ["-v", "-f", "../tests/examples/h612.pl"]
+            "args": ["-v", "-f", "../tests/work.pl"]
+            // "args": ["-g", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks"]
+            // "args": ["--test-folder", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/multisubset"]
+            // "args": ["-v", "-f", "../tests/examples/h149.pl"]
             // "args": ["-v", "-f", "../tests/dom_inference.pl"]
             // "args": ["-v", "-f", "../tests/part.pl"]
             // "args": ["-v", "-f", "../tests/paper2.pl"]

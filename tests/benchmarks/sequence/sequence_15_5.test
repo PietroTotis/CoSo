@@ -1,0 +1,13 @@
+set of indist uni = [1:15];
+set of dom1 = [2:3];
+set of dom2 = [13:14];
+set of indist dom3 = [2:15];
+set of dom4 = [4:5];
+set of indist dom5 = [13:14];
+set of indist dom6 = [11:15];
+set of dom7 = [3:5];
+set of dom8 = [12:13];
+a in [|| uni];
+#a != 5;
+a[2] = dom7;
+#dom6&a != 1;

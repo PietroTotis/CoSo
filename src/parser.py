@@ -1,3 +1,4 @@
+from typing import Counter
 import portion
 import functools
 from problem import *
@@ -25,7 +26,6 @@ class Lexer(object):
         'partitions' : 'PARTITIONS',
         'compositions' : 'COMPOSITIONS', 
         'set' : 'SET', 
-        'of' : 'OF', 
         'sum' : 'SUM',
         'min' : 'MIN',
         'max' : 'MAX',
@@ -218,33 +218,43 @@ class Parser(object):
                 p[0] = Or(p[1],p[3])
 
     def p_declare_set(self, p):
-        '''declare_set : INDIST LABEL EQUALS LPAR entity_list RPAR 
-                | LABEL EQUALS LPAR entity_list RPAR 
-                | INDIST LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
-                | LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
-                | SET OF LABEL
-                | SET OF INDIST LABEL
+        '''declare_set : SET LABEL EQUALS LPAR entity_list RPAR 
+                | SET LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
+                | SET LABEL
+                | SET INDIST LABEL
         '''
-        if p[1] == "set":
-            indist = p[3]=="indist"
-            label = p[4] if indist else p[3]
+        if "=" not in p:
+            indist = p[2] == "indist"
+            label = p[2] if not indist else p[3]
             self.venn.add_base_set(label, indist)            
         else:
-            indist = p[1]=="indist"
-            label = p[2] if indist else p[1]
+            label = p[2]
             if ':' in p:
-                lb = p[5] if indist else p[4]
-                ub = p[7] if indist else p[6]
+                lb = p[5]
+                ub = p[7]
                 elems = [n for n in range(lb, ub+1)]
             else:
-                elems = p[5] if indist else p[4]
-            ivs = self.list2interval(elems)
-            dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
-            dist = P.IntervalDict()
-            dist[dom] = not indist
-            d = DomainFormula(label, dist, self.problem.universe)
+                elems = p[5]
+            domains_ivs = self.list2interval(elems)
+            doms = []
+            for distinguish in domains_ivs:
+                for ivs in domains_ivs[distinguish]:
+                    dom = functools.reduce(lambda a,b: a.union(b), ivs, portion.empty())
+                    elems = P.IntervalDict()
+                    elems[dom] = distinguish
+                    d = DomainFormula(f"{label}_{len(doms)}", elems, self.problem.universe)
+                    doms.append(d)
+            if len(doms) == 1:
+                d = doms[0]
+                d.name = label
+            else:
+                d = doms[0]
+                for dom in doms:
+                    d = d | dom
+                    d.name = label
             if self.parse_domains:
                 self.problem.add_domain(d)
+            print(d.elements)
             p[0] = d
 
     def p_arrangement(self, p):
@@ -391,7 +401,44 @@ class Parser(object):
                 print(f"Syntax error: Unexpected {token}")
 
     def list2interval(self, elems):
-        entities = [self.problem.add_entity(e) for e in elems]
+        """[summary]
+
+        Args:
+            elems ([str]): list of labels of the (multi)set's elements
+
+        Returns:
+            [[int]]: list of intervals containing the ids in the internal representation
+        """
+        # find duplicates
+        count = Counter(elems)
+        base = []
+        units = []
+        for label, n in count.items():
+            if n>1:
+                indist_elems = [label] + [f"{label}_{i}" for i in range(1,n)]
+                units.append(indist_elems)
+            else:
+                base.append(label)
+
+        # convert entities to intervals
+        base_ivs = self.entities2intervals(base)
+        intervals = {False: [], True: base_ivs}
+        for property in units:
+            prop_ivs = self.entities2intervals(property)
+            intervals[False].append(prop_ivs)
+        return intervals
+
+
+    def entities2intervals(self, entities):
+        """Convert a list of entities to the internal representation
+
+        Args:
+            entities ([str]): labels
+
+        Returns:
+            [portion]: The intervals covering the ids corresponding to the labels
+        """
+        entities = [self.problem.add_entity(e) for e in entities]
         entities.sort()
         ivs = []
         i = 0
