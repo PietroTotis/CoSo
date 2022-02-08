@@ -25,6 +25,7 @@ class Problem(object):
         self.domains = {}
         self.entity_map = {}
         self.configuration = None
+        self.internal_copies = {}
 
     # def add_choice_formula(self, head, body):
     #     struct_name = head.args[0]
@@ -56,12 +57,28 @@ class Problem(object):
             self.count_formulas.append(cof)
 
     def add_entity(self, e):
-        if str(e) in self.entity_map:
-            return self.entity_map[str(e)]
+        name = str(e)
+        if name in self.entity_map:
+            return self.entity_map[name]
         else:
             i = len(self.entity_map) +1
-            self.entity_map[str(e)] = i
+            self.entity_map[name] = i
+            copy_ids = name.split("__")
+            if len(copy_ids)>1:
+                base_id, _ = copy_ids
+                if base_id in self.internal_copies:
+                    self.internal_copies[base_id] += [i]
+                else:
+                    self.internal_copies[base_id] = [i]
             return i
+
+    def get_entity(self, e):
+        name = str(e)
+        base_id = self.entity_map[name]
+        if base_id is None:
+            raise Exception(f"Unknown label {name}")
+        copy_ids = self.internal_copies.get(name,[])
+        return [base_id]+copy_ids
 
     # def add_query(self, q):
     #     self.queries.append(q)
@@ -158,11 +175,11 @@ class Problem(object):
     #     else:
     #         return self.compute_dom(formula)
 
-    def get_entity(self, e):
-        if e in self.entity_map:
-            return self.entity_map[e]
-        else:
-            return None
+    # def get_entity(self, e):
+    #     if e in self.entity_map:
+    #         return self.entity_map[e]
+    #     else:
+    #         return None
 
     def get_interval(self,op,n):
         if op == "<":
@@ -176,7 +193,7 @@ class Problem(object):
         elif op == "=":
             interval = portion.singleton(n)
         else:
-            interval = portion.closedopen(1,n) | portion.open(n,portion.inf)
+            interval = portion.closedopen(0,n) | portion.open(n,portion.inf)
         return interval
 
     def solve(self, log=True):

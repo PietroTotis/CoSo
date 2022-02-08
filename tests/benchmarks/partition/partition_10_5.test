@@ -1,12 +1,6 @@
-set of indist uni = [1:10];
-set of dom1 = [2:3];
-set of dom2 = [1:3];
-set of dom3 = [6:8];
-set of indist dom4 = [1:2];
-set of dom5 = [8:10];
-set of dom6 = [2:5];
-set of indist dom7 = [1:10];
-set of indist dom8 = [4:5];
-a in partitions(uni);
-#a > 5;
-#(#dom4 != 2) = 5 ;
+set universe = {e1, e1, e1, e1, e1, e1, e2, e2, e3, e4};
+set dom1 = {e3, e4};
+set dom2 = {e1, e2, e3, e4};
+a in partitions(universe);
+#a != 5;
+#{#¬(dom2) > 2} != 2 ;

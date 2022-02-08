@@ -12,38 +12,42 @@ from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 
 ops = [">","<","<=",">=","!=","="]
+random.seed(123)
 
 class ModHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, evt):
         pass
 
 def get_random_complex_dom(n_domains):
-    type = random.randint(1,4)
-    if type <= 2:
-        n_dom = random.randint(2,n_domains)
-        dom = f"dom{n_dom}"
-    if type == 2:
-        dom = f"¬({dom})"
-    if type > 2:
-        n_dom_left = random.randint(1,n_domains)
-        n_dom_right = random.randint(1,n_domains)
-        while n_dom_left == n_dom_right:
+    if n_domains < 2:
+        return "dom1"
+    else:
+        type = random.randint(1,4)
+        if type <= 2:
+            n_dom = random.randint(2,n_domains)
+            dom = f"dom{n_dom}"
+        if type == 2:
+            dom = f"¬({dom})"
+        if type > 2:
+            n_dom_left = random.randint(1,n_domains)
             n_dom_right = random.randint(1,n_domains)
-        neg_left = random.randint(0,1)
-        neg_right = random.randint(0,1)
-        dom_left = f"dom{n_dom_left}"
-        dom_right = f"dom{n_dom_right}"
-        if neg_left == 1:
-            dom_left = f"¬{dom_left}"
-        if neg_right == 1:
-            dom_right = f"¬{dom_right}"
-        if type == 3:
-            dom = f"({dom_left}&{dom_right})"
-        else:
-            dom = f"({dom_left}+{dom_right})"
-    return dom
+            while n_dom_left == n_dom_right:
+                n_dom_right = random.randint(1,n_domains)
+            neg_left = random.randint(0,1)
+            neg_right = random.randint(0,1)
+            dom_left = f"dom{n_dom_left}"
+            dom_right = f"dom{n_dom_right}"
+            if neg_left == 1:
+                dom_left = f"¬{dom_left}"
+            if neg_right == 1:
+                dom_right = f"¬{dom_right}"
+            if type == 3:
+                dom = f"({dom_left}&{dom_right})"
+            else:
+                dom = f"({dom_left}+{dom_right})"
+        return dom
 
-def generate_problem(structure,domains_upto,u_size,struct_size,choice_constraints,counting_constraints):
+def generate_problem(structure,domains_upto,universe_size,struct_size,choice_constraints,counting_constraints):
     """Generate a CoLa problem
 
     Args:
@@ -57,48 +61,73 @@ def generate_problem(structure,domains_upto,u_size,struct_size,choice_constraint
     Returns:
         [type]: [description]
     """
-    random.seed(1234)
     problem = ""
-    universe_size = u_size
+    problem += f"set universe = {{"
+    left = universe_size
+    multiset = {}
+    elems = []
+    for i in range(0, universe_size):
+        if left > 0:
+            name  = f"e{i+1}"
+            n_copies = 1+ random.randint(0,left//2)
+            multiset[i] = n_copies
+            new_elems = [name] * n_copies
+            elems += new_elems
+            left -= n_copies
+    problem += ", ".join(elems)
+    problem += "};\n"           
     n_domains = random.randint(2, domains_upto)
-    problem += f"set of indist uni = [1:{universe_size}];\n"
+    # dom_sizes = {}
     for i in range(1,n_domains):
-        base = random.randint(1,universe_size-1)
-        upper = random.randint(base+1,universe_size)
-        indist = random.randint(0,1) == 1
-        if indist:
-            problem+= f"set of indist dom{i} = [{base}:{upper}];\n"
-        else:
-            problem+= f"set of dom{i} = [{base}:{upper}];\n"
+        base = random.randint(1,len(multiset)-1)
+        upper = random.randint(base+2,len(multiset)+1)
+        # s = 0
+        # for j in range(base,upper):
+        #     s += multiset[j]
+        # dom_sizes[i] = s
+        elems = [f"e{j}" for j in range(base,upper)]
+        elems_str = ", ".join(elems)
+        problem+= f"set dom{i} = {{{elems_str}}};\n"
+
+    # n_domains = random.randint(2, domains_upto)
+    # problem += f"set indist uni = [1:{universe_size}];\n"
+    # for i in range(1,n_domains):
+    #     base = random.randint(1,universe_size-1)
+    #     upper = random.randint(base+1,universe_size)
+    #     indist = random.randint(0,1) == 1
+    #     if indist:
+    #         problem+= f"set indist dom{i} = [{base}:{upper}];\n"
+    #     else:
+    #         problem+= f"set dom{i} = [{base}:{upper}];\n"
     if structure in ["partition", "composition"]:
-        problem += f"a in {structure}s(uni);\n"
+        problem += f"a in {structure}s(universe);\n"
     elif structure == "sequence":
-        problem += f"a in [|| uni];\n"
+        problem += f"a in [|| universe];\n"
     elif structure == "permutation":
-        problem += f"a in [| uni];\n"
+        problem += f"a in [| universe];\n"
     elif structure == "multisubset":
-        problem += f"a in {{|| uni}};\n"
+        problem += f"a in {{|| universe}};\n"
     elif structure == "subset":
-        problem += f"a in {{| uni}};\n"
+        problem += f"a in {{| universe}};\n"
     else:
         raise Exception(f"Unknown structure {structure}")
-    struct_op = random.randint(0,5)
+    struct_op = random.randint(1,5) # avoid large structure with few elements
     problem += f"#a {ops[struct_op]} {struct_size};\n"
 
     if structure in ["partition", "composition"]:
         if choice_constraints and structure == "composition":
             pos = random.randint(1,struct_size)
-            n = random.randint(1,universe_size)
+            n = random.randint(1,universe_size // 4)
             op = ops[random.randint(0,5)]
             dom = get_random_complex_dom(n_domains-1)
             problem += f"#a[{pos}] & {dom} {op} {n} ;\n"
         if counting_constraints:
-            n1 = random.randint(1,struct_size)
+            n1 = random.randint(1,struct_size // 2)
             op1 = ops[random.randint(0,5)]
-            n2 = random.randint(1,universe_size)
+            n2 = random.randint(1,universe_size // 4 )
             op2 = ops[random.randint(0,5)]
             dom = get_random_complex_dom(n_domains-1)
-            problem += f"#(#{dom} {op2} {n2}) {op1} {n1} ;\n"
+            problem += f"#{{#{dom} {op2} {n2}}} {op1} {n1} ;\n"
             pass
     else:
         if choice_constraints and structure in {"permutation", "sequence"}:
@@ -367,9 +396,9 @@ def count_sols(filename):
 def generate_constrained(folder, pconstr, cconstr):
     size_domain = [10,15,20]
     size_struct = [5,10,15]
-    domains_upto = 10
     cases = ["sequence", "permutation", "subset", "multisubset", "partition", "composition"]
     for d in size_domain:
+        domains_upto = d // 3
         for s in size_struct:
             for case in cases:
                 case_path = os.path.join(folder,case)
@@ -418,6 +447,7 @@ def test_folder(folder, aproblog, minizinc):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', help='Run solver on file')
+    parser.add_argument('-l', action='store_true', help='Logging')
     parser.add_argument('-g', help='Geneate random tests in given folder')
     parser.add_argument('-m', default="minizinc", help='Minizinc directory')    
     parser.add_argument('--test-folder', help='Run tool comparison on files in folder')
@@ -425,7 +455,7 @@ if __name__ == '__main__':
     parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
-    print(args)
+    # print(args)
     if args.f:
         parser = Parser(args.f)
         parser.parse()
@@ -433,7 +463,7 @@ if __name__ == '__main__':
         if args.minizinc:
             compare2minizinc(parser.problem, args.f)
         else:
-            sol = parser.problem.solve(log=False)
+            sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)

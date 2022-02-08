@@ -219,23 +219,27 @@ class Parser(object):
 
     def p_declare_set(self, p):
         '''declare_set : SET LABEL EQUALS LPAR entity_list RPAR 
+                | SET UNIVERSE EQUALS LPAR entity_list RPAR 
+                | SET INDIST LABEL EQUALS LPAR entity_list RPAR 
                 | SET LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
+                | SET INDIST LABEL EQUALS LSPAR NUMBER COL NUMBER RSPAR 
                 | SET LABEL
                 | SET INDIST LABEL
         '''
+        distinguishable = p[2] != "indist"
         if "=" not in p:
-            indist = p[2] == "indist"
             label = p[2] if not indist else p[3]
-            self.venn.add_base_set(label, indist)            
+            self.venn.add_base_set(label, distinguishable)            
         else:
-            label = p[2]
+            label = p[2] if distinguishable else p[3]
+            k = 0 if distinguishable else 1
             if ':' in p:
-                lb = p[5]
-                ub = p[7]
+                lb = p[5+k]
+                ub = p[7+k]
                 elems = [n for n in range(lb, ub+1)]
             else:
-                elems = p[5]
-            domains_ivs = self.list2interval(elems)
+                elems = p[5+k]
+            domains_ivs = self.list2interval(elems, distinguishable, label=="universe")
             doms = []
             for distinguish in domains_ivs:
                 for ivs in domains_ivs[distinguish]:
@@ -254,7 +258,6 @@ class Parser(object):
                     d.name = label
             if self.parse_domains:
                 self.problem.add_domain(d)
-            print(d.elements)
             p[0] = d
 
     def p_arrangement(self, p):
@@ -400,45 +403,64 @@ class Parser(object):
             if p.type != 'PROPERTY':
                 print(f"Syntax error: Unexpected {token}")
 
-    def list2interval(self, elems):
-        """[summary]
-
+    def list2interval(self, elems, dist, universe):
+        """
+        Convert a list of labels into internal intervals mapped to distinguishable or not
         Args:
             elems ([str]): list of labels of the (multi)set's elements
-
+            dist (Bool): is this a list of distinguishable elements 
+            universe (Bool): if the set is universe add elements, otherwise retrieve ids
         Returns:
             [[int]]: list of intervals containing the ids in the internal representation
         """
         # find duplicates
         count = Counter(elems)
-        base = []
-        units = []
+        single = []
+        copies = []
         for label, n in count.items():
             if n>1:
-                indist_elems = [label] + [f"{label}_{i}" for i in range(1,n)]
-                units.append(indist_elems)
+                indist_elems = [label] + [f"{label}__{i}" for i in range(1,n)]
+                copies.append(indist_elems)
             else:
-                base.append(label)
+                single.append(label)
 
         # convert entities to intervals
-        base_ivs = self.entities2intervals(base)
-        intervals = {False: [], True: base_ivs}
-        for property in units:
-            prop_ivs = self.entities2intervals(property)
-            intervals[False].append(prop_ivs)
+        intervals = {False: [], True: []}
+        single_ivs = self.entities2intervals(single, universe)
+        intervals[dist].append(single_ivs)
+        for indist_set in copies:
+            indist_ivs = self.entities2intervals(indist_set, universe)
+            for indist_iv in indist_ivs:
+                intervals[False].append(indist_iv)
         return intervals
 
-
-    def entities2intervals(self, entities):
-        """Convert a list of entities to the internal representation
-
+    def entities2intervals(self, entities, universe):
+        """
+        Convert a list of entities to the internal representation
         Args:
             entities ([str]): labels
-
+            universe (Bool): if the set is universe add elements, otherwise retrieve ids
         Returns:
             [portion]: The intervals covering the ids corresponding to the labels
         """
-        entities = [self.problem.add_entity(e) for e in entities]
+        if universe:
+            lists = [[self.problem.add_entity(e) for e in entities]]
+        else:
+            lists = [self.problem.get_entity(e) for e in entities]
+        portions = []
+        for list in lists:
+            portions += self.list2portion(list)
+        return portions
+
+    def list2portion(self,entities):
+        """
+        Given a list of entities ids obtains the equivalent intervals
+        Args:
+            entities ([int]): entities ids
+
+        Returns:
+            [portion]: intervals corresponding to the entities' list
+        """
         entities.sort()
         ivs = []
         i = 0

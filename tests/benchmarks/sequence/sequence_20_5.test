@@ -1,11 +1,7 @@
-set of indist uni = [1:20];
-set of dom1 = [4:5];
-set of dom2 = [19:20];
-set of dom3 = [4:16];
-set of dom4 = [1:2];
-set of indist dom5 = [12:20];
-set of dom6 = [5:7];
-set of indist dom7 = [4:5];
-set of indist dom8 = [8:10];
-a in [|| uni];
-#a > 5;
+set universe = {e1, e1, e1, e1, e2, e2, e2, e2, e2, e2, e2, e3, e3, e3, e4, e4, e5, e5, e6, e7};
+set dom1 = {e2, e3, e4, e5, e6, e7};
+set dom2 = {e1, e2, e3, e4, e5, e6, e7};
+set dom3 = {e3, e4, e5};
+a in [|| universe];
+#a != 5;
+#(dom2+¬dom3)&a > 2;

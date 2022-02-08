@@ -27,15 +27,15 @@ class Solution(object):
         self.subproblems = subproblems
     
     def __add__(self, rhs):
-        if self.count == 0:
-            return rhs
-        elif rhs.count == 0:
-            return self
-        else:
-            self.count += rhs.count
-            self.histograms += rhs.histograms
-            self.subproblems += rhs.subproblems
-            return self
+        # if self.count == 0:
+        #     return rhs
+        # elif rhs.count == 0:
+        #     return self
+        # else:
+        self.count += rhs.count
+        self.histograms += rhs.histograms
+        self.subproblems += rhs.subproblems
+        return self
 
     def __mul__(self, rhs):
         histograms = []
@@ -184,6 +184,8 @@ class SharpCSP(object):
         #     cof.values = cof.values.replace(upper = dom_size)
         max_entities = min(self.n_vars,cof.formula.size())
         lb, ub = interval_closed(cof.values, ub_default=max_entities)
+        all_values = P.closed(0,self.n_vars)
+        out_values = all_values - cof.values
         count = Solution(0,[])
         if lb == ub:
             try:
@@ -192,14 +194,15 @@ class SharpCSP(object):
                 count = self.split_on_constraints(choices, others)
             except Unsatisfiable:
                 pass
-        elif lb==1:
-            # ignore and then remove the all unsat case
-            self.log(f"Satisfy at least 1 {cof.formula} by any-exactly 0...")
+        elif len(out_values)<len(cof.values):
+            # ignore and then remove the unsat cases
+            self.log(f"Relax {cof} and remove unsat")
             count_ignore = self.split_on_constraints(1, others)
-            not_cof = CountingFormula(cof.formula, singleton(0))
+            not_cof = CountingFormula(cof.formula, out_values)
             count_not = self.split_on_constraints(1, [not_cof] + others)
-            count = count_ignore - count_not         
+            count += count_ignore - count_not 
         else:
+            # propositionalization of each i in the interval
             self.log(f"Expanding bounds {cof.values}...")
             values = cof.values.replace(upper=ub,right=P.CLOSED)
             for i in P.iterate(values, step = 1):
@@ -533,8 +536,10 @@ class SharpCSP(object):
         Checks if we ask to observe more properties than available variables
         Or things that split_class_var cannot satisfy
         """
+        if scof.values.empty or rcof.values.empty:
+            return False
         slb, sub =  interval_closed(scof.values, ub_default=n_split)
-        rlb, rub =  interval_closed(scof.values, ub_default=n_rest)
+        rlb, rub =  interval_closed(rcof.values, ub_default=n_rest)
         if slb > n_split:
             return False
         if rlb > n_rest:
@@ -608,99 +613,6 @@ class SharpCSP(object):
                 raise Unsatisfiable("Unsat!")
             else:
                 return n_choices, vars
-
-    # def propagate_cof_atleast(self, cof, var_list = None): #works but leads to choices accounting issues
-    #     """
-    #     Given a set of exchangeable variables, propagate one size constraint.
-    #     - Check how many vars already satisfy, can satisfy, cannot satisfy the property
-    #     - If there is no var that can satisfy, either is already sat or not
-    #     - If there are vars that can satisfy, set m vars to satisfy the property where m is how many more entities there need to be, if set the others to not satisfy.
-    #     return the number of exchangeable choices the propagation requires 
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     lb, ub = interval_closed(cof.values, ub_default=len(vars))
-    #     satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
-    #     lb_diff = lb - len(satisfied)
-    #     ub_diff = (len(vars) - ub) - len(not_satisfied)
-    #     var_maybe = [vars[v] for v in maybe]
-    #     # ex_classes = self.exchangeable_classes(var_maybe)
-    #     if len(maybe) == 0:
-    #         if lb_diff <= 0 and ub_diff <= 0:
-    #             self.log(cof, "already satisfied")
-    #             return 1, vars
-    #         else:
-    #             self.log(cof, " is unsat here")
-    #             raise Unsatisfiable("Unsat!")
-    #     else: 
-    #         v = var_maybe[0]
-    #         self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
-    #         if self.type == "subset" or self.type=="partition":
-    #             n_choices = 1
-    #         else:
-    #             lb_n_choices = math.comb(len(maybe), abs(lb_diff))
-    #             ub_n_choices = math.comb(len(maybe)-lb_diff, abs(ub_diff))
-    #             n_choices = lb_n_choices * ub_n_choices
-    #         sat_f = self.propagate(v, cof.formula)
-    #         not_sat_f = self.propagate(v, cof.formula.neg())
-    #         for i in maybe:
-    #             if lb_diff >0:
-    #                 vars[i]  = sat_f
-    #                 lb_diff -= 1
-    #             elif ub_diff >0:
-    #                 vars[i]  = not_sat_f
-    #                 ub_diff -= 1
-    #             else:
-    #                 pass
-    #         if lb_diff > 0 or ub_diff > 0: #should never happen
-    #             raise Unsatisfiable("Unsat!")
-    #         else:
-    #             return n_choices, vars
-
-    # def propagate_max(self, agg, others, var_list = None):
-    #     """
-    #     lower bound: unconstrained - problems where min>upper
-    #     upper bound: remove ints>max from domains
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     if agg.values.lower == 0:
-    #         out = P.openclosed(agg.values.upper, self.universe.elements.domain().upper)
-    #         out_nums = P.IntervalDict()
-    #         out_nums[out] = True
-    #         out_dom = DomainFormula("max", out_nums, self.universe)
-    #         prop = []
-    #         for v in vars:
-    #             prop.append(v - out_dom)
-    #         count = self.solve_subproblem(prop, self.type, others, [], [])
-    #     else:
-    #         complement = AggFormula(agg.set, max, P.closedopen(0, agg.values.lower))
-    #         self.log(f"Sol = unconstrained problem - problem with {complement}")
-    #         count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
-    #         count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
-    #         count = count_unconstr - count_complement
-    #     return count
-
-    # def propagate_min(self, agg, others, var_list = None):
-    #     """
-    #     lower bound: remove ints<min from domains
-    #     upper bound: unconstrained - problems where min>upper
-    #     """
-    #     vars = var_list if var_list is not None else self.vars
-    #     if agg.values.upper == P.inf:
-    #         out = P.closedopen(0, agg.values.lower)
-    #         out_nums = P.IntervalDict()
-    #         out_nums[out] = True
-    #         out_dom = DomainFormula("min", out_nums, self.universe)
-    #         prop = []
-    #         for v in vars:
-    #             prop.append(v - out_dom)
-    #         count = self.solve_subproblem(prop, self.type, others, [], [])
-    #     else:
-    #         complement = AggFormula(agg.set, min, P.open(agg.values.upper, P.inf))
-    #         self.log(f"Sol = unconstrained problem - {complement}")
-    #         count_unconstr = self.solve_subproblem(vars, self.type, others, [], [])
-    #         count_complement = self.solve_subproblem(vars, self.type, [complement]+others, [], [])
-    #         count = count_unconstr - count_complement
-    #     return count
 
     def relevant_cases_intersection(self, universe, rest_classes):
         """
@@ -865,25 +777,25 @@ class SharpCSP(object):
         indist = dom.elements.find(False)
         indist_sizes = self.get_sizes_indistinguishable(indist)
         indist_size = sum(indist_sizes)
-        dist_size = dom.size() - indist_size
-        if indist_size == 0:
-            if len(ex_classes) == 1:
-                count = math.comb(dist_size+n-1,n)
-            else:
-                count = 0
-                for exc in ex_classes:
-                    s = self.count_multisubsets(ex_classes[exc])
-                    count *= s.count
-            sol = Solution(count, self.histogram())
+        dist_size = dom.size() - indist_size + len(indist_sizes)
+        # if indist_size == 0:
+        if len(ex_classes) == 1:
+            count = math.comb(dist_size+n-1,n)
         else:
-            choices = self.get_group_choices([dist_size] + indist_sizes, n) 
             count = 0
-            for choice in choices:
-                dist_choice = choice[0]
-                n_dist_choices = math.comb(dist_size+dist_choice-1, dist_choice)
-                # arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
-                count += n_dist_choices
-            sol = Solution(count, self.histogram())
+            for exc in ex_classes:
+                s = self.count_multisubsets(ex_classes[exc])
+                count *= s.count
+        sol = Solution(count, self.histogram())
+        # else:
+        #     choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+        #     count = 0
+        #     for choice in choices:
+        #         dist_choice = choice[0]
+        #         n_dist_choices = math.comb(dist_size+dist_choice-1, dist_choice)
+        #         # arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+        #         count += n_dist_choices
+        #     sol = Solution(count, self.histogram())
         return sol
 
     def count_sequence(self, var_list=None):
@@ -1177,6 +1089,7 @@ class SharpCSP(object):
                 count = self.count_constrained_partitions(vars)
         else:
             count = self.count_constrained_partitions(vars)
+        self.log(f"Count: {count}")
         return count
 
     def count_constrained_partitions(self, var_list = None):
@@ -1204,12 +1117,13 @@ class SharpCSP(object):
                 v.histogram[self.universe] = v.size.values.lower
             else: # register fix from constraints
                 for rv_set in relevant:
+                    fixed_rv_set = False
                     for cof in v.cofs:
                         single = is_singleton(cof.values)
                         if rv_set == cof.formula and single:
                             v.histogram[rv_set] = cof.values.lower
-                        else:
-                            fixed = fixed and single
+                            fixed_rv_set = True
+                    fixed = fixed and fixed_rv_set
         count = Solution(0,[])
         if fixed:
             count = self.count_fixed_partitions(relevant, vars)
@@ -1291,6 +1205,7 @@ class SharpCSP(object):
     def count_unfixed_partitions(self, relevant, var_list = None):
         vars = var_list if var_list is not None else self.vars
         fixed = self.fix_partitions( (1, vars), relevant)
+        self.log(f"There are {len(fixed)} possible ways of fixing {relevant} domains")
         count = Solution(0,[])
         for fix_vars in fixed:
             e, prop_vars = fix_vars
@@ -1312,6 +1227,7 @@ class SharpCSP(object):
                 feasible = feasible and v.feasible(rv_set, int_partition[i])
             if feasible:
                 fips.append(int_partition)
+        self.log(f"{n} of {rv_set} have {len(fips)} feasible {len(vars)}-partitions")
         return fips
 
     def feasible_relevant_compositions(self, ex_classes, rv_set):
@@ -1365,11 +1281,12 @@ class SharpCSP(object):
                     else:
                         cases += [(c_prop, p_vars)]
                     # self.dolog = dl
-                    self.lvl -= 1
+                    # self.lvl -= 1
                 except Unsatisfiable:
                     self.log("Propagation unsat")
-                    self.dolog = dl
+                    # self.dolog = dl
                     self.lvl -= 1
+            self.lvl -= 1
             return cases
         else: # shatter constraints
             self.log(f"Variables are not exchangeable: shattering size constraints")
@@ -1404,13 +1321,14 @@ class SharpCSP(object):
         else:
             problems = [(1, vars)]  
         count = Solution(0, [])
-        self.log(f"Size constraints shattered, solving combinations...")
+        self.log(f"Size constraints shattered, solving {len(problems)} combinations...")
+        i = 1
         for c, p in problems:
-            self.log(f"------------")
+            self.log(f"------ Combination {i} ------")
+            i += 1
             self.lvl += 1
             count += self.count_partitions(p).with_choices(c)
             self.lvl -= 1
-            self.log("------------")
         return count
 
     def has_fixed_indist(self, var_list=None):
