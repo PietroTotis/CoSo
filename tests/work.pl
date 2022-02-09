@@ -1,10 +1,8 @@
-set universe = {e1, e1, e1, e1, e2, e3, e3, e4, e4, e4, e4, e4, e5, e5, e6, e7, e7, e7, e8, e8};
-set dom1 = {e4, e5, e6, e7, e8};
-set dom2 = {e6, e7, e8};
-set dom3 = {e1, e2, e3, e4, e5, e6, e7, e8};
-set dom4 = {e2, e3, e4};
-set dom5 = {e3, e4, e5};
+set universe = {e1, e2, e2};
 a in compositions(universe);
-#a = 20;
-#a[12] & (dom1+¬dom4) = 4 ;
-#{#(dom1&dom3) < 1} >= 5 ;
+#a = 2;
+
+% e1 | e2 e2
+% e2 e2 | e1
+% e2 | e1 e2
+% e1 e2 | e2

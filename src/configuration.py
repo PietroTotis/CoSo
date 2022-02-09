@@ -18,6 +18,7 @@ class Domain(object):
 
     def __init__(self, name, elems):
         self.name = name
+        self.formula = name
         self.elements = elems
         self.n_elements = None
 
@@ -66,11 +67,14 @@ class Domain(object):
         return str(self)
     
     def __str__(self):
-        if self.all_indistinguishable():
-            str = "indist. "
+        if self.name is None:
+            label = f"{self.formula}"
         else:
-            str = ""
-        str += f"{self.name}"
+            label = f"{self.name}"
+        if self.all_indistinguishable() and not label.startswith("indist"):
+            str = "indist. " + label
+        else:
+            str = label
         # ok for debug, not for log
         # if self.size() > 0 :
         #     str += f"({list(self.elements.keys())})=|{self.n_elements}|"

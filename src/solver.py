@@ -19,6 +19,9 @@ class Solver(object):
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.configuration.type
 
+        for d in self.problem.domains:
+            print(d, self.problem.domains[d].universe)
+
     def solve(self, log=True):
         count = Solution(0,[])
         if not self.trivial_unsat():

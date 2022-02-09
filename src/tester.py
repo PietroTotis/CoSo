@@ -218,6 +218,61 @@ def problem2minizinc(problem):
     minizinc += "solve satisfy;"
     return minizinc
 
+def problem2asp(problem):
+    asp = ""
+    for dom in problem.domains.values():
+        asp += f""
+        asp += ",".join(list(map(str,portion.iterate(dom.elements.domain(), step =1))))
+        asp += "};\n"
+    length = problem.structure.size.values.lower
+    asp += f"int: n = {length};\n"
+    sequence = problem.structure.type == "sequence" or problem.structure.type == "permutation"
+    subset = problem.structure.type == "subset" or problem.structure.type == "multisubset"
+    alldiff = problem.structure.type == "permutation" or problem.structure.type == "subset"
+    if sequence:
+        asp += f"array[1..n] of var uni: sequence;\n"
+        if alldiff:
+            asp += "constraint alldifferent(sequence);\n"
+    elif subset:
+        asp += f"var set of uni: sub;\n"
+        asp += f"constraint card(sub) == n;\n"
+    n = 0
+    for chf in problem.choice_formulas:
+        if isinstance(chf, PosFormula):
+            aux_doms, dom_f, n  = domf2minizinc(chf.dformula.name, n)
+            asp += aux_doms
+            asp += f"constraint sequence[{chf.pos}] in {dom_f};\n"
+        elif isinstance(chf, InFormula):
+            minizinc += f"constraint {chf.entity} in sets;\n"
+    for cof in problem.count_formulas:
+        if sequence:
+            range = "i in 1..n"
+            elem = "sequence[i]"
+        elif subset:
+            range = "i in sub"
+            elem = "i"
+        intv = cof.values
+        bounds = []
+        for left, lower, upper, right in portion.to_data(intv):
+            if upper > 1000:#some issues comparing to portion.inf
+                upper = length
+            if not left:
+                lower+= 1
+            if not right:
+                upper+= 1
+            bounds.append((lower,upper))
+        aux_doms, dom_f, n  = domf2minizinc(cof.formula.name, n)
+        for l in aux_doms.split('\n'):
+            if l not in asp:
+                asp += l + "\n"
+        asp += f"constraint "
+        cofs = []
+        for lower, upper in bounds:
+            cofs.append(f"sum({range})(bool2int({elem} in {dom_f})) >= {lower} /\\ sum({range})(bool2int({elem} in {dom_f})) <= {upper}")
+        asp += "\\/\n".join(cofs) + ";\n"
+    asp += "solve satisfy;"
+    return asp
+
 def get_n_vars(n):
     vars = []
     for c in range(ord('A'),ord('Z')):

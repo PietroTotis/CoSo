@@ -798,7 +798,7 @@ class SharpCSP(object):
         #     sol = Solution(count, self.histogram())
         return sol
 
-    def count_sequence(self, var_list=None):
+    def count_sequence(self, var_list = None):
         """
         Look at a sequence problem and figure out what to do:
         - Sequence: cartesian product
@@ -1074,12 +1074,12 @@ class SharpCSP(object):
         counting_constraints = False
         for v in vars:
             counting_constraints = counting_constraints or len(v.cofs)>0
-        # se gli indistinguishable non sono fixed allora non posso andare su by_size
+        no_indist = self.universe.elements.find(False).empty
         if len(ex_classes) == 1: 
             partition = vars[0]
             max_size = self.universe.size() - self.n_vars + 1
             unconstrained = SizeFormula("any", P.closed(1, max_size))
-            if not counting_constraints and partition.size == unconstrained:
+            if not counting_constraints and partition.size == unconstrained and no_indist:
                 self.log("Exchangeable variables and no constraints: Stirling numbers 2nd kind")
                 sol = self.stirling(n_elems, len(vars))
                 if self.type == "composition":

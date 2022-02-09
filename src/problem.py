@@ -150,19 +150,16 @@ class Problem(object):
         universe = next(dom_iter)
         for d in dom_iter:
             universe = universe | d
-        # universe.name = "universe"
+        universe.name = "universe"
         dom_iter = iter(self.domains.values())
         for d in dom_iter:
-            d.universe = universe
-        # if self.configuration.df is None:
-        #     self.configuration.df  = universe
+            d.set_universe(universe)
         for pf in self.pos_formulas:
             pf.formula.universe = universe
         for cof in self.count_formulas:
             cof.formula.universe = universe
         self.universe = universe
-        self.universe.universe = universe
-        # print(self.universe.elements)
+        self.universe.set_universe(universe)
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":

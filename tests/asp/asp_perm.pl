@@ -1,6 +1,6 @@
 set("e1", 1).
-set("e2", 1).
-set("e4", 1).
+set("e2", 3).
+set("e3", 2).
 
 1{permutation(X,Y,Z):seq(X,Y,Z)}1.
 seq(X,Y,Z) :- set(X,_), set(Y,_), set(Z,_).

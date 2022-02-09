@@ -138,6 +138,8 @@ class And(object):
         l = ("","") if isinstance(self.left, str) else ("(",")")
         r = ("","") if isinstance(self.right, str) else ("(",")")
         return f"{l[0]}{self.left}{l[1]} ∧ {r[0]}{self.right}{r[1]}"
+    
+    
 
 class Or(object):
 

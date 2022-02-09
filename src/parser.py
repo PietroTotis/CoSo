@@ -92,6 +92,7 @@ class Parser(object):
         self.file = file
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self)
+        self.universe_explicit = False
         self.parse_domains = True 
         self.sizes = {}
         self.problem = Problem()
@@ -239,7 +240,10 @@ class Parser(object):
                 elems = [n for n in range(lb, ub+1)]
             else:
                 elems = p[5+k]
-            domains_ivs = self.list2interval(elems, distinguishable, label=="universe")
+            univ = label=="universe"
+            if univ:
+                self.universe_explicit = True
+            domains_ivs = self.list2interval(elems, distinguishable, univ)
             doms = []
             for distinguish in domains_ivs:
                 for ivs in domains_ivs[distinguish]:
@@ -250,12 +254,11 @@ class Parser(object):
                     doms.append(d)
             if len(doms) == 1:
                 d = doms[0]
-                d.name = label
             else:
                 d = doms[0]
                 for dom in doms:
                     d = d | dom
-                    d.name = label
+            d.name = label
             if self.parse_domains:
                 self.problem.add_domain(d)
             p[0] = d
@@ -443,7 +446,7 @@ class Parser(object):
         Returns:
             [portion]: The intervals covering the ids corresponding to the labels
         """
-        if universe:
+        if universe or not self.universe_explicit:
             lists = [[self.problem.add_entity(e) for e in entities]]
         else:
             lists = [self.problem.get_entity(e) for e in entities]

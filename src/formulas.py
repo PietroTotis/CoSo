@@ -99,8 +99,12 @@ class DomainFormula(Domain):
         the universe of the problem: each complement is computed w.r.t. it
     """
 
-    def __init__(self, formula, elems, universe):
-        self.name = formula
+    def __init__(self, formula, elems, universe, name = None):
+        if name is None:
+            self.name = formula
+        else:
+            self.name = name
+        self.formula = formula
         self.elements = elems
         self.universe = universe
         self.n_elements = None
@@ -114,47 +118,62 @@ class DomainFormula(Domain):
         comb = combine(self, rhs)
         elems = comb[dom]
         if elems == self.elements:
-            f = self.name
+            f = self.formula
         elif elems == rhs.elements:
-            f = rhs.name
+            f = rhs.formula
         else:
             f = And(self, rhs)
-        return DomainFormula(f, elems, self.universe)
+        if self.name == "universe":
+            name = rhs.name
+        elif rhs.name == "universe":
+            name = self.name
+        elif self.name == rhs.name:
+            name = self.name
+        else:
+            name = And(str(self), str(rhs))
+        return DomainFormula(f, elems, self.universe, name)
     
     def __or__(self, rhs):
         comb = combine(self, rhs)
         if comb.domain() in self.elements.domain():
-            f = self.name
+            f = self.formula
         elif comb.domain() in rhs.elements.domain():
-            f = rhs.name
+            f = rhs.formula
         else:
             f = Or(self, rhs)
-        return DomainFormula(f, comb, self.universe)
+        if self.name == "universe" or rhs.name == "universe":
+            name = "universe"
+        elif self.name == rhs.name:
+            name = self.name
+        else:
+            name = Or(str(self), str(rhs))
+        return DomainFormula(f, comb, self.universe, name)
 
     def __sub__(self, rhs):
         if self.disjoint(rhs):
-            f = self.name
+            f = self.formula
         else:
             f = And(self, Not(rhs))
         comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
         sub_dom = self.elements.domain() - rhs.elements.domain()
-        return DomainFormula(f, comb[sub_dom], self.universe)
+        return DomainFormula(f, comb[sub_dom], self.universe, self.name)
 
     def copy(self):
-        return DomainFormula(self.name, self.elements, self.universe)
+        return DomainFormula(self.formula, self.elements, self.universe, self.name)
 
     def neg(self):
-        if isinstance(self.name, Not):
-            f = self.name.child
+        if isinstance(self.formula, Not):
+            f = self.formula.child
         else:
             f = Not(self)
         els = self.universe.elements.domain() - self.elements.domain()
         dom = self.universe.elements[els]
-        return DomainFormula(f, dom, self.universe)
+        name = Not(str(self))
+        return DomainFormula(f, dom, self.universe, name)
 
     def indistinguishable_subsets(self, dom_formula=None):
         df = dom_formula if dom_formula is not None else self
-        f = df.name
+        f = df.formula
         if isinstance(f, And) or isinstance(f, Or): 
             ind_l = self.indistinguishable_subsets(f.left)
             ind_r = self.indistinguishable_subsets(f.right)
@@ -167,7 +186,28 @@ class DomainFormula(Domain):
                 indist = {df}
             else:
                 indist = set()
+            # if df.name == "universe":
+
+            # else:
+            #     df = df & self.universe # update indistinguishability from universe
+            #     if [False] == list(df.elements.values()):
+            #         indist = {df}
+            #     else:
+            #         indist = set()
         return indist
+
+    def set_universe(self, universe):
+        self.universe = universe
+        if isinstance(self.formula, And) or isinstance(self.formula, Or): 
+            if isinstance(self.formula.left, DomainFormula):
+                self.formula.left.set_universe(universe)
+            if isinstance(self.formula.right, DomainFormula):
+                self.formula.left.set_universe(universe)
+        elif isinstance(self.formula, Not):
+            if isinstance(self.formula.child, DomainFormula):
+                self.formula.child.set_universe(universe)
+        else:
+            pass
 
 
 # class InFormula(object):
