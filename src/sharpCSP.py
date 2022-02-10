@@ -1162,23 +1162,23 @@ class SharpCSP(object):
         dists = []
         for distribution in ics:
             prop_vars = []
-            self.log(f"Distribution for {len(ex_classes)} classes: {distribution}")
+            self.log(f"Distribution of {rv_set} for {len(ex_classes)} classes: {distribution}")
             for j, n in enumerate(distribution):
                 class_vars = ex_classes[keys[j]]
                 prop_cvars = [v.copy() for v in class_vars]
                 self.lvl += 1
-                valid = self.fix_exchangeable_partititons(rv_set, n, prev_e, prop_cvars)  
+                valid = self.fix_exchangeable_partititons(rv_set, n, 1, prop_cvars)
                 self.lvl -= 1
                 if len(valid) > 0:                  
                     prop_vars.append(valid)
             if len(prop_vars) == len(ex_classes): # otherwise something was unsat
-                cases = list(self.product(*prop_vars))
+                cases = list(self.product(prev_e, *prop_vars))
                 dists += cases
         self.lvl -= 1
         return dists
     
-    def product(self, *args):
-        result = [(1,[])]
+    def product(self, prev_e, *args):
+        result = [(prev_e,[])]
         for pool in args:
             result = [(ex*ey, x+y) for ex, x in result for ey, y in pool]
         for prod in result:
@@ -1193,13 +1193,17 @@ class SharpCSP(object):
             e, vars = fixed
             rv_set = relevant[0] # propagate one
             ex_classes = self.exchangeable_classes(vars)
+            self.log(f"Propagating {rv_set} for {e}")
             if len(ex_classes) == 1:
                 prop_vars = self.fix_exchangeable_partititons(rv_set, rv_set.size(), e, vars)
             else: 
                 prop_vars = self.fix_non_exchangeable_partititons(rv_set, e, vars)
+            self.log(f"{rv_set} propagated")
+            self.lvl += 1
             for pvs in prop_vars:
                 prop_fix = self.fix_partitions(pvs, relevant[1:]) # propagate other relevants
                 props += prop_fix
+            self.lvl -= 1
         return props
                 
     def count_unfixed_partitions(self, relevant, var_list = None):
