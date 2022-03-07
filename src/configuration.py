@@ -13,7 +13,7 @@ class Domain(object):
         the label associated to the domains
     elements : IntervalDict
         intervals corresponding to the entities (mapped to integers) of the domain
-        mapped as dict to boolean saying whether elements are distinguishable or not
+        mapped as dict to True if distinguishable False otherwise
     """
 
     def __init__(self, name, elems):

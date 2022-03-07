@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 import time
 import portion
@@ -7,9 +8,12 @@ import pyinotify
 import signal
 import random
 import itertools
+import clingo
+import portion as P
 from pathlib import Path
 from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
+from util import interval_closed
 
 ops = [">","<","<=",">=","!=","="]
 random.seed(123)
@@ -218,66 +222,134 @@ def problem2minizinc(problem):
     minizinc += "solve satisfy;"
     return minizinc
 
+def dom2asp(label, domain):
+    str = ""
+    i = 0
+    for interval in domain.elements.keys():
+        indist = domain.elements[interval]
+        for atomic_interval in interval:
+            if indist:
+                e = atomic_interval.lower
+                l, u = interval_closed(atomic_interval)
+                n_copies = u-l+1
+                str += f"{label}_{i}({e},{n_copies}).\n"
+            else:
+                for e in portion.iterate(atomic_interval, step =1):
+                    str += f"{label}_{i}({e}, 1).\n"
+        str += f"{label}(X) :- {label}_{i}(X, _).\n"
+        i += 1
+    str += f"universe(X) :- {label}(X).\n"
+    return str, i
+
 def problem2asp(problem):
     asp = ""
-    for dom in problem.domains.values():
-        asp += f""
-        asp += ",".join(list(map(str,portion.iterate(dom.elements.domain(), step =1))))
-        asp += "};\n"
-    length = problem.structure.size.values.lower
-    asp += f"int: n = {length};\n"
-    sequence = problem.structure.type == "sequence" or problem.structure.type == "permutation"
-    subset = problem.structure.type == "subset" or problem.structure.type == "multisubset"
-    alldiff = problem.structure.type == "permutation" or problem.structure.type == "subset"
-    if sequence:
-        asp += f"array[1..n] of var uni: sequence;\n"
-        if alldiff:
-            asp += "constraint alldifferent(sequence);\n"
-    elif subset:
-        asp += f"var set of uni: sub;\n"
-        asp += f"constraint card(sub) == n;\n"
+    n_supports = {}
+    for lab, dom in problem.domains.items():
+        str, n_support = dom2asp(lab, dom)
+        n_supports[lab] = n_support
+        asp += str
+    sizes = problem.configuration.size.values
+    if problem.configuration.size.values.upper == P.inf:
+        ub = problem.universe.size() +1
+        sizes = problem.configuration.size.values.replace(upper = ub)
+    lenghts = P.iterate(sizes, step=1)
+    sequence = problem.configuration.type == "sequence" 
+    permutation =  problem.configuration.type == "permutation"
+    subset = problem.configuration.type == "subset" 
+    multiset =  problem.configuration.type == "multisubset"
+    composition =  problem.configuration.type == "composition"
+    partition =  problem.configuration.type == "partition"
+    asp_lengths = []
+    for l in lenghts:
+        asp_length = ""
+        if not composition and not partition:
+            vars = get_n_vars(l)
+            vars_list = ",".join(vars)
+            type = problem.configuration.type
+            name = f"{type}_guess_{l}"
+            asp_length += f"{name}("
+            asp_length += vars_list
+            domains = []
+            for i, v in enumerate(vars):
+                dom = ""
+                for pf in problem.pos_formulas:
+                    if pf.pos == i:
+                        if dom != "":
+                            raise Exception("can't correctly translate many pos constraints on same position")
+                        dom_str, _ = dom2asp(f"pf_{i}", pf.dformula)
+                        asp_length += dom_str
+                        dom = f"pf_{i}({v})"
+                if dom == "":
+                    dom = f"universe({v})" 
+                domains.append(dom)
+            asp_length += ") :- " + ", ".join(domains)
+            if subset or multiset:
+                ineq = "<" if subset else "<="
+                inequalities = [f"{v}{ineq}{vars[i+1]}" for i, v in enumerate(vars) if i < len(vars)-1]
+                asp_length += ", "
+                asp_length += ", ".join(inequalities) + ".\n"
+            else:
+                asp_length += ".\n"
+            asp_length += f"1{{{type}_{l}({vars_list}):{name}({vars_list})}}1.\n"
+            for k in range(0,l):
+                pos_vars = ", ".join(["_" if i != k else "X" for i in range(0,l) ])
+                asp_length += f"used_{l}(X,{k}) :- {type}_{l}({pos_vars}). \n"
+            if permutation or subset:
+                asp_length += f":- {name}({vars_list}), set(S,SN), C = #count{{N:used(S,N)}}, C>SN.\n"
+            
+            for i, cf in enumerate(problem.count_formulas):
+                dlab = f"df_{i}"
+                if dlab not in n_supports:
+                    dom_str, n = dom2asp(dlab, cf.formula)
+                    n_supports[dlab] = n
+                    asp += dom_str
+                for n in P.iterate(cf.complement(0,l), step=1):
+                    asp_length += f":- C = #count{{N:used_{l}(S,N),df_{i}(S)}}, C!={n}.\n"
+        elif composition:
+            for i in range(0,l):
+                asp_length += f"part({i}).\n" 
+            for lab in n_supports:
+                for i in range(0,n_supports[lab]):
+                    asp_length += f"1{{put(E,N,P): int(N), N<=EN}} 1 :- {lab}_{i}(E, EN), part(P).\n"
+                    asp_length += ":- set(E,EN), #sum{N,P:put(E,N,P),part(P)}!=EN.\n"
+            asp_length += ":- part(P), #count{E,N:put(E,N,P), N>0}==0.\n"
+        else:
+            pass
+        if permutation or subset:
+            for lab in n_supports:
+                for i in range(0,n_supports[lab]):
+                    asp_length += f":- {type}_{l}({vars_list}), {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN."
+        asp_lengths.append(asp+asp_length)
+    return asp_lengths
+
+class Context:
+    def id(self, x):
+        return x
+    def seq(self, x, y):
+        return [x, y]
+
+def compare2asp(problem, name):
+    pasp = problem2asp(problem)
     n = 0
-    for chf in problem.choice_formulas:
-        if isinstance(chf, PosFormula):
-            aux_doms, dom_f, n  = domf2minizinc(chf.dformula.name, n)
-            asp += aux_doms
-            asp += f"constraint sequence[{chf.pos}] in {dom_f};\n"
-        elif isinstance(chf, InFormula):
-            minizinc += f"constraint {chf.entity} in sets;\n"
-    for cof in problem.count_formulas:
-        if sequence:
-            range = "i in 1..n"
-            elem = "sequence[i]"
-        elif subset:
-            range = "i in sub"
-            elem = "i"
-        intv = cof.values
-        bounds = []
-        for left, lower, upper, right in portion.to_data(intv):
-            if upper > 1000:#some issues comparing to portion.inf
-                upper = length
-            if not left:
-                lower+= 1
-            if not right:
-                upper+= 1
-            bounds.append((lower,upper))
-        aux_doms, dom_f, n  = domf2minizinc(cof.formula.name, n)
-        for l in aux_doms.split('\n'):
-            if l not in asp:
-                asp += l + "\n"
-        asp += f"constraint "
-        cofs = []
-        for lower, upper in bounds:
-            cofs.append(f"sum({range})(bool2int({elem} in {dom_f})) >= {lower} /\\ sum({range})(bool2int({elem} in {dom_f})) <= {upper}")
-        asp += "\\/\n".join(cofs) + ";\n"
-    asp += "solve satisfy;"
-    return asp
+    for program in pasp:
+        print(program)
+        ctl = clingo.Control()
+        ctl.configuration.solve.models = 0
+        ctl.add("base", [],program)
+        ctl.ground([("base", [])], context=Context())
+        models = ctl.solve(yield_=True)
+        n_length = sum(1 for _ in models)
+        print("\t", n_length)
+        n += n_length
+    print(f"Count {name}: {n}")
+    return n
 
 def get_n_vars(n):
     vars = []
     for c in range(ord('A'),ord('Z')):
         if len(vars) < n:
-            vars.append(c)
+            vars.append(chr(c))
+    return vars
 
 
 # def problem2problog(problem):
@@ -461,12 +533,19 @@ def generate_constrained(folder, pconstr, cconstr):
                 if d>s:
                     # print(f"{name}, size domain={d}, size structure={s}")
                     problem = generate_problem(case, domains_upto, d, s, pconstr, cconstr)
-                    print(problem)
                     filename = f"{case}_{d}_{s}.test"
                     path = os.path.join(case_path, filename)
                     file = open(path, "w")
                     file.write(problem)
                     file.close()
+                    parser = Parser(str(path))
+                    parser.parse()
+                    problem_asp = problem2asp(parser.problem)
+                    filename_asp = f"{case}_{d}_{s}.lp"
+                    path_asp = os.path.join(case_path, filename_asp)
+                    file_asp = open(path_asp, "w")
+                    file_asp.write(problem_asp)
+                    file_asp.close()
 
 # def test_folder(folder, problog, from_file = ""):
 #     for filename in os.listdir(folder):
@@ -507,6 +586,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', default="minizinc", help='Minizinc directory')    
     parser.add_argument('--test-folder', help='Run tool comparison on files in folder')
     parser.add_argument('--minizinc', action='store_true', help="Compare with 'minizinc'")
+    parser.add_argument('--asp', action='store_true', help="Compare with 'asp'")
     parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
@@ -517,6 +597,8 @@ if __name__ == '__main__':
         # print(parser.problem)
         if args.minizinc:
             compare2minizinc(parser.problem, args.f)
+        elif args.asp:
+            compare2asp(parser.problem, args.f)
         else:
             sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")

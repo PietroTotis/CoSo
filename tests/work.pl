@@ -1,8 +1,10 @@
-set universe = {e1, e2, e2};
-a in compositions(universe);
-#a = 2;
 
-% e1 | e2 e2
-% e2 e2 | e1
-% e2 | e1 e2
-% e1 e2 | e2
+set indist russians = {r1,r2};
+set americans = {a1,a2,a3};
+% spaniards = {s1};
+selection in [| russians+americans];
+% selection in {| russians+americans+spaniards};
+#selection = 3;
+#(russians & selection) > 0;
+% #(spaniards & selection) > 0;
+#(americans & selection) > 0;
