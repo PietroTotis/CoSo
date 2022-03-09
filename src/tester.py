@@ -1,22 +1,50 @@
+import errno
 import os
+import signal
+import functools
 import sys
 import argparse
 import time
 import portion
 import subprocess
 import pyinotify
-import signal
 import random
-import itertools
+import signal
 import clingo
 import portion as P
 from pathlib import Path
 from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 from util import interval_closed
+from contextlib import contextmanager
+
+TIMEOUT = 10
+random.seed(123)
+
+
+class TimeoutError(Exception):
+    pass
+
+def timeout(seconds=TIMEOUT, error_message=os.strerror(errno.ETIME)):
+    def decorator(func):
+        def _handle_timeout(signum, frame):
+            raise TimeoutError(error_message)
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            signal.signal(signal.SIGALRM, _handle_timeout)
+            signal.alarm(seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                signal.alarm(0)
+            return result
+
+        return wrapper
+
+    return decorator
 
 ops = [">","<","<=",">=","!=","="]
-random.seed(123)
 
 class ModHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, evt):
@@ -225,19 +253,20 @@ def problem2minizinc(problem):
 def dom2asp(label, domain):
     str = ""
     i = 0
-    for interval in domain.elements.keys():
-        indist = domain.elements[interval]
-        for atomic_interval in interval:
-            if indist:
-                e = atomic_interval.lower
-                l, u = interval_closed(atomic_interval)
-                n_copies = u-l+1
-                str += f"{label}_{i}({e},{n_copies}).\n"
-            else:
-                for e in portion.iterate(atomic_interval, step =1):
-                    str += f"{label}_{i}({e}, 1).\n"
+    indist_intervals = domain.elements.find(False)
+    for atomic_interval in indist_intervals:
+        e = atomic_interval.lower
+        l, u = interval_closed(atomic_interval)
+        n_copies = u-l+1
+        str += f"{label}_{i}({e},{n_copies}).\n"
         str += f"{label}(X) :- {label}_{i}(X, _).\n"
         i += 1
+    dist_intervals = domain.elements.find(True)
+    for atomic_interval in dist_intervals:
+        for e in portion.iterate(atomic_interval, step =1):
+            str += f"{label}_{i}({e}, 1).\n"
+            str += f"{label}(X) :- {label}_{i}(X, _).\n"
+            i += 1
     str += f"universe(X) :- {label}(X).\n"
     return str, i
 
@@ -270,14 +299,15 @@ def problem2asp(problem):
             asp_length += f"{name}("
             asp_length += vars_list
             domains = []
+            new_props = []
             for i, v in enumerate(vars):
                 dom = ""
                 for pf in problem.pos_formulas:
-                    if pf.pos == i:
+                    if pf.pos-1 == i:
                         if dom != "":
                             raise Exception("can't correctly translate many pos constraints on same position")
                         dom_str, _ = dom2asp(f"pf_{i}", pf.dformula)
-                        asp_length += dom_str
+                        new_props.append(dom_str)
                         dom = f"pf_{i}({v})"
                 if dom == "":
                     dom = f"universe({v})" 
@@ -290,12 +320,15 @@ def problem2asp(problem):
                 asp_length += ", ".join(inequalities) + ".\n"
             else:
                 asp_length += ".\n"
+            asp_length += "\n".join(new_props)
             asp_length += f"1{{{type}_{l}({vars_list}):{name}({vars_list})}}1.\n"
             for k in range(0,l):
                 pos_vars = ", ".join(["_" if i != k else "X" for i in range(0,l) ])
                 asp_length += f"used_{l}(X,{k}) :- {type}_{l}({pos_vars}). \n"
             if permutation or subset:
-                asp_length += f":- {name}({vars_list}), set(S,SN), C = #count{{N:used(S,N)}}, C>SN.\n"
+                for lab in n_supports:
+                    for i in range(0,n_supports[lab]):
+                        asp_length += f":- {name}({vars_list}), {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN.\n"
             
             for i, cf in enumerate(problem.count_formulas):
                 dlab = f"df_{i}"
@@ -303,8 +336,9 @@ def problem2asp(problem):
                     dom_str, n = dom2asp(dlab, cf.formula)
                     n_supports[dlab] = n
                     asp += dom_str
-                for n in P.iterate(cf.complement(0,l), step=1):
-                    asp_length += f":- C = #count{{N:used_{l}(S,N),df_{i}(S)}}, C!={n}.\n"
+                vals = P.closed(0,l) - cf.values
+                for n in P.iterate(vals, step=1):
+                    asp_length += f":- C = #count{{N:used_{l}(S,N),df_{i}(S)}}, C={n}.\n"
         elif composition:
             for i in range(0,l):
                 asp_length += f"part({i}).\n" 
@@ -315,10 +349,6 @@ def problem2asp(problem):
             asp_length += ":- part(P), #count{E,N:put(E,N,P), N>0}==0.\n"
         else:
             pass
-        if permutation or subset:
-            for lab in n_supports:
-                for i in range(0,n_supports[lab]):
-                    asp_length += f":- {type}_{l}({vars_list}), {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN."
         asp_lengths.append(asp+asp_length)
     return asp_lengths
 
@@ -328,21 +358,42 @@ class Context:
     def seq(self, x, y):
         return [x, y]
 
-def compare2asp(problem, name):
-    pasp = problem2asp(problem)
+@timeout(TIMEOUT)
+def run_asp(programs):
     n = 0
-    for program in pasp:
-        print(program)
+    for program in programs:
+        # print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
         ctl.ground([("base", [])], context=Context())
         models = ctl.solve(yield_=True)
         n_length = sum(1 for _ in models)
-        print("\t", n_length)
+        print(n_length)
         n += n_length
-    print(f"Count {name}: {n}")
     return n
+
+@timeout(TIMEOUT)
+def run_solver(problem):
+    return problem.solve(log=False)
+
+def compare2asp(problem, name):
+    print("Running solver...")
+    try:
+        start = time.time()
+        count = run_solver(problem) 
+        print(f"Solver: {count} in {finish-start:.2f}s")
+    except TimeoutError as e:
+        print("CoSo timeout")
+    pasp = problem2asp(problem)
+    print("Running clingo...")
+    try:
+        start = time.time()
+        asp_count = run_asp(pasp)
+        finish = time.time()
+        print(f"Clingo: {asp_count} in {finish-start:.2f}s")
+    except TimeoutError as e:
+        print("Clingo timeout")
 
 def get_n_vars(n):
     vars = []

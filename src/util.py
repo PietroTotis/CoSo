@@ -9,7 +9,7 @@ def is_distinguishable(d1, d2):
 def interval_closed(interval, lb_default=0, ub_default=P.inf):
     if interval.lower != P.inf and interval.upper!=P.inf:
         lb = interval.lower if interval.left == P.CLOSED else interval.lower +1
-        ub = interval.upper if interval.right == P.CLOSED else interval.lower -1
+        ub = interval.upper if interval.right == P.CLOSED else interval.upper -1
         return (lb,ub)
     elif interval.lower != P.inf:
         lb = interval.lower if interval.left == P.CLOSED else interval.lower +1

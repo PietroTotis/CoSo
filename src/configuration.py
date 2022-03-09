@@ -71,7 +71,9 @@ class Domain(object):
             label = f"{self.formula}"
         else:
             label = f"{self.name}"
-        if self.all_indistinguishable() and not label.startswith("indist"):
+        if self.all_indistinguishable() and \
+            not label.startswith("indist") and \
+            len(self.elements.domain())==1:
             str = "indist. " + label
         else:
             str = label

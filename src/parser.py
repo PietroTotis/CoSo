@@ -261,7 +261,6 @@ class Parser(object):
             d.name = label
             if self.parse_domains:
                 self.problem.add_domain(d)
-            print(d.elements)
             p[0] = d
 
     def p_arrangement(self, p):
@@ -432,7 +431,7 @@ class Parser(object):
         intervals = {False: [], True: []}
         single_ivs = self.entities2intervals(single, universe)
         # intervals[dist].append(single_ivs)
-        intervals[False].append(single_ivs)
+        intervals[universe].append(single_ivs)
         for indist_set in copies:
             indist_ivs = self.entities2intervals(indist_set, universe)
             for indist_iv in indist_ivs:

@@ -155,7 +155,7 @@ class SharpCSP(object):
         if isinstance(chf, PosFormula):
             if chf.pos-1<self.n_vars:
                 self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.dformula
-                self.log("Choice set:", self.vars[chf.pos-1])
+                self.log("Choice set: ", self.vars[chf.pos-1])
         # if isinstance(chf, InFormula):
         #     if self.fixed_choices > self.n_vars:
         #         raise Unsatisfiable("Too many elements for the subset size!")
@@ -343,26 +343,30 @@ class SharpCSP(object):
         cofs_split_class = []
         cofs_rest_classes = []
         for cof in count_f:
-            cases_split_class = []  # split for cof (left)
-            cases_rest_classes = [] # split for cof (right)
-            if cof.values.upper >= self.n_vars:
-                interval_any = cof.values.replace(upper=n_split, right=P.CLOSED)    # adjust upper bound to number of vars
-                any = CountingFormula(cof.formula, interval_any)    # add case >= n in split class then work on each =i <n
-                cases_split_class.append(any)
-                cof_rest_classes = CountingFormula(cof.formula, P.closed(0,n_rest))
-                cases_rest_classes.append(cof_rest_classes)
-                if cof.values.left == P.OPEN:
-                    n_cases = cof.values.lower
-                else:
-                    n_cases = cof.values.lower-1
-            else:
-                n_cases = cof.values.upper
-            for i in range(0,n_cases+1):
-                cof_split_class = CountingFormula(cof.formula, P.singleton(i))
-                cof_rest_classes = CountingFormula(cof.formula, cof.complement(i, n_rest))
-                if self.is_feasible_split(split_class_vars[0],n_split,n_rest,cof_split_class,cof_rest_classes):
-                    cases_split_class.append(cof_split_class)
-                    cases_rest_classes.append(cof_rest_classes)
+            # cases_split_class = []  # split for cof (left)
+            # cases_rest_classes = [] # split for cof (right)
+            # vals = cof.values
+            # if cof.values.upper >= self.n_vars:
+            #     interval_any = cof.values.replace(upper=n_split, right=P.CLOSED)    # adjust upper bound to number of vars
+            #     any = CountingFormula(cof.formula, interval_any)    # add case >= n in split class then work on each =i <n
+            #     cases_split_class.append(any)
+            #     cof_rest_classes = CountingFormula(cof.formula, P.closed(0,n_rest))
+            #     cases_rest_classes.append(cof_rest_classes)
+            #     if cof.values.left == P.OPEN:
+            #         n_cases = cof.values.lower
+            #     else:
+            #         n_cases = cof.values.lower-1
+            # else:
+            #     n_cases = cof.values.upper
+            # for i in range(0,n_cases+1):
+            # for partition in self.get_feasible_splits(split_class_vars[0],n_split, n_rest, cof.formula):
+            #     l_value, r_value = partition
+            #     cof_split_class = CountingFormula(cof.formula, P.singleton(l_value))
+            #     cof_rest_classes = CountingFormula(cof.formula, P.singleton(r_value))
+            #     # if self.is_feasible_split(split_class_vars[0],n_split,n_rest,cof_split_class,cof_rest_classes):
+            #     cases_split_class.append(cof_split_class)
+            #     cases_rest_classes.append(cof_rest_classes)
+            cases_split_class, cases_rest_classes = self.get_feasible_splits(split_class_vars[0],n_split, n_rest, cof)
             cofs_split_class.append(cases_split_class)
             cofs_rest_classes.append(cases_rest_classes)
         combs_split_class =  list(itertools.product(*cofs_split_class))
@@ -531,6 +535,40 @@ class SharpCSP(object):
                 parts.append(p)
         return parts       
 
+    def get_feasible_splits(self, split_class_var, n_split, n_rest, cof):
+
+        disjoint = split_class_var.disjoint(cof.formula)
+        included = split_class_var in cof.formula 
+
+        cases_split_class = []  # split for cof (left)
+        cases_rest_classes = [] # split for cof (right)
+        for inter in cof.values:
+            lb, ub = interval_closed(inter, ub_default=n_split+n_rest)
+            if included and n_split>ub:
+                # unsat
+                pass
+            elif disjoint:
+                # rest does all
+                if n_rest >= lb:
+                    cof_split_class = CountingFormula(cof.formula, P.singleton(0))
+                    cof_rest_classes = CountingFormula(cof.formula, P.closed(lb,n_rest))
+                    cases_split_class.append(cof_split_class)
+                    cases_rest_classes.append(cof_rest_classes)
+                else:
+                    #unsat
+                    pass
+            else:
+                if included:
+                    lb = max(lb, n_split) # consider only cases where left>=n_split
+                for i in range(lb,ub+1):
+                    for l_val, r_val in self.integer_k_partitions(i,2):
+                        if l_val <= n_split and r_val <= n_rest:
+                            cof_split_class = CountingFormula(cof.formula, P.singleton(l_val))
+                            cof_rest_classes = CountingFormula(cof.formula, P.singleton(r_val))
+                            cases_split_class.append(cof_split_class)
+                            cases_rest_classes.append(cof_rest_classes)
+        return cases_split_class, cases_rest_classes
+
     def is_feasible_split(self, split_class_var, n_split, n_rest, scof, rcof):
         """
         Checks if we ask to observe more properties than available variables
@@ -541,14 +579,18 @@ class SharpCSP(object):
         slb, sub =  interval_closed(scof.values, ub_default=n_split)
         rlb, rub =  interval_closed(rcof.values, ub_default=n_rest)
         if slb > n_split:
+            self.log(f"{scof}//{rcof} is unfeasible because not enough vars in split")
             return False
         if rlb > n_rest:
+            self.log(f"{scof}//{rcof} is unfeasible because not enough vars in rest")
             return False
         disjoint = split_class_var.disjoint(scof.formula)
         included = scof.formula in split_class_var
         if disjoint and slb > 0:
+            self.log(f"{scof}//{rcof} is unfeasible because split is disjoint from {scof.formula} and {slb} > 0")
             return False
         if included and sub < n_split:
+            self.log(f"{scof}//{rcof} is unfeasible because split is included in {scof.formula} and {sub} < {n_split}")
             return False
         return True
     
@@ -980,7 +1022,8 @@ class SharpCSP(object):
         n = len(split_class_vars)
         rest_domains = list(self.exchangeable_classes(rest_classes_vars).keys())
         rest_domains = [d for d in rest_domains if not split_class.disjoint(d)] # optimization: filter out disjoint domains
-        cases = self.relevant_cases(split_class, rest_domains)
+        indist_domains = [DomainFormula(split_class.formula, split_class.elements[dom], split_class.universe, split_class.name) for dom in split_class.elements.find(False)]
+        cases = self.relevant_cases(split_class, indist_domains+rest_domains)
         c = len(cases)
         if c == 0: # optimization: if all disjoint then split class subproblem already independent
             self.log("Split class is disjoint from others: no need for injectivity split...")
