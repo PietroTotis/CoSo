@@ -18,8 +18,14 @@ from formulas import PosFormula, And, Or, Not
 from util import interval_closed
 from contextlib import contextmanager
 
-TIMEOUT = 10
+TIMEOUT = 120
 random.seed(123)
+
+class Context:
+    def id(self, x):
+        return x
+    def seq(self, x, y):
+        return [x, y]
 
 
 class TimeoutError(Exception):
@@ -256,11 +262,12 @@ def dom2asp(label, domain):
     indist_intervals = domain.elements.find(False)
     for atomic_interval in indist_intervals:
         e = atomic_interval.lower
-        l, u = interval_closed(atomic_interval)
-        n_copies = u-l+1
-        str += f"{label}_{i}({e},{n_copies}).\n"
-        str += f"{label}(X) :- {label}_{i}(X, _).\n"
-        i += 1
+        if atomic_interval != P.empty():
+            l, u = interval_closed(atomic_interval)
+            n_copies = u-l+1
+            str += f"{label}_{i}({e},{n_copies}).\n"
+            str += f"{label}(X) :- {label}_{i}(X, _).\n"
+            i += 1
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
         for e in portion.iterate(atomic_interval, step =1):
@@ -314,10 +321,14 @@ def problem2asp(problem):
                 domains.append(dom)
             asp_length += ") :- " + ", ".join(domains)
             if subset or multiset:
-                ineq = "<" if subset else "<="
+                # ineq = "<" if subset else "<="
+                ineq = "<="
                 inequalities = [f"{v}{ineq}{vars[i+1]}" for i, v in enumerate(vars) if i < len(vars)-1]
-                asp_length += ", "
-                asp_length += ", ".join(inequalities) + ".\n"
+                if len(inequalities) > 0:
+                    asp_length += ", "
+                    asp_length += ", ".join(inequalities) + ".\n"
+                else:
+                    asp_length += ".\n"
             else:
                 asp_length += ".\n"
             asp_length += "\n".join(new_props)
@@ -328,7 +339,7 @@ def problem2asp(problem):
             if permutation or subset:
                 for lab in n_supports:
                     for i in range(0,n_supports[lab]):
-                        asp_length += f":- {name}({vars_list}), {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN.\n"
+                        asp_length += f":- {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN.\n"
             
             for i, cf in enumerate(problem.count_formulas):
                 dlab = f"df_{i}"
@@ -352,12 +363,6 @@ def problem2asp(problem):
         asp_lengths.append(asp+asp_length)
     return asp_lengths
 
-class Context:
-    def id(self, x):
-        return x
-    def seq(self, x, y):
-        return [x, y]
-
 @timeout(TIMEOUT)
 def run_asp(programs):
     n = 0
@@ -378,10 +383,12 @@ def run_solver(problem):
     return problem.solve(log=False)
 
 def compare2asp(problem, name):
+    print(f"Comparing on {name}")
     print("Running solver...")
     try:
         start = time.time()
         count = run_solver(problem) 
+        finish = time.time()
         print(f"Solver: {count} in {finish-start:.2f}s")
     except TimeoutError as e:
         print("CoSo timeout")

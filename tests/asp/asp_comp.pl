@@ -1,8 +1,11 @@
-set("e1", 1).
+set("e1", 4).
 set("e2", 2).
-% set("e3", 1).
+set("e3", 1).
 
-int(0..3).
+df1("e2").
+df1("e3").
+
+int(0..4).
 
 part("p1").
 part("p2").
@@ -17,7 +20,16 @@ part("p2").
 :- part(P), #count{E,N:put(E,N,P), N>0}==0.
 
 % output for each part how many entities from each 
-part(P, A, B) :- put("e1",A,P),put("e2",B,P).
+part(P, A, B, C) :- put("e1",A,P),put("e2",B,P),put("e3",C,P).
+
+% size constraints 
+:-  C=#sum{N,E:put(E,N,"p2")}, C>2.
+
+% count constraints
+:-  C=#sum{N,E:put(E,N,"p2"), df1(E)}, C!=2.
+
+
 
 % #show put/3.
-#show part/3.
+#show part/4.
+#show count/2.

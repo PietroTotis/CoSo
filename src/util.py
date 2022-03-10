@@ -15,7 +15,7 @@ def interval_closed(interval, lb_default=0, ub_default=P.inf):
         lb = interval.lower if interval.left == P.CLOSED else interval.lower +1
         return (lb,ub_default)
     else:
-        ub = interval.upper if interval.right == P.CLOSED else interval.lower -1
+        ub = interval.upper if interval.right == P.CLOSED else interval.upper -1
         return (lb_default,ub)
 
 def is_singleton(interval):

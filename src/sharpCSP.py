@@ -183,33 +183,54 @@ class SharpCSP(object):
         #     # cof.values = cof.values.replace(upper = self.n_vars+1)
         #     cof.values = cof.values.replace(upper = dom_size)
         max_entities = min(self.n_vars,cof.formula.size())
-        lb, ub = interval_closed(cof.values, ub_default=max_entities)
-        all_values = P.closed(0,self.n_vars)
-        out_values = all_values - cof.values
-        count = Solution(0,[])
-        if lb == ub:
-            try:
-                choices, prop_vars = self.propagate_cof(cof)
-                self.vars = prop_vars
-                count = self.split_on_constraints(choices, others)
-            except Unsatisfiable:
-                pass
-        elif len(out_values)<len(cof.values):
-            # ignore and then remove the unsat cases
-            self.log(f"Relax {cof} and remove unsat")
-            count_ignore = self.split_on_constraints(1, others)
-            not_cof = CountingFormula(cof.formula, out_values)
-            count_not = self.split_on_constraints(1, [not_cof] + others)
-            count += count_ignore - count_not 
+        if cof.values.atomic:
+            lb, ub = interval_closed(cof.values, ub_default=max_entities)
+            all_values = P.closed(0,self.n_vars)
+            out_values = all_values - cof.values
+            count = Solution(0,[])
+            if lb == ub:
+                try:
+                    choices, prop_vars = self.propagate_cof(cof)
+                    self.vars = prop_vars
+                    count = self.split_on_constraints(choices, others)
+                except Unsatisfiable:
+                    pass
+            elif cof.values.upper == P.inf:
+                # >= n constraint: satisfy for n and leave rest unconstrained
+                self.log(f" Fix at least {lb} {cof.formula} and let rest unconstrained")
+                try:
+                    choices, prop_vars = self.propagate_cof(cof)
+                    self.vars = prop_vars
+                    count = self.split_on_constraints(choices, others)
+                except Unsatisfiable:
+                    pass
+            elif lb == 0:
+                # propagate n_vars-ub ¬cof.formula and leave rest unconstrained
+                self.log(f"Invert {cof}: at least {up} {Not(cof.formula)}")
+                interval_not = P.closedopen(ub+1, P.inf)
+                cof_not = CountingFormula(Not(cof.formula), interval_not)
+                count += self.apply_count(cof_not, others)
+            elif len(out_values)<len(cof.values):
+                # ignore and then remove the unsat cases
+                self.log(f"Relax {cof} and remove unsat")
+                count_ignore = self.split_on_constraints(1, others)
+                not_cof = CountingFormula(cof.formula, out_values)
+                count_not = self.split_on_constraints(1, [not_cof] + others)
+                count += count_ignore - count_not 
+            else:
+                # propositionalization of each i in the interval
+                self.log(f"Expanding bounds {cof.values}...")
+                values = cof.values.replace(upper=ub,right=P.CLOSED)
+                for i in P.iterate(values, step = 1):
+                    cof_eq = CountingFormula(cof.formula, P.singleton(i))
+                    count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others)
+                    count += count_case
+                self.log(f"Propagate lower bound #{cof.formula}={lb}...")
         else:
-            # propositionalization of each i in the interval
-            self.log(f"Expanding bounds {cof.values}...")
-            values = cof.values.replace(upper=ub,right=P.CLOSED)
-            for i in P.iterate(values, step = 1):
-                cof_eq = CountingFormula(cof.formula, P.singleton(i))
-                count_case = self.solve_subproblem(self.vars, self.type, {}, [cof_eq] + others)
-                count += count_case
-            self.log(f"Propagate lower bound #{cof.formula}={lb}...")
+            count = Solution(0,[])
+            for interval in cof.values:
+                partial_cof = CountingFormula(cof.formula, interval)
+                count += self.apply_count(partial_cof, others)
         self.lvl -=1
         return count
     
@@ -624,6 +645,7 @@ class SharpCSP(object):
         """
         vars = var_list if var_list is not None else self.vars
         lb, ub = interval_closed(cof.values, ub_default=len(vars))
+        atleast = ub == len(vars)
         satisfied, not_satisfied, maybe = self.count_satisfied(cof.formula, vars)
         diff = lb - len(satisfied)
         var_maybe = [vars[v] for v in maybe]
@@ -636,22 +658,23 @@ class SharpCSP(object):
         else: 
             v = var_maybe[0]
             self.log(f"{len(maybe)} exchangeable constrainable vars: {v}")
-            if self.type == "subset" or self.type=="partition":
+            if self.type == "subset" or self.type == "multisubset" or self.type=="partition":
                 n_choices = 1
             else:
                 n_choices = math.comb(len(maybe), abs(diff))
             sat_f = self.propagate(v, cof.formula)
             not_sat_f = self.propagate(v, cof.formula.neg())
             for i in maybe:
-                if diff<0:
+                if diff<0 and not atleast:
                     vars[i]  = not_sat_f
                     diff += 1
                 elif diff>0:
                     vars[i] = sat_f
                     diff -= 1
-                else:
-                    vars[i]  = not_sat_f
-            if diff != 0:
+                else: #diff=0
+                    if not atleast:
+                        vars[i]  = not_sat_f
+            if diff != 0 and not atleast:
                 raise Unsatisfiable("Unsat!")
             else:
                 return n_choices, vars
@@ -824,7 +847,7 @@ class SharpCSP(object):
         if len(ex_classes) == 1:
             count = math.comb(dist_size+n-1,n)
         else:
-            count = 0
+            count = 1
             for exc in ex_classes:
                 s = self.count_multisubsets(ex_classes[exc])
                 count *= s.count

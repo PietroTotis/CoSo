@@ -11,8 +11,8 @@
             "program": "tester.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
-            // "args": ["-l", "-f", "../tests/benchmarks/permutation/permutation_20_15.test"]
-            "args": ["-l", "--asp", "-f", "../tests/benchmarks/permutation/permutation_20_10.test"]
+            // "args": ["-l", "-f", "../tests/benchmarks/subset/subset_15_10.test"]
+            "args": ["-l", "--asp", "-f", "../tests/benchmarks/subset/subset_15_10.test"]
             // "args": ["-l", "-f", "../tests/at_least.pl"]
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/multisubset/multisubset_15_10.test"]
