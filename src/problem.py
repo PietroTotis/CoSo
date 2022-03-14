@@ -152,12 +152,17 @@ class Problem(object):
             universe = universe | d
         universe.name = "universe"
         dom_iter = iter(self.domains.values())
+        label_map = {v: k for k, v in self.entity_map.items()}
         for d in dom_iter:
             d.set_universe(universe)
+            d.set_labels(label_map)
         for pf in self.pos_formulas:
-            pf.formula.universe = universe
+            pf.set_universe(universe)
+            pf.set_labels(label_map)
         for cof in self.count_formulas:
-            cof.formula.universe = universe
+            cof.set_universe(universe)
+            cof.set_labels(label_map)
+            # cof.formula.universe = universe
         self.universe = universe
         self.universe.set_universe(universe)
 

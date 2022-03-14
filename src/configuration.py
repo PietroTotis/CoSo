@@ -21,6 +21,7 @@ class Domain(object):
         self.formula = name
         self.elements = elems
         self.n_elements = None
+        self.labels = {}
 
     @staticmethod
     def is_distinguishable(d1, d2):
@@ -74,15 +75,18 @@ class Domain(object):
         if self.all_indistinguishable() and \
             not label.startswith("indist") and \
             len(self.elements.domain())==1:
-            str = "indist. " + label
+            n_elems = sum([1 for _ in P.iterate(self.elements.domain(),step=1)])
+            i = self.elements.domain().lower
+            e_lab = self.labels.get(i,i)
+            s = f"{n_elems}x " + str(e_lab)
         else:
-            str = label
+            s = label
         # ok for debug, not for log
         # if self.size() > 0 :
-        #     str += f"({list(self.elements.keys())})=|{self.n_elements}|"
+        #     s += f"({list(self.elements.keys())})=|{self.n_elements}|"
         # else:
-        #     str += f"(none)"
-        return str
+        #     s += f"(none)"
+        return s
 
     def all_indistinguishable(self):
         return not (True in self.elements.values())
@@ -96,6 +100,9 @@ class Domain(object):
     def disjoint(self, rhs):
         inter = self & rhs
         return inter.elements.domain().empty
+
+    def set_labels(self, labels):
+        self.labels = labels
 
     def size(self):
         if self.n_elements is None:
@@ -313,14 +320,29 @@ class LiftedSet(object):
             return disj
 
     def feasible(self, rv_set, n, n_class=1):
+        """Check if there is some incompatible constraint with the distribution of n entities of 
+        rv_set over n_class exchangeable variables
+
+        Args:
+            rv_set (DomainFormula): the domain formula being distributed
+            n (int): number of entities
+            n_class (int, optional): number of exchangeable variables together with self. Defaults to 1.
+
+        Returns:
+            Boolean: True if no constraint is violated by the distribution
+        """
         # print("-----")
         # print(self, rv_set, n, n_class)
         if rv_set == self.universe:
+            # we are distributing the universe: a size constraint
             size_class = self.size.values.replace(
                 upper=lambda v: n_class*v,
                 lower=lambda v: n_class*v
             )
-            return n in size_class
+            feasible = n in size_class
+            # if not feasible:
+                # print(f"Unfeasible size: {n} not in {size_class}")
+            return feasible
         else:
             for cof in self.cofs:
                 if rv_set in cof.formula:
@@ -328,28 +350,43 @@ class LiftedSet(object):
                         upper=lambda v: n_class*v,
                         lower=lambda v: n_class*v
                     )
-                    if n>cof_class.upper:
-                        return False
-                    n_cof = n
+                    # we would have too many elements for a counting constraint 
+                    lb = cof_class.lower if cof_class.left==P.CLOSED else cof_class.lower+1
+                    ub = cof_class.upper if cof_class.right==P.CLOSED else cof_class.upper-1
+                    feasible = n<=ub
+                    if not feasible:
+                        # print(f"Unfeasible because {n} {rv_set} > {ub} {cof.formula}")
+                        return feasible
+                    # now check histograms: because rv_set in cof.formula we start with
+                    # n entities that satisfy cof.formula 
+                    n_cof = 0
                     unfixed = []
+                    # then we count which entities are fixed that satisfy cof.formula
                     for rvs in self.histogram:
-                        if rvs in cof.formula and rvs!=rv_set:
-                            if self.histogram[rvs]!=-1:
+                        if rvs in cof.formula and rvs != rv_set:
+                            if self.histogram[rvs]==-1:
                                 unfixed.append(rvs)
                             else:
                                 n_cof += self.histogram[rvs]
                     if len(unfixed) == 0:
-                        if n*n_class not in cof_class:
+                        # if everything is fixed then the constraint should be satisfied
+                        if n_cof + n not in cof_class:
+                            # print(f"Everything related to {cof} is fixed but still unsat")
                             return False
                     else:
+                        # if the sizes of the unfixed (in cof.formula) are too small to satisfy 
+                        # a lower bound of the constraint then unsat
                         sizes = sum([rvs.size() for rvs in unfixed])
-                        if (sizes + n_cof)*n_class < cof_class.lower:
+                        if (sizes + n_cof + n)*n_class < lb:
+                            # print(f"{sizes} entities from other relevant sets and {n_class} variables are not enough for {cof}")
                             return False
             if len(self.histogram) > 1:
+                # check lasts unfixed value for histogram: everything not yet sat should become sat
                 vals = [n for n in self.histogram.values() if n> -1]
                 if len(vals) == len(self.histogram)-1 and self.histogram[rv_set] == -1: #last relevant set: check size
                     fixed = sum(vals) # respect overall size
                     if fixed+(n/n_class) not in self.size.values:
+                        # print(f"{rv_set} is the last to be fixed but {fixed+(n/n_class)} is not a valid size")
                         return False
             return True
 

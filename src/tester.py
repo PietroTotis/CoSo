@@ -261,17 +261,18 @@ def dom2asp(label, domain):
     i = 0
     indist_intervals = domain.elements.find(False)
     for atomic_interval in indist_intervals:
-        e = atomic_interval.lower
+        e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
             n_copies = u-l+1
-            str += f"{label}_{i}({e},{n_copies}).\n"
+            str += f"{label}_{i}(\"{e}\",{n_copies}).\n"
             str += f"{label}(X) :- {label}_{i}(X, _).\n"
             i += 1
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
         for e in portion.iterate(atomic_interval, step =1):
-            str += f"{label}_{i}({e}, 1).\n"
+            e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
+            str += f"{label}_{i}(\"{e}\", 1).\n"
             str += f"{label}(X) :- {label}_{i}(X, _).\n"
             i += 1
     str += f"universe(X) :- {label}(X).\n"
@@ -351,13 +352,46 @@ def problem2asp(problem):
                 for n in P.iterate(vals, step=1):
                     asp_length += f":- C = #count{{N:used_{l}(S,N),df_{i}(S)}}, C={n}.\n"
         elif composition:
+            asp += f"int(0..{problem.universe.size()}).\n"
             for i in range(0,l):
                 asp_length += f"part({i}).\n" 
             for lab in n_supports:
                 for i in range(0,n_supports[lab]):
                     asp_length += f"1{{put(E,N,P): int(N), N<=EN}} 1 :- {lab}_{i}(E, EN), part(P).\n"
-                    asp_length += ":- set(E,EN), #sum{N,P:put(E,N,P),part(P)}!=EN.\n"
+                    asp_length += f":- {lab}_{i}(E,EN), #sum{{N,P:put(E,N,P),part(P)}}!=EN.\n"
             asp_length += ":- part(P), #count{E,N:put(E,N,P), N>0}==0.\n"
+            for i in range(0,l):
+                for pf in problem.pos_formulas:
+                    if pf.pos-1 == i:
+                        for j, cof in enumerate(pf.formula.cofs):
+                            dlab = f"df_{i}_{j}"
+                            if dlab not in n_supports:
+                                dom_str, n = dom2asp(dlab, cof.formula)
+                                n_supports[dlab] = n
+                                asp += dom_str
+                            vals = P.closed(0,l) - cof.values
+                            for n in P.iterate(vals, step=1):
+                                asp_length += f":-  C=#sum{{N,E:put(E,N,{i}), {dlab}(E)}}, C={n}.\n"
+            for i, cf_2 in enumerate(problem.count_formulas):
+                cf_1 = cf_2.formula
+                dlab = f"df_{i}"
+                if dlab not in n_supports:
+                    dom_str, n = dom2asp(dlab, cf_1.formula)
+                    n_supports[dlab] = n
+                    asp += dom_str
+                vals = cf_1.values if cf_1.values.upper != P.inf else cf_1.values.replace(upper=l+1)
+                count_pred = []
+                count_vars = []
+                for n in P.iterate(vals, step=1):
+                    asp_length += f"cf_{i}_{n}(P,S) :-  S=#sum{{N,E:put(E,N,P), {dlab}(E)}}, part(P), S={n}.\n"
+                    count_pred.append(f"C{i}=#count{{P:cf_{i}_{n}(P,{n})}}")
+                    count_vars.append(f"C{i}")
+                asp_length += f"count_{i}(C) :- "
+                asp_length += ", ".join(count_pred) + ", C=" + "+".join(count_vars)
+                asp_length += ".\n"
+                vals = P.closed(0,l) - cf_2.values
+                for n in P.iterate(vals, step=1):
+                    asp_length += f":- count_{i}({n}).\n"
         else:
             pass
         asp_lengths.append(asp+asp_length)
@@ -367,7 +401,7 @@ def problem2asp(problem):
 def run_asp(programs):
     n = 0
     for program in programs:
-        # print(program)
+        print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)

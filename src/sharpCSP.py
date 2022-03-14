@@ -154,7 +154,7 @@ class SharpCSP(object):
         """
         if isinstance(chf, PosFormula):
             if chf.pos-1<self.n_vars:
-                self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.dformula
+                self.vars[chf.pos-1] = self.vars[chf.pos-1] & chf.formula
                 self.log("Choice set: ", self.vars[chf.pos-1])
         # if isinstance(chf, InFormula):
         #     if self.fixed_choices > self.n_vars:
@@ -559,8 +559,11 @@ class SharpCSP(object):
     def get_feasible_splits(self, split_class_var, n_split, n_rest, cof):
 
         disjoint = split_class_var.disjoint(cof.formula)
-        included = split_class_var in cof.formula 
-
+        if not isinstance(cof.formula, CountingFormula):
+            included = split_class_var in cof.formula 
+        else:
+            #TODO: do the same check for level 2 configurations
+            included = False
         cases_split_class = []  # split for cof (left)
         cases_rest_classes = [] # split for cof (right)
         for inter in cof.values:
@@ -1045,7 +1048,7 @@ class SharpCSP(object):
         n = len(split_class_vars)
         rest_domains = list(self.exchangeable_classes(rest_classes_vars).keys())
         rest_domains = [d for d in rest_domains if not split_class.disjoint(d)] # optimization: filter out disjoint domains
-        indist_domains = [DomainFormula(split_class.formula, split_class.elements[dom], split_class.universe, split_class.name) for dom in split_class.elements.find(False)]
+        indist_domains = [DomainFormula(split_class.formula, split_class.elements[dom], split_class.universe, split_class.name, split_class.labels) for dom in split_class.elements.find(False)]
         cases = self.relevant_cases(split_class, indist_domains+rest_domains)
         c = len(cases)
         if c == 0: # optimization: if all disjoint then split class subproblem already independent
@@ -1309,9 +1312,10 @@ class SharpCSP(object):
         for int_composition in int_compositions:
             feasible = True
             for i, v in enumerate(ex_classes.keys()):
-                n_class = len(ex_classes[v])
-                f = v.feasible(rv_set, int_composition[i], n_class)
-                feasible = feasible and f
+                if feasible:
+                    n_class = len(ex_classes[v])
+                    f = v.feasible(rv_set, int_composition[i], n_class)
+                    feasible = feasible and f
             if feasible:
                 fics.append(int_composition)
         return fics

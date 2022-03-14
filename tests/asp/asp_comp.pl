@@ -26,10 +26,15 @@ part(P, A, B, C) :- put("e1",A,P),put("e2",B,P),put("e3",C,P).
 :-  C=#sum{N,E:put(E,N,"p2")}, C>2.
 
 % count constraints
-:-  C=#sum{N,E:put(E,N,"p2"), df1(E)}, C!=2.
+% the number of parts with 2 elements from df1 cannot be 1 
 
+count_2(P,S) :-  S=#sum{N,E:put(E,N,P), df1(E)}, part(P),S=2.
+
+count(C) :- C=#count{P:count_2(P,2)}.
+
+:- count(1).
 
 
 % #show put/3.
 #show part/4.
-#show count/2.
+% #show count/1.
