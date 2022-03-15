@@ -6,19 +6,20 @@ import sys
 import argparse
 import time
 import portion
-import subprocess
 import pyinotify
 import random
 import signal
 import clingo
 import portion as P
 from pathlib import Path
+import subprocess
+from subprocess import Popen, PIPE
 from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 from util import interval_closed
 from contextlib import contextmanager
 
-TIMEOUT = 120
+TIMEOUT = 30
 random.seed(123)
 
 class Context:
@@ -51,10 +52,21 @@ def timeout(seconds=TIMEOUT, error_message=os.strerror(errno.ETIME)):
     return decorator
 
 ops = [">","<","<=",">=","!=","="]
+root = ".."
+asp_tools = os.path.join(root, "ASP_tools")
+sharp_sat = os.path.join(root, "sharpSAT", "build", "Release", "sharpSAT")
 
 class ModHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, evt):
         pass
+
+
+def get_n_vars(n):
+    vars = []
+    for c in range(ord('A'),ord('Z')):
+        if len(vars) < n:
+            vars.append(chr(c))
+    return vars
 
 def get_random_complex_dom(n_domains):
     if n_domains < 2:
@@ -314,7 +326,7 @@ def problem2asp(problem):
                     if pf.pos-1 == i:
                         if dom != "":
                             raise Exception("can't correctly translate many pos constraints on same position")
-                        dom_str, _ = dom2asp(f"pf_{i}", pf.dformula)
+                        dom_str, _ = dom2asp(f"pf_{i}", pf.formula)
                         new_props.append(dom_str)
                         dom = f"pf_{i}({v})"
                 if dom == "":
@@ -384,8 +396,8 @@ def problem2asp(problem):
                 count_vars = []
                 for n in P.iterate(vals, step=1):
                     asp_length += f"cf_{i}_{n}(P,S) :-  S=#sum{{N,E:put(E,N,P), {dlab}(E)}}, part(P), S={n}.\n"
-                    count_pred.append(f"C{i}=#count{{P:cf_{i}_{n}(P,{n})}}")
-                    count_vars.append(f"C{i}")
+                    count_pred.append(f"C{n}=#count{{P:cf_{i}_{n}(P,{n})}}")
+                    count_vars.append(f"C{n}")
                 asp_length += f"count_{i}(C) :- "
                 asp_length += ", ".join(count_pred) + ", C=" + "+".join(count_vars)
                 asp_length += ".\n"
@@ -401,31 +413,54 @@ def problem2asp(problem):
 def run_asp(programs):
     n = 0
     for program in programs:
-        print(program)
+        # print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
         ctl.ground([("base", [])], context=Context())
         models = ctl.solve(yield_=True)
         n_length = sum(1 for _ in models)
-        print(n_length)
+        # print(n_length)
         n += n_length
     return n
 
 @timeout(TIMEOUT)
 def run_solver(problem):
-    return problem.solve(log=False)
-
-def compare2asp(problem, name):
-    print(f"Comparing on {name}")
     print("Running solver...")
     try:
         start = time.time()
-        count = run_solver(problem) 
+        count = problem.solve(log=False)
         finish = time.time()
         print(f"Solver: {count} in {finish-start:.2f}s")
     except TimeoutError as e:
         print("CoSo timeout")
+
+@timeout(TIMEOUT)
+def run_sat(programs):
+    n = 0
+    lp2normal = os.path.join(asp_tools, "lp2normal-2.18")
+    lp2sat = os.path.join(asp_tools, "lp2sat-1.24")
+    lp2atomic = os.path.join(asp_tools, "lp2atomic-1.17")
+    input = os.path.join(asp_tools, "tmp.lp")
+    out = os.path.join(asp_tools, "out.cnf")
+    for program in programs:
+        lp = open(input, "w+")
+        lp.write(program)
+        lp.close()
+        p = Popen([f"gringo {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"], shell=True)
+        p.wait()
+        p = Popen([f"{sharp_sat} {out}"], shell=True, stdout=PIPE, stderr=PIPE)
+        std_out, std_err = p.communicate()
+        sol = std_out.decode('UTF-8')
+        n_string = sol[sol.find("# solutions")+11:sol.find("# END")].replace('\n','').replace(' ','')
+        n_program = int(n_string)
+        # print(n_program)
+        n += n_program
+    return n
+
+def compare2asp(problem, name):
+    print(f"Comparing on {name}")
+    run_solver(problem)
     pasp = problem2asp(problem)
     print("Running clingo...")
     try:
@@ -436,12 +471,18 @@ def compare2asp(problem, name):
     except TimeoutError as e:
         print("Clingo timeout")
 
-def get_n_vars(n):
-    vars = []
-    for c in range(ord('A'),ord('Z')):
-        if len(vars) < n:
-            vars.append(chr(c))
-    return vars
+def compare2sat(problem, name):
+    print(f"Comparing on {name}")
+    run_solver(problem)
+    pasp = problem2asp(problem)
+    print("Running sharpSAT...")
+    try:
+        start = time.time()
+        sat_count = run_sat(pasp)
+        finish = time.time()
+        print(f"SharpSAT: {sat_count} in {finish-start:.2f}s")
+    except TimeoutError as e:
+        print("SharpSAT timeout")
 
 
 # def problem2problog(problem):
@@ -650,7 +691,7 @@ def generate_constrained(folder, pconstr, cconstr):
 #                 if problog:
 #                     compare2aproblog(problem)
 
-def test_folder(folder, aproblog, minizinc):
+def test_folder(folder, asp, minizinc):
     for filename in os.listdir(folder):
         if filename.endswith(".test") or filename.endswith(".pl"):
             print(f"Test {filename}:")
@@ -660,13 +701,10 @@ def test_folder(folder, aproblog, minizinc):
                 problem = parser.problem
                 if minizinc:
                     compare2minizinc(problem, os.path.join(folder,filename))
-                if aproblog:
-                    compare2aproblog(problem,  os.path.join(folder,filename))
-                if not minizinc and not aproblog:
-                    start = time.time()
-                    sol = problem.solve(log=False)
-                    finish = time.time()
-                    print(f"Solver: {sol} in {finish-start:.3f}s")
+                if asp:
+                    compare2asp(problem, os.path.join(folder,filename))
+                if not minizinc and not asp:
+                    run_solver(problem)
             except EmptyException:
                 print("Empty: skipping")
 
@@ -679,6 +717,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-folder', help='Run tool comparison on files in folder')
     parser.add_argument('--minizinc', action='store_true', help="Compare with 'minizinc'")
     parser.add_argument('--asp', action='store_true', help="Compare with 'asp'")
+    parser.add_argument('--sat', action='store_true', help="Compare with 'sharpSAT'")
     parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
@@ -691,6 +730,8 @@ if __name__ == '__main__':
             compare2minizinc(parser.problem, args.f)
         elif args.asp:
             compare2asp(parser.problem, args.f)
+        elif args.sat:
+            compare2sat(parser.problem, args.f)
         else:
             sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")
@@ -698,6 +739,6 @@ if __name__ == '__main__':
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.test_folder:
         # ap = 'aproblog' in args.compare
-        test_folder(args.test_folder, False,  args.minizinc)
+        test_folder(args.test_folder, args.asp,  args.minizinc)
     else:
         pass

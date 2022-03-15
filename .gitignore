@@ -4,6 +4,8 @@ pyenv/
 minizinc/
 aproblog/
 problog/
+ASP_tools/
+sharpSAT/
 *.tgz
 *.vscode
 tests/examples

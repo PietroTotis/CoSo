@@ -11,12 +11,14 @@
             "program": "tester.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-l", "--asp", "-f", "../tests/work.pl"]
-            // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_15_5.test"]
-            // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_15_5.test"]
+            "args": ["-l", "--sat", "-f", "../tests/benchmarks/sequence/sequence_15_5.test"]
+            // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/sequence"]
+            // "args": ["-l", "--asp", "-f", "../tests/work.pl"]
+            // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
+            // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-f", "../tests/at_least.pl"]
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_20_15.test"]
-            // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/multisubset/multisubset_15_10.test"]
+            // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_15_10.test"]
             // "args": ["-l", "-f", "../tests/work.pl"]
             // "args": ["-g", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks"]
             // "args": ["--test-folder", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
