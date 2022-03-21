@@ -557,7 +557,6 @@ class SharpCSP(object):
         return parts       
 
     def get_feasible_splits(self, split_class_var, n_split, n_rest, cof):
-
         disjoint = split_class_var.disjoint(cof.formula)
         if not isinstance(cof.formula, CountingFormula):
             included = split_class_var in cof.formula 
@@ -585,7 +584,9 @@ class SharpCSP(object):
                 if included:
                     lb = max(lb, n_split) # consider only cases where left>=n_split
                 for i in range(lb,ub+1):
-                    for l_val, r_val in self.integer_k_partitions(i,2):
+                    partitions = self.integer_k_partitions(i,2)
+                    distributions = partitions + [[r,l] for l,r in partitions if l!=r]
+                    for l_val, r_val in distributions:
                         if l_val <= n_split and r_val <= n_rest:
                             cof_split_class = CountingFormula(cof.formula, P.singleton(l_val))
                             cof_rest_classes = CountingFormula(cof.formula, P.singleton(r_val))

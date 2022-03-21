@@ -1,0 +1,43 @@
+MINION 3
+# CSETopLevel_number = 0
+# CSETopLevel_eliminated_expressions = 0
+# CSETopLevel_total_size = 0
+# CSE_active_number = 0
+# CSE_active_eliminated_expressions = 0
+# CSE_active_total_size = 0
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Flags_00001 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Flags_00002 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Flags_00003 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Values_00001 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Values_00002 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+DISCRETE conf_3_ExplicitWithFlags_Values_00003 #
+{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
+**CONSTRAINTS**
+false()
+**VARIABLES**
+**SEARCH**
+PRINT[[conf_3_ExplicitWithFlags_Flags_00001],[conf_3_ExplicitWithFlags_Flags_00002],[conf_3_ExplicitWithFlags_Flags_00003],[conf_3_ExplicitWithFlags_Values_00001],[conf_3_ExplicitWithFlags_Values_00002],[conf_3_ExplicitWithFlags_Values_00003]]
+VARORDER STATIC [conf_3_ExplicitWithFlags_Flags_00001, conf_3_ExplicitWithFlags_Flags_00002, conf_3_ExplicitWithFlags_Flags_00003, conf_3_ExplicitWithFlags_Values_00001, conf_3_ExplicitWithFlags_Values_00002, conf_3_ExplicitWithFlags_Values_00003]
+**CONSTRAINTS**
+false()**EOF**

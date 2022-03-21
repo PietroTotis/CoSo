@@ -370,6 +370,7 @@ class Parser(object):
                 n = p[6]
                 interval = self.problem.get_interval(comp, n)
                 cf = CountingFormula(cf_par, interval)
+                cf.set_labels(self.problem.label_map)
                 self.problem.add_counting_formula(cf)
                 p[0] = cf
         else:
@@ -385,6 +386,7 @@ class Parser(object):
                 else:
                     set.cofs[0].values = inter
                 pf = PosFormula(self.problem.configuration, pos, set)
+                pf.set_labels(self.problem.label_map)
                 self.problem.add_pos_formula(pf)
             elif not self.parse_domains:
                 if set == self.problem.configuration.name:
@@ -394,6 +396,7 @@ class Parser(object):
                 else:
                     df = self.problem.compute_dom(set)
                     cf = CountingFormula(df, inter)
+                    cf.set_labels(self.problem.label_map)
                     self.problem.add_counting_formula(cf)
                     p[0] = cf
 

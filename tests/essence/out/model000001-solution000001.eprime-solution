@@ -1,0 +1,4 @@
+language ESSENCE' 1.0
+
+letting s_ExplicitBounded_Length be 3
+letting s_ExplicitBounded_Values be [1, 2, 2; int(1..3)]

@@ -390,6 +390,10 @@ class LiftedSet(object):
                         return False
             return True
 
+    def set_labels(self, labels):
+        for cof in self.cofs:
+            cof.set_labels(labels)
+            
     def rv_size(self, relevant):
         for cof in self.cofs:
             if cof.formula == relevant:

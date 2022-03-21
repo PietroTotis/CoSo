@@ -120,6 +120,14 @@ class DomainFormula(Domain):
         return self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
 
     def __and__(self, rhs):
+        """Intersection of DomainFormulas self /\ rhs
+
+        Args:
+            rhs (DomainFormula): another DomainFormula
+
+        Returns:
+            DomainFormula: DomainFormula representing the intersection
+        """
         dom = self.elements.domain() & rhs.elements.domain()
         # comb = self.elements.combine(rhs.elements, how=DomainFormula.is_distinguishable)
         comb = combine(self, rhs)
@@ -137,7 +145,7 @@ class DomainFormula(Domain):
         elif self.name == rhs.name:
             name = self.name
         else:
-            name = And(str(self), str(rhs))
+            name = self.simplify_name(elems, rhs, And)
         return DomainFormula(f, elems, self.universe, name, self.labels)
     
     def __or__(self, rhs):
@@ -220,6 +228,32 @@ class DomainFormula(Domain):
                 self.formula.child.set_labels(labels)
         else:
             pass
+    
+    def simplify_name(self, elems, rhs, op):
+        """If a DomainFormula resulting from And/Or represents a single element
+        then simplify the description using the name of the element
+
+        Args:
+            elems (portion): either a single distinguishable element or n indistinguishable copies
+            rhs (DomainFormula): the other operand
+            op (And/Or): the operator to combine the names if simplification is not possible
+
+        Returns:
+            _type_: _description_
+        """
+        if len(elems.domain())==1:
+            if not (True in elems.values()):
+                n_elems = sum([1 for _ in P.iterate(elems.domain(),step=1)])
+                i = elems.domain().lower
+                e_lab = self.labels.get(i,i)
+                name = f"{n_elems}x " + str(e_lab)
+            else:
+                i = elems.domain().lower
+                e_lab = self.labels.get(i,i)
+                name = f"1x " + str(e_lab)
+        else:
+            name = op(str(self), str(rhs))
+        return name
 # class InFormula(object):
 #     """
 #     A choice formula for subsets

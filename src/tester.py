@@ -19,7 +19,7 @@ from formulas import PosFormula, And, Or, Not
 from util import interval_closed
 from contextlib import contextmanager
 
-TIMEOUT = 30
+TIMEOUT = 20
 random.seed(123)
 
 class Context:
@@ -52,9 +52,10 @@ def timeout(seconds=TIMEOUT, error_message=os.strerror(errno.ETIME)):
     return decorator
 
 ops = [">","<","<=",">=","!=","="]
-root = ".."
-asp_tools = os.path.join(root, "ASP_tools")
-sharp_sat = os.path.join(root, "sharpSAT", "build", "Release", "sharpSAT")
+tools = os.path.join("..", "tools")
+asp_tools = os.path.join(tools, "ASP_tools")
+sharp_sat = os.path.join(tools, "sharpSAT", "build", "Release", "sharpSAT")
+conjure = os.path.join(tools, "conjure")
 
 class ModHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, evt):
@@ -384,6 +385,12 @@ def problem2asp(problem):
                             vals = P.closed(0,l) - cof.values
                             for n in P.iterate(vals, step=1):
                                 asp_length += f":-  C=#sum{{N,E:put(E,N,{i}), {dlab}(E)}}, C={n}.\n"
+                        size = pf.formula.size.values
+                        if size.lower != 1 or size.upper != l:
+                            vals = P.closed(0,l) - size
+                            for n in P.iterate(vals, step=1):
+                                asp_length += f":-  C=#sum{{N,E:put(E,N,{i})}}, C={n}.\n"
+                        
             for i, cf_2 in enumerate(problem.count_formulas):
                 cf_1 = cf_2.formula
                 dlab = f"df_{i}"
@@ -409,11 +416,89 @@ def problem2asp(problem):
         asp_lengths.append(asp+asp_length)
     return asp_lengths
 
+def dom2essence(lab, domain):
+    str = ""
+    indist_intervals = domain.elements.find(False)
+    copies = {}
+    for atomic_interval in indist_intervals:
+        e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
+        if atomic_interval != P.empty():
+            l, u = interval_closed(atomic_interval)
+            n_copies = u-l+1
+            copies[e] = n_copies
+    dist_intervals = domain.elements.find(True)
+    for atomic_interval in dist_intervals:
+        for e in portion.iterate(atomic_interval, step =1):
+            e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
+            copies[e] = 1
+    entity_list = ", ".join(copies.keys())
+    if domain.universe == domain:
+        str += f"letting {lab} be new type enum {{ {entity_list} }}\n"
+    else:
+        str += f"letting {lab} be {{ {entity_list} }}\n"
+    function_list = ", ".join([f"{e} --> {n}" for e,n in copies.items()])
+    str += f"letting f_{lab} be function({function_list})\n"
+    return str
+
+
+def problem2essence(problem):
+    essence = ""
+    for lab, dom in problem.domains.items():
+        str = dom2essence(lab, dom)
+        essence += str
+    sizes = problem.configuration.size.values
+    if problem.configuration.size.values.upper == P.inf:
+        ub = problem.universe.size() +1
+        sizes = problem.configuration.size.values.replace(upper = ub)
+    lenghts = P.iterate(sizes, step=1)
+    sequence = problem.configuration.type == "sequence" 
+    permutation =  problem.configuration.type == "permutation"
+    subset = problem.configuration.type == "subset" 
+    multiset =  problem.configuration.type == "multisubset"
+    composition =  problem.configuration.type == "composition"
+    partition =  problem.configuration.type == "partition"
+    uni = problem.universe.name
+    for l in lenghts:
+        name = f"conf_{l}"
+        essence += f"letting l be {l}\n"
+        if not composition and not partition:
+            if sequence or permutation:
+                essence += f"find {name} : sequence (size l) of {uni}\n"
+            if multiset or subset:
+                essence += f"find {name} : mset (size l) of {uni}\n"
+
+            essence += "such that \n"
+            constraints = []
+            mset_constraint = f"\tforAll e: {uni}.\n"
+            ub = "1" if permutation or subset else f"f_{uni}(e)"
+            mset_constraint += f"\t\tsum([1 | i: int(1..l), {name}(i)=e]) <= {ub}\n "
+            constraints.append(mset_constraint)
+            for i in range(0,l):
+                dom = ""
+                for j, pf in enumerate(problem.pos_formulas):
+                    if pf.pos-1 == i:
+                        dom_string = dom2essence(f"pf_{i}_{j}", pf.formula)
+                        essence += dom_string
+                        constraints.append(f"{name}({i}) in pf_{i}_{j}")
+            constraint_str = ""
+            for i, cf in enumerate(problem.count_formulas):
+                dlab = f"df_{i}"
+                dom_str = dom2essence(dlab, cf.formula)
+                essence += dom_str
+                cf_constraints = []
+                for n in P.iterate(cf.values, step=1):
+                    cf_constraints.append(f"sum([1 | i: int(1..l), {name}(i) in {dlab}]) = {n}")
+                    constraints.append("\/ ".join(cf_constraints))
+        constraint_str = "\n /\ ".join(constraints)
+        essence += constraint_str
+    return essence
+
+
 @timeout(TIMEOUT)
 def run_asp(programs):
     n = 0
     for program in programs:
-        # print(program)
+        print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
@@ -456,35 +541,34 @@ def run_sat(programs):
         n_program = int(n_string)
         # print(n_program)
         n += n_program
+    os.remove(input)
+    os.remove(out)
     return n
 
-def compare2asp(problem, name):
+def run_essence(program):
+    print(program)
+    exec_conjure = os.path.join(conjure, "conjure")
+    input = os.path.join(tools, "model.essence")
+    model = open(input, "w+")
+    model.write(program)
+    model.close()
+    conjure_env = os.environ.copy()
+    conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
+    p = Popen([f"{exec_conjure} solve -ac {input}"], shell=True, env=conjure_env)
+    p.wait()
+    
+def compare(problem, name, sys_name, translate, run):
     print(f"Comparing on {name}")
     run_solver(problem)
-    pasp = problem2asp(problem)
-    print("Running clingo...")
+    t = translate(problem)
+    print(f"Running {sys_name}...")
     try:
         start = time.time()
-        asp_count = run_asp(pasp)
+        count = run(t)
         finish = time.time()
-        print(f"Clingo: {asp_count} in {finish-start:.2f}s")
+        print(f"{sys_name}: {count} in {finish-start:.2f}s")
     except TimeoutError as e:
-        print("Clingo timeout")
-
-def compare2sat(problem, name):
-    print(f"Comparing on {name}")
-    run_solver(problem)
-    pasp = problem2asp(problem)
-    print("Running sharpSAT...")
-    try:
-        start = time.time()
-        sat_count = run_sat(pasp)
-        finish = time.time()
-        print(f"SharpSAT: {sat_count} in {finish-start:.2f}s")
-    except TimeoutError as e:
-        print("SharpSAT timeout")
-
-
+        print(f"{sys_name} timeout")
 # def problem2problog(problem):
 #     problog = ":- use_module(library(aproblog)).\n\
 #             :- use_semiring(\n\
@@ -691,7 +775,7 @@ def generate_constrained(folder, pconstr, cconstr):
 #                 if problog:
 #                     compare2aproblog(problem)
 
-def test_folder(folder, asp, minizinc):
+def test_folder(folder, asp, sat, minizinc):
     for filename in os.listdir(folder):
         if filename.endswith(".test") or filename.endswith(".pl"):
             print(f"Test {filename}:")
@@ -703,6 +787,8 @@ def test_folder(folder, asp, minizinc):
                     compare2minizinc(problem, os.path.join(folder,filename))
                 if asp:
                     compare2asp(problem, os.path.join(folder,filename))
+                if sat:
+                    compare2sat(problem, os.path.join(folder,filename))
                 if not minizinc and not asp:
                     run_solver(problem)
             except EmptyException:
@@ -718,6 +804,7 @@ if __name__ == '__main__':
     parser.add_argument('--minizinc', action='store_true', help="Compare with 'minizinc'")
     parser.add_argument('--asp', action='store_true', help="Compare with 'asp'")
     parser.add_argument('--sat', action='store_true', help="Compare with 'sharpSAT'")
+    parser.add_argument('--essence', action='store_true', help="Compare with 'essence'")
     parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
@@ -729,9 +816,11 @@ if __name__ == '__main__':
         if args.minizinc:
             compare2minizinc(parser.problem, args.f)
         elif args.asp:
-            compare2asp(parser.problem, args.f)
+            compare(parser.problem, args.f, "Clingo", problem2asp, run_asp)
         elif args.sat:
-            compare2sat(parser.problem, args.f)
+            compare(parser.problem, args.f, "SharpSAT", problem2sat, run_sat)
+        elif args.essence:
+            compare(parser.problem, args.f, "Essence", problem2essence, run_essence)
         else:
             sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")
@@ -739,6 +828,6 @@ if __name__ == '__main__':
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.test_folder:
         # ap = 'aproblog' in args.compare
-        test_folder(args.test_folder, args.asp,  args.minizinc)
+        test_folder(args.test_folder, args.asp, args.sat, args.minizinc)
     else:
         pass
