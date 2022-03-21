@@ -2,42 +2,42 @@ MINION 3
 # CSETopLevel_number = 0
 # CSETopLevel_eliminated_expressions = 0
 # CSETopLevel_total_size = 0
-# CSE_active_number = 0
-# CSE_active_eliminated_expressions = 0
-# CSE_active_total_size = 0
+# CSE_active_number = 1
+# CSE_active_eliminated_expressions = 4
+# CSE_active_total_size = 4
 **VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Flags_00001 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Flags_00002 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Flags_00003 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Values_00001 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Values_00002 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
-DISCRETE conf_3_ExplicitWithFlags_Values_00003 #
-{0..0}  #  This is an empty domain. Faking that by using 0..0 and the false() constraint below.
-**CONSTRAINTS**
-false()
-**VARIABLES**
+DISCRETE put_00001_00001 #
+{0..3}
+DISCRETE put_00001_00002 #
+{1..4}
+DISCRETE put_00002_00001 #
+{0..2}
+DISCRETE put_00002_00002 #
+{0..2}
+DISCRETE put_00003_00001 #
+{0..1}
+DISCRETE put_00003_00002 #
+{0..1}
+DISCRETE aux8 #Active-CSE: 4 occurrences of this expression or equivalent: (put_00003_00002 + put_00001_00002 + put_00002_00002)
+{3..6}
+BOOL aux9 #((put_00003_00001 + put_00002_00001)=tv=2)
+BOOL aux10 #((put_00003_00002 + put_00002_00002)=tv=2)
 **SEARCH**
-PRINT[[conf_3_ExplicitWithFlags_Flags_00001],[conf_3_ExplicitWithFlags_Flags_00002],[conf_3_ExplicitWithFlags_Flags_00003],[conf_3_ExplicitWithFlags_Values_00001],[conf_3_ExplicitWithFlags_Values_00002],[conf_3_ExplicitWithFlags_Values_00003]]
-VARORDER STATIC [conf_3_ExplicitWithFlags_Flags_00001, conf_3_ExplicitWithFlags_Flags_00002, conf_3_ExplicitWithFlags_Flags_00003, conf_3_ExplicitWithFlags_Values_00001, conf_3_ExplicitWithFlags_Values_00002, conf_3_ExplicitWithFlags_Values_00003]
+PRINT[[put_00001_00001],[put_00001_00002],[put_00002_00001],[put_00002_00002],[put_00003_00001],[put_00003_00002]]
+VARORDER STATIC [put_00001_00001, put_00001_00002, put_00002_00001, put_00002_00002, put_00003_00001, put_00003_00002]
 **CONSTRAINTS**
-false()**EOF**
+reify(watched-and({sumleq([put_00003_00001,put_00002_00001],2),sumgeq([put_00003_00001,put_00002_00001],2)}), aux9)
+reify(watched-and({sumleq([put_00003_00002,put_00002_00002],2),sumgeq([put_00003_00002,put_00002_00002],2)}), aux10)
+watched-or({w-literal(aux8,3),w-literal(aux8,4),w-literal(aux8,5),w-literal(aux8,6)})
+sumgeq([put_00003_00001,put_00001_00001,put_00002_00001],1)
+sumleq([put_00003_00002,put_00001_00002,put_00002_00002],aux8)
+sumgeq([put_00003_00002,put_00001_00002,put_00002_00002],aux8)
+sumleq([aux9,aux10],1)
+sumgeq([aux9,aux10],1)
+sumleq([put_00002_00001,put_00002_00002],2)
+sumgeq([put_00002_00001,put_00002_00002],2)
+sumleq([put_00003_00001,put_00003_00002],1)
+sumgeq([put_00003_00001,put_00003_00002],1)
+sumleq([put_00001_00001,put_00001_00002],4)
+sumgeq([put_00001_00001,put_00001_00002],4)
+**EOF**
