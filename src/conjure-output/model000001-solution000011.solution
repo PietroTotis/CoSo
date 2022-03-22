@@ -1,8 +1,0 @@
-language Essence 1.3
-
-letting put be [[2, 2; int(1..2)], [1, 1; int(1..2)], [1, 0; int(1..2)]; int(1..3)]
-$ Visualisation for put
-$ 2 2
-$ 1 1
-$ 1 0
-

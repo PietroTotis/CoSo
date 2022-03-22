@@ -417,7 +417,7 @@ def problem2asp(problem):
     return asp_lengths
 
 def dom2essence(lab, domain):
-    str = ""
+    dom_str = ""
     indist_intervals = domain.elements.find(False)
     copies = {}
     for atomic_interval in indist_intervals:
@@ -428,17 +428,17 @@ def dom2essence(lab, domain):
             copies[e] = n_copies
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
-        for e in portion.iterate(atomic_interval, step =1):
-            e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
+        for n in portion.iterate(atomic_interval, step =1):
+            e = domain.labels.get(n,n)
             copies[e] = 1
     entity_list = ", ".join(copies.keys())
     if domain.universe == domain:
-        str += f"letting {lab} be new type enum {{ {entity_list} }}\n"
+        dom_str += f"letting {lab} be new type enum {{ {entity_list} }}\n"
     else:
-        str += f"letting {lab} be {{ {entity_list} }}\n"
+        dom_str += f"letting {lab} be {{ {entity_list} }}\n"
     function_list = ", ".join([f"{e} --> {n}" for e,n in copies.items()])
-    str += f"letting f_{lab} be function({function_list})\n"
-    return str
+    dom_str += f"letting f_{lab} be function({function_list})\n"
+    return dom_str
 
 def range2essence(interval, name, ub):
     if interval.upper == P.inf:
@@ -449,9 +449,11 @@ def range2essence(interval, name, ub):
 
 def problem2essence(problem):
     essence = ""
+    added_doms = []
     for lab, dom in problem.domains.items():
-        str = dom2essence(lab, dom)
-        essence += str
+        dom_str = dom2essence(lab, dom)
+        added_doms.append(lab)
+        essence += dom_str
     sizes = problem.configuration.size.values
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() +1
@@ -464,39 +466,47 @@ def problem2essence(problem):
     composition =  problem.configuration.type == "composition"
     partition =  problem.configuration.type == "partition"
     uni = problem.universe.name
+    essence_lengths = []
     for l in lenghts:
         name = f"conf_{l}"
-        essence += f"letting l be {l}\n"
+        essence_l = f"letting l_{l} be {l}\n"
         constraints = []
         constraint_str = ""
         if not composition and not partition:
-            if sequence or permutation:
-                essence += f"find {name} : sequence (size l) of {uni}\n"
-            if multiset or subset:
-                essence += f"find {name} : mset (size l) of {uni}\n"
-            essence += "such that \n"
-            mset_constraint = f"\tforAll e: {uni}.\n"
-            ub = "1" if permutation or subset else f"f_{uni}(e)"
-            mset_constraint += f"\t\tsum([1 | i: int(1..l), {name}(i)=e]) <= {ub}\n "
-            constraints.append(mset_constraint)
+            if permutation or subset:
+                mset_constraint = f"\tforAll e: {uni}.\n"
+                ub = "1" if permutation or subset else f"f_{uni}(e)"
+                mset_constraint += f"\t\tsum([1 | i: int(1..l_{l}), {name}(i)=e]) <= {ub}\n "
+                constraints.append(mset_constraint)
             for i in range(0,l):
                 dom = ""
                 for j, pf in enumerate(problem.pos_formulas):
                     if pf.pos-1 == i:
-                        dom_string = dom2essence(f"pf_{i}_{j}", pf.formula)
-                        essence += dom_string
-                        constraints.append(f"{name}({i}) in pf_{i}_{j}")
+                        dlab = f"pf_{i}_{j}"
+                        if dlab not in added_doms:
+                            dom_str = dom2essence(dlab, pf.formula)
+                            essence += dom_str
+                            added_doms.append(dlab)
+                        constraints.append(f"{name}({i}) in {dlab}")
             for i, cf in enumerate(problem.count_formulas):
                 dlab = f"df_{i}"
-                dom_str = dom2essence(dlab, cf.formula)
-                essence += dom_str
-                range_vals = ",".join([i for i in P.iterate(cf.values, step=1)])
-                essence += f"letting vals_{i} be {{ {range_vals} }}"
-                constraints.append(f"sum([1 | i: int(1..l), {name}(i) in {dlab}]) <- vals_{i}")
+                if dlab not in added_doms:
+                    dom_str = dom2essence(dlab, cf.formula)
+                    essence += dom_str
+                    added_doms.append(dlab)
+                range_vals = ",".join([str(i) for i in P.iterate(cf.values, step=1)])
+                essence_l += f"letting vals_{i} be {{ {range_vals} }}\n"
+                constraints.append(f"sum([1 | i: int(1..l_{l}), {name}(i) in {dlab}]) in vals_{i}")
+            if sequence or permutation:
+                essence_l += f"find {name} : sequence (size l_{l}) of {uni}\n"
+            if multiset or subset:
+                essence_l += f"find {name} : mset (size l_{l}) of {uni}\n"
+            if len(constraints) >0:
+                essence_l += "such that \n"
         else:
             myparts = [f"p{i}" for i in range(1,l+1)]
-            essence += "letting myparts be new type enum {" + ",".join(myparts) + "}\n"
-            essence += f"letting n be {problem.universe.size()}\n"
+            essence_l += "letting myparts be new type enum {" + ",".join(myparts) + "}\n"
+            essence_l += f"letting n be {problem.universe.size()}\n"
             nonempty = "forAll p: myparts.\n\t sum([put[e,p] | e:universe]) > 0"
             constraints.append(nonempty)
             alldistributed = "forAll e: universe.\n\t sum([put[e,p] | p: myparts]) = f_universe(e)"
@@ -508,33 +518,40 @@ def problem2essence(problem):
                     if pf.pos == i:
                         if pf.formula.size.values != P.closed(1,ub):
                             name = f"s_{i}"
-                            essence += range2essence(pf.formula.size.values, name, ub)
+                            essence_l += range2essence(pf.formula.size.values, name, ub)
                             size_constr = f"sum([put[e,p{i}] | e:{uni}]) in {name}"
                             constraints.append(size_constr)
                         else:
                             for k, cof in enumerate(pf.formula):
                                 df = cof.formula
-                                dlab = f"df_{i}_{j}_{k}"
-                                dom_str = dom2essence(dlab, df)
-                                essence += dom_str
+                                if dlab not in added_doms:
+                                    dlab = f"df_{i}_{j}_{k}"
+                                    dom_str = dom2essence(dlab, df)
+                                    essence += dom_str
+                                    added_doms.append(dlab)
                                 range_name = f"vals_{i}_{j}_{k}"
-                                essence += range2essence(cof.values, name)
+                                essence_l += range2essence(cof.values, name)
                                 constraints.append(f"sum([put[e,p{i}] | e:{dlab}]) in {range_name}")
             for i, cf in enumerate(problem.count_formulas):
                 outer_range = range2essence(cf.values, f"vals_{i}_out", l)
                 inner_range = range2essence(cf.formula.values, f"vals_{i}_in", ub)
-                essence += outer_range + inner_range
+                essence_l += outer_range + inner_range
                 dlab = f"df_{i}"
-                dom_str = dom2essence(dlab, cf.formula.formula)
-                essence += dom_str
+                if dlab not in added_doms:
+                    dom_str = dom2essence(dlab, cf.formula.formula)
+                    essence += dom_str
+                    added_doms.append(dlab)
                 cf_constraint = f"|[p | p:myparts, sum([put[e,p] | e <- df_{i}]) in vals_{i}_in]| in vals_{i}_out"
                 constraints.append(cf_constraint)
 
-            essence += f"find put: matrix indexed by [universe, myparts] of int(0..n)\n"
-            essence += "such that \n"
-        constraint_str = "\n /\ ".join(constraints)
-        essence += constraint_str
-    return essence
+            essence_l += f"find put: matrix indexed by [universe, myparts] of int(0..n)\n"
+            essence_l += "such that \n"
+        constraint_str = "\n\t/\ ".join(constraints)
+        essence_l += constraint_str
+        essence_l += "\n"
+        essence_l = essence + essence_l
+        essence_lengths.append(essence_l)
+    return essence_lengths
 
 
 @timeout(TIMEOUT)
@@ -588,21 +605,32 @@ def run_sat(programs):
     os.remove(out)
     return n
 
-def run_essence(program):
-    print(program)
-    exec_conjure = os.path.join(conjure, "conjure")
-    input = os.path.join(tools, "model.essence")
-    model = open(input, "w+")
-    model.write(program)
-    model.close()
-    conjure_env = os.environ.copy()
-    conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
-    p = Popen([f"{exec_conjure} solve -ac {input} --number-of-solutions=all"], shell=True, env=conjure_env)
-    p.wait()
-    solutions = [f for f in os.listdir(tools) if f.endswith(".solution")]
-    n = len(solutions)
-    for s in solutions:
-        os.remove(os.path.join(tools, s))
+@timeout(TIMEOUT)
+def run_essence_timeout(programs):
+    n = 0
+    for program in programs:
+        # print(program)
+        exec_conjure = os.path.join(conjure, "conjure")
+        input = os.path.join(tools, "model.essence")
+        model = open(input, "w+")
+        model.write(program)
+        model.close()
+        conjure_env = os.environ.copy()
+        conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
+        p = Popen([f"{exec_conjure} solve -ac {input} --number-of-solutions=all --limit-time {TIMEOUT}"], shell=True, env=conjure_env)
+        p.wait()
+        solutions = [f for f in os.listdir(tools) if f.endswith(".solution")]
+        n_prog = len(solutions)
+        n += n_prog
+        for s in solutions:
+            os.remove(os.path.join(tools, s))
+    return n
+
+def run_essence(programs):
+    n = run_essence_timeout(programs)
+    for f in os.listdir(tools):
+        if f.endswith(".solution"):
+            os.remove(os.path.join(tools, f))
     return n
     
 def compare(problem, name, sys_name, translate, run):
@@ -824,7 +852,7 @@ def generate_constrained(folder, pconstr, cconstr):
 #                 if problog:
 #                     compare2aproblog(problem)
 
-def test_folder(folder, asp, sat, minizinc):
+def test_folder(folder, asp, sat, essence):
     for filename in os.listdir(folder):
         if filename.endswith(".test") or filename.endswith(".pl"):
             print(f"Test {filename}:")
@@ -832,13 +860,14 @@ def test_folder(folder, asp, sat, minizinc):
             try:
                 parser.parse()
                 problem = parser.problem
-                if minizinc:
-                    compare2minizinc(problem, os.path.join(folder,filename))
+                name = os.path.join(folder,filename)
+                if essence:
+                    compare(parser.problem, name, "Essence", problem2essence, run_essence)
                 if asp:
-                    compare2asp(problem, os.path.join(folder,filename))
+                    compare(parser.problem, name, "Clingo", problem2asp, run_asp)
                 if sat:
-                    compare2sat(problem, os.path.join(folder,filename))
-                if not minizinc and not asp:
+                    compare(parser.problem, name, "SharpSAT", problem2sat, run_sat)
+                if not essence and not asp and not sat:
                     run_solver(problem)
             except EmptyException:
                 print("Empty: skipping")
@@ -877,6 +906,6 @@ if __name__ == '__main__':
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.test_folder:
         # ap = 'aproblog' in args.compare
-        test_folder(args.test_folder, args.asp, args.sat, args.minizinc)
+        test_folder(args.test_folder, args.asp, args.sat, args.essence)
     else:
         pass

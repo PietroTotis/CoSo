@@ -9,6 +9,8 @@ ASP_tools/
 sharpSAT/
 *.tgz
 *.vscode
+*.solution
+*.fuse*
 tests/examples
 
 # Byte-compiled / optimized / DLL files
