@@ -206,7 +206,7 @@ class SharpCSP(object):
                     pass
             elif lb == 0:
                 # propagate n_vars-ub ¬cof.formula and leave rest unconstrained
-                self.log(f"Invert {cof}: at least {up} {Not(cof.formula)}")
+                self.log(f"Invert {cof}: at least {ub} {Not(cof.formula)}")
                 interval_not = P.closedopen(ub+1, P.inf)
                 cof_not = CountingFormula(Not(cof.formula), interval_not)
                 count += self.apply_count(cof_not, others)
