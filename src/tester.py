@@ -880,6 +880,7 @@ if __name__ == '__main__':
     parser.add_argument('--asp', action='store_true', help="Compare with 'asp'")
     parser.add_argument('--sat', action='store_true', help="Compare with 'sharpSAT'")
     parser.add_argument('--essence', action='store_true', help="Compare with 'essence'")
+    parser.add_argument('--timeout', action='store_const', const=TIMEOUT, help="Set timeout in seconds")
     parser.add_argument('--noposconstr', action='store_false', help="Disable positional constraint generation when -g")
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
