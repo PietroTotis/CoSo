@@ -3,7 +3,7 @@
 
 py="pyenv/bin/python3.8"
 source pyenv/bin/activate
-path=realpath .
+path=$(realpath .)
 
 # asp
 $py src/tester.py --asp --test-folder tests/benhmarks/sequence > "$path/tests/results/sequences_asp.txt"
