@@ -2,7 +2,6 @@ import errno
 import os
 import signal
 import functools
-import sys
 import argparse
 import time
 import portion
@@ -11,13 +10,10 @@ import random
 import signal
 import clingo
 import portion as P
-from pathlib import Path
-import subprocess
 from subprocess import Popen, PIPE
 from parser import EmptyException, Parser
-from formulas import PosFormula, And, Or, Not, SizeFormula
-from util import interval_closed
-from contextlib import contextmanager
+from formulas import PosFormula, And, Or, Not
+from util import interval_closed, ROOT_DIR
 
 TIMEOUT = 20
 random.seed(123)
@@ -52,7 +48,7 @@ def timeout(seconds=TIMEOUT, error_message=os.strerror(errno.ETIME)):
     return decorator
 
 ops = [">","<","<=",">=","!=","="]
-tools = os.path.join("..", "tools")
+tools = os.path.join(ROOT_DIR, "tools")
 asp_tools = os.path.join(tools, "ASP_tools")
 sharp_sat = os.path.join(tools, "sharpSAT", "build", "Release", "sharpSAT")
 conjure = os.path.join(tools, "conjure")

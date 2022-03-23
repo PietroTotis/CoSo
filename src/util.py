@@ -1,5 +1,8 @@
 import portion as P
+import os
 from portion.dict import IntervalDict
+
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 def is_distinguishable(d1, d2):
     # if e is distinguishable truth value in one domain is d1 and the other d2,

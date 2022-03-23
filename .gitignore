@@ -3,10 +3,11 @@
 pyenv/
 tools/
 *.tgz
-*.vscode/
+*/.vscode/
 *.solution
 *.fuse*
 tests/examples
+src/data.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
