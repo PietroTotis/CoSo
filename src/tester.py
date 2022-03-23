@@ -19,7 +19,7 @@ from formulas import PosFormula, And, Or, Not, SizeFormula
 from util import interval_closed
 from contextlib import contextmanager
 
-TIMEOUT = 300
+TIMEOUT = 20
 random.seed(123)
 
 class Context:
@@ -896,7 +896,7 @@ if __name__ == '__main__':
         if args.asp:
             compare(parser.problem, args.f, "Clingo", problem2asp, run_asp)
         if args.sat:
-            compare(parser.problem, args.f, "SharpSAT", problem2sat, run_sat)
+            compare(parser.problem, args.f, "SharpSAT", problem2asp, run_sat)
         if args.essence:
             compare(parser.problem, args.f, "Essence", problem2essence, run_essence)
         if not args.asp and not args.sat and not args.essence:
