@@ -1,12 +1,7 @@
 # Extra
 
 pyenv/
-tools/
-minizinc/
-aproblog/
-problog/
-ASP_tools/
-sharpSAT/
+tools/*
 *.tgz
 *.vscode/
 *.solution
