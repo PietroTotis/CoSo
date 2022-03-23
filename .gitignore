@@ -8,7 +8,7 @@ problog/
 ASP_tools/
 sharpSAT/
 *.tgz
-*.vscode
+*.vscode/
 *.solution
 *.fuse*
 tests/examples
