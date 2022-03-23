@@ -579,6 +579,7 @@ def run_solver(problem):
 @timeout(TIMEOUT)
 def run_sat(programs):
     n = 0
+    gringo = os.path.join(asp_tools, "gringo")
     lp2normal = os.path.join(asp_tools, "lp2normal-2.18")
     lp2sat = os.path.join(asp_tools, "lp2sat-1.24")
     lp2atomic = os.path.join(asp_tools, "lp2atomic-1.17")
@@ -588,7 +589,7 @@ def run_sat(programs):
         lp = open(input, "w+")
         lp.write(program)
         lp.close()
-        p = Popen([f"gringo {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"], shell=True)
+        p = Popen([f"{gringo} {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"], shell=True)
         p.wait()
         p = Popen([f"{sharp_sat} {out}"], shell=True, stdout=PIPE, stderr=PIPE)
         std_out, std_err = p.communicate()
