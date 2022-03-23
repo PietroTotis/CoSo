@@ -15,6 +15,7 @@ from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 from util import interval_closed, ROOT_DIR
 
+MEMOUT = 4 * 1024 * 1024 * 1024
 TIMEOUT = 20
 random.seed(123)
 
@@ -603,33 +604,27 @@ def run_sat(programs):
     return n
 
 @timeout(TIMEOUT)
-def run_essence_timeout(programs):
+def run_essence(programs):
     n = 0
     for program in programs:
         # print(program)
         exec_conjure = os.path.join(conjure, "conjure")
         input = os.path.join(tools, "model.essence")
+        conjure_output = os.path.join(tools, "conjure-output")
+        output = os.path.join(conjure_output, "model000001.solutions")
         model = open(input, "w+")
         model.write(program)
         model.close()
         conjure_env = os.environ.copy()
         conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
-        p = Popen([f"{exec_conjure} solve -ac {input} --number-of-solutions=all --limit-time {TIMEOUT} --log-level lognone"], shell=True, env=conjure_env)
+        p = Popen([f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --limit-time {TIMEOUT}  --log-level lognone {input}"], shell=True, env=conjure_env)
         p.wait()
-        solutions = [f for f in os.listdir(tools) if f.endswith(".solution")]
-        n_prog = len(solutions)
-        n += n_prog
-        for s in solutions:
-            os.remove(os.path.join(tools, s))
+        if os.path.exists(output):
+            with open(output, "r") as sol:
+                n_prog = sol.read().count("Solution:")
+                n += n_prog
     return n
 
-def run_essence(programs):
-    n = run_essence_timeout(programs)
-    for f in os.listdir(tools):
-        if f.endswith(".solution"):
-            os.remove(os.path.join(tools, f))
-    return n
-    
 def compare(problem, name, sys_name, translate, run):
     print(f"Comparing on {name}")
     run_solver(problem)
