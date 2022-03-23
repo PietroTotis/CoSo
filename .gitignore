@@ -1,7 +1,7 @@
 # Extra
 
 pyenv/
-tools/*
+tools/
 *.tgz
 *.vscode/
 *.solution

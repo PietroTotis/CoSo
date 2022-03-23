@@ -19,7 +19,7 @@ from formulas import PosFormula, And, Or, Not, SizeFormula
 from util import interval_closed
 from contextlib import contextmanager
 
-TIMEOUT = 20
+TIMEOUT = 300
 random.seed(123)
 
 class Context:
@@ -866,7 +866,7 @@ def test_folder(folder, asp, sat, essence):
                 if asp:
                     compare(parser.problem, name, "Clingo", problem2asp, run_asp)
                 if sat:
-                    compare(parser.problem, name, "SharpSAT", problem2sat, run_sat)
+                    compare(parser.problem, name, "SharpSAT", problem2asp, run_sat)
                 if not essence and not asp and not sat:
                     run_solver(problem)
             except EmptyException:
