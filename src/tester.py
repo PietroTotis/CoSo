@@ -614,7 +614,7 @@ def run_essence_timeout(programs):
         model.close()
         conjure_env = os.environ.copy()
         conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
-        p = Popen([f"{exec_conjure} solve -ac {input} --number-of-solutions=all --limit-time {TIMEOUT}"], shell=True, env=conjure_env)
+        p = Popen([f"{exec_conjure} solve -ac {input} --number-of-solutions=all --limit-time {TIMEOUT} --log-level lognone"], shell=True, env=conjure_env)
         p.wait()
         solutions = [f for f in os.listdir(tools) if f.endswith(".solution")]
         n_prog = len(solutions)
