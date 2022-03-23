@@ -12,14 +12,14 @@
             // "program": "launcher.py",
             "console": "integratedTerminal",
             // "args": ["-l", "--essence", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
-            "args": ["--essence", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
+            // "args": ["--essence", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
             // "args": ["-l", "--essence" ,"-f", "../tests/work.pl"]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
             // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-f", "../tests/at_least.pl"]
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_15_10.test"]
-            // "args": ["-l", "-f", "../tests/work.pl"]
+            "args": ["-l", "-f", "../tests/work.pl"]
             // "args": ["-g", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks"]
             // "args": ["--test-folder", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
             // "args": ["-l", "-f", "../tests/examples/h147.pl"]
