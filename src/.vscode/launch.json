@@ -11,7 +11,8 @@
             "program": "tester.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": ["-l", "--essence", "-f", "../tests/benchmarks/sequence/sequence_15_5.test"]
+            // "args": ["--asp" ,"-f", "../tests/work.pl"]
+            "args": ["--asp", "-f", "../tests/benchmarks/permutation/permutation_15_5.test"]
             // "args": ["-t", "20", "--sat", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/sequence"]
             // "args": ["-l", "--essence" ,"-f", "../tests/work.pl"]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]

@@ -1,10 +1,5 @@
-set universe = {e1,e1,e1,e1, e2, e2, e3};
-set df = {e2,e3};
-
-sbs in compositions(universe);
-#sbs = 2;
-#sbs[2] > 2;
-#{#part&df = 2} = 1;
-
-% fix labels
-% fix asp translation
+set universe = {e1, e1, e1, e2, e2, e2, e2, e3, e4, e5};
+set dom1 = {e2, e3};
+a in {| universe};
+#a = 6;
+#dom1&a >= 5;

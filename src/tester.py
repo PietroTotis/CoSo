@@ -280,8 +280,8 @@ def dom2asp(label, domain):
             i += 1
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
-        for e in portion.iterate(atomic_interval, step =1):
-            e = domain.labels.get(atomic_interval.lower,atomic_interval.lower)
+        for n in portion.iterate(atomic_interval, step =1):
+            e = domain.labels.get(n,n)
             str += f"{label}_{i}(\"{e}\", 1).\n"
             str += f"{label}(X) :- {label}_{i}(X, _).\n"
             i += 1
@@ -567,11 +567,11 @@ def run_asp(programs):
     return n
 
 @timeout(TIMEOUT)
-def run_solver(problem):
+def run_solver(problem, log=False):
     print("Running solver...")
     try:
         start = time.time()
-        count = problem.solve(log=False)
+        count = problem.solve(log)
         finish = time.time()
         print(f"Solver: {count} in {finish-start:.2f}s")
     except TimeoutError as e:
@@ -625,9 +625,9 @@ def run_essence(programs):
                 n += n_prog
     return n
 
-def compare(problem, name, sys_name, translate, run):
+def compare(problem, name, sys_name, translate, run, log=False):
     print(f"Comparing on {name}")
-    run_solver(problem)
+    run_solver(problem, log=log)
     t = translate(problem)
     print(f"Running {sys_name}...")
     try:
@@ -887,11 +887,11 @@ if __name__ == '__main__':
         # if args.minizinc:
         #     compare2minizinc(parser.problem, args.f)
         if args.asp:
-            compare(parser.problem, args.f, "Clingo", problem2asp, run_asp)
+            compare(parser.problem, args.f, "Clingo", problem2asp, run_asp, log=args.l)
         if args.sat:
-            compare(parser.problem, args.f, "SharpSAT", problem2asp, run_sat)
+            compare(parser.problem, args.f, "SharpSAT", problem2asp, run_sat, log=args.l)
         if args.essence:
-            compare(parser.problem, args.f, "Essence", problem2essence, run_essence)
+            compare(parser.problem, args.f, "Essence", problem2essence, run_essence, log=args.l)
         if not args.asp and not args.sat and not args.essence:
             sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")

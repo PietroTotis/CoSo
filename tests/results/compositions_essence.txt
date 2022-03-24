@@ -1,0 +1,71 @@
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Running with a time limit of 20 seconds.
+Test composition_15_5.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_15_5.test
+Running solver...
+Solver: 0 (3 subproblems) in 0.60s
+Running Essence...
+Essence timeout
+Test composition_20_5.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_5.test
+Running solver...
+CoSo timeout
+Running Essence...
+Essence timeout
+Test composition_10_5.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_10_5.test
+Running solver...
+Solver: 0 (13 subproblems) in 0.37s
+Running Essence...
+Essence: 0 in 0.20s
+Test composition_15_10.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_15_10.test
+Running solver...
+CoSo timeout
+Running Essence...
+Essence: 0 in 0.40s
+Test composition_20_15.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_15.test
+Running solver...
+CoSo timeout
+Running Essence...
+Essence: 0 in 0.22s
+Test composition_20_10.test:
+Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_10.test
+Running solver...
+CoSo timeout
+Running Essence...
+Essence: 0 in 0.42s
