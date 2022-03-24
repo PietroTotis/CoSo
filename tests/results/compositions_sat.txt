@@ -1,7 +1,7 @@
 Test composition_15_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_15_5.test
 Running solver...
-Solver: 0 (3 subproblems) in 1.24s
+Solver: 0 (3 subproblems) in 2.25s
 Running SharpSAT...
 SharpSAT timeout
 Test composition_20_5.test:
@@ -13,7 +13,7 @@ SharpSAT timeout
 Test composition_10_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_10_5.test
 Running solver...
-Solver: 0 (13 subproblems) in 0.45s
+Solver: 0 (13 subproblems) in 0.48s
 Running SharpSAT...
 SharpSAT timeout
 Test composition_15_10.test:
@@ -34,3 +34,9 @@ Running solver...
 CoSo timeout
 Running SharpSAT...
 SharpSAT timeout
+/home/pietro/CoSo/tools/ASP_tools/lp2atomic-1.17: unknown rule type
+/home/pietro/CoSo/tools/ASP_tools/lp2sat-1.24: unknown rule type
+Killed
+/home/pietro/CoSo/tools/ASP_tools/lp2atomic-1.17: unknown rule type
+/home/pietro/CoSo/tools/ASP_tools/lp2sat-1.24: unknown rule type
+Killed

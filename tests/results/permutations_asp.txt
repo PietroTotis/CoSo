@@ -1,7 +1,7 @@
 Test permutation_20_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/permutation/permutation_20_5.test
 Running solver...
-Solver: 7665195104 (80 subproblems) in 6.49s
+Solver: 7665195104 (80 subproblems) in 6.60s
 Running Clingo...
 Clingo timeout
 Test permutation_15_10.test:
@@ -13,7 +13,7 @@ Clingo timeout
 Test permutation_10_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/permutation/permutation_10_5.test
 Running solver...
-Solver: 586563 (66 subproblems) in 4.83s
+Solver: 586563 (66 subproblems) in 4.90s
 Running Clingo...
 Clingo timeout
 Test permutation_20_15.test:
@@ -25,12 +25,12 @@ Clingo timeout
 Test permutation_15_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/permutation/permutation_15_5.test
 Running solver...
-Solver: 138 (60 subproblems) in 1.86s
+Solver: 138 (60 subproblems) in 1.89s
 Running Clingo...
-Clingo: 84 in 0.02s
+Clingo: 138 in 0.02s
 Test permutation_20_10.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/permutation/permutation_20_10.test
 Running solver...
-Solver: 841400 (66 subproblems) in 13.54s
+Solver: 841400 (66 subproblems) in 13.77s
 Running Clingo...
 Clingo timeout

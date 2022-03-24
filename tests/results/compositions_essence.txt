@@ -1,44 +1,83 @@
 Running with a time limit of 20 seconds.
 Running with a time limit of 20 seconds.
+conjure: 
+Ran commands: 
+savilerow -in-eprime /home/pietro/CoSo/tools/conjure-output/model000001.eprime -out-minion /home/pietro/CoSo/tools/conjure-output/model000001.eprime-minion -out-sat /home/pietro/CoSo/tools/conjure-output/model000001.eprime-dimacs -out-aux /home/pietro/CoSo/tools/conjure-output/model000001.eprime-aux -out-info /home/pietro/CoSo/tools/conjure-output/model000001.eprime-info -run-solver -S0 -solutions-to-stdout-one-line -all-solutions -minion
+which savilerow
+
+Exception: <<timeout>>
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output: removeDirectoryRecursive:removeContentsRecursive:removeDirectory: unsatisfied constraints (Directory not empty)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Running with a time limit of 20 seconds.
+conjure: /home/pietro/CoSo/tools/conjure-output/.nfs0000000003144404000000d5: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeLink: resource busy (Device or resource busy)
 Test composition_15_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_15_5.test
 Running solver...
-Solver: 0 (3 subproblems) in 0.60s
+Solver: 0 (3 subproblems) in 0.41s
 Running Essence...
-Essence timeout
+Essence: 0 in 12.92s
 Test composition_20_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_5.test
 Running solver...
@@ -48,15 +87,15 @@ Essence timeout
 Test composition_10_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_10_5.test
 Running solver...
-Solver: 0 (13 subproblems) in 0.37s
+Solver: 0 (13 subproblems) in 12.98s
 Running Essence...
-Essence: 0 in 0.20s
+Essence: 0 in 0.21s
 Test composition_15_10.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_15_10.test
 Running solver...
 CoSo timeout
 Running Essence...
-Essence: 0 in 0.40s
+Essence: 0 in 0.45s
 Test composition_20_15.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_15.test
 Running solver...
@@ -68,4 +107,4 @@ Comparing on /home/pietro/CoSo/tests/benchmarks/composition/composition_20_10.te
 Running solver...
 CoSo timeout
 Running Essence...
-Essence: 0 in 0.42s
+Essence: 0 in 0.38s

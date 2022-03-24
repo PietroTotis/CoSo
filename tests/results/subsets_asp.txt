@@ -1,7 +1,7 @@
 Test subset_15_10.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/subset/subset_15_10.test
 Running solver...
-Solver: 33 (21 subproblems) in 1.89s
+Solver: 33 (21 subproblems) in 1.88s
 Running Clingo...
 Clingo: 33 in 0.04s
 Test subset_20_5.test:
@@ -15,13 +15,13 @@ Comparing on /home/pietro/CoSo/tests/benchmarks/subset/subset_20_10.test
 Running solver...
 Solver: 190 (2 subproblems) in 0.00s
 Running Clingo...
-Clingo: 95 in 0.04s
+Clingo: 190 in 0.15s
 Test subset_10_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/subset/subset_10_5.test
 Running solver...
-Solver: 16 (27 subproblems) in 3.83s
+Solver: 16 (27 subproblems) in 3.80s
 Running Clingo...
-Clingo: 4 in 0.02s
+Clingo: 16 in 0.08s
 Test subset_20_15.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/subset/subset_20_15.test
 Running solver...

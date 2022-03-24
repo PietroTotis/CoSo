@@ -3,7 +3,7 @@
 pyenv/
 tools/
 *.tgz
-*/.vscode/
+src/.vscode/
 *.solution
 *.fuse*
 tests/examples

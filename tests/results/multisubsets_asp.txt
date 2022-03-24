@@ -7,7 +7,7 @@ Clingo: 56 in 0.00s
 Test multisubset_15_10.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/multisubset/multisubset_15_10.test
 Running solver...
-Solver: 312 (7 subproblems) in 0.66s
+Solver: 312 (7 subproblems) in 0.64s
 Running Clingo...
 Clingo: 312 in 0.12s
 Test multisubset_15_5.test:
@@ -19,3 +19,29 @@ Clingo timeout
 Test multisubset_20_5.test:
 Comparing on /home/pietro/CoSo/tests/benchmarks/multisubset/multisubset_20_5.test
 Running solver...
+Traceback (most recent call last):
+  File "src/tester.py", line 902, in <module>
+    test_folder(args.test_folder, args.asp, args.sat, args.essence)
+  File "src/tester.py", line 859, in test_folder
+    compare(parser.problem, name, "Clingo", problem2asp, run_asp)
+  File "src/tester.py", line 630, in compare
+    run_solver(problem, log=log)
+  File "src/tester.py", line 42, in wrapper
+    result = func(*args, **kwargs)
+  File "src/tester.py", line 574, in run_solver
+    count = problem.solve(log)
+  File "/home/pietro/CoSo/src/problem.py", line 211, in solve
+    return s.solve(log)
+  File "/home/pietro/CoSo/src/solver.py", line 33, in solve
+    count += csp.solve(log)
+  File "/home/pietro/CoSo/src/sharpCSP.py", line 742, in solve
+    count = self.apply_counts()
+  File "/home/pietro/CoSo/src/sharpCSP.py", line 246, in apply_counts
+    count = self.count_exchangeable()
+  File "/home/pietro/CoSo/src/sharpCSP.py", line 315, in count_exchangeable
+    count = self.apply_count(cof, others)
+  File "/home/pietro/CoSo/src/sharpCSP.py", line 212, in apply_count
+    count += self.apply_count(cof_not, others)
+  File "/home/pietro/CoSo/src/sharpCSP.py", line 185, in apply_count
+    max_entities = min(self.n_vars,cof.formula.size())
+AttributeError: 'Not' object has no attribute 'size'
