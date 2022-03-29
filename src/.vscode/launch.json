@@ -12,7 +12,7 @@
             // "program": "launcher.py",
             "console": "integratedTerminal",
             // "args": ["--asp" ,"-f", "../tests/work.pl"]
-            "args": ["-l", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
+            // "args": ["-l", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["-t", "20", "--sat", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/sequence"]
             // "args": ["-l", "--essence" ,"-f", "../tests/work.pl"]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
@@ -22,7 +22,7 @@
             // "args": ["-l", "-f", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition/composition_15_10.test"]
             // "args": ["-l", "-f", "../tests/work.pl"]
             // "args": ["-g", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks"]
-            // "args": ["--test-folder", "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
+            "args": ["--essence", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/subset"]
             // "args": ["-l", "-f", "../tests/examples/h147.pl"]
             // "args": ["-v", "-f", "../tests/dom_inference.pl"]
             // "args": ["-v", "-f", "../tests/part.pl"]
