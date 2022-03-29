@@ -880,7 +880,7 @@ if __name__ == '__main__':
     parser.add_argument('--nocountconstr', action='store_false', help="Disable counting constraint generation when -g")
     args = parser.parse_args()
     # print(args)
-    TIMEOUT = args.t
+    TIMEOUT = args.timeout
     if args.f:
         parser = Parser(args.f)
         parser.parse()
