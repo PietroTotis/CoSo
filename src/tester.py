@@ -429,7 +429,7 @@ def dom2essence(lab, domain):
             e = domain.labels.get(n,n)
             copies[e] = 1
     entity_list = ", ".join(copies.keys())
-    if domain.universe == domain:
+    if domain.universe == domain and lab=="universe":
         dom_str += f"letting {lab} be new type enum {{ {entity_list} }}\n"
     else:
         dom_str += f"letting {lab} be {{ {entity_list} }}\n"
@@ -473,7 +473,10 @@ def problem2essence(problem):
             if permutation or subset:
                 mset_constraint = f"\tforAll e: {uni}.\n"
                 ub = "1" if permutation or subset else f"f_{uni}(e)"
-                mset_constraint += f"\t\tsum([1 | i: int(1..l_{l}), {name}(i)=e]) <= {ub}\n "
+                if permutation:
+                    mset_constraint += f"\t\tsum([1 | i: int(1..l_{l}), {name}(i)=e]) <= {ub}\n "
+                else:
+                    mset_constraint += f"\t\tforAll e: universe. freq({name},e) <= f_{uni}(e)"
                 constraints.append(mset_constraint)
             for i in range(0,l):
                 dom = ""
@@ -491,9 +494,16 @@ def problem2essence(problem):
                     dom_str = dom2essence(dlab, cf.formula)
                     essence += dom_str
                     added_doms.append(dlab)
-                range_vals = ",".join([str(i) for i in P.iterate(cf.values, step=1)])
+                if cf.values.upper != P.inf:
+                    vals = cf.values
+                else:
+                    vals = cf.values.replace(upper=l+1)
+                range_vals = ",".join([str(i) for i in P.iterate(vals, step=1)])
                 essence_l += f"letting vals_{i} be {{ {range_vals} }}\n"
-                constraints.append(f"sum([1 | i: int(1..l_{l}), {name}(i) in {dlab}]) in vals_{i}")
+                if sequence or permutation:
+                    constraints.append(f"sum([1 | i: int(1..l_{l}), {name}(i) in {dlab}]) in vals_{i}")
+                else:
+                    constraints.append(f"sum([freq({name}, i) | i: {uni}, i in {dlab}]) in vals_{i}")
             if sequence or permutation:
                 essence_l += f"find {name} : sequence (size l_{l}) of {uni}\n"
             if multiset or subset:

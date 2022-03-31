@@ -171,17 +171,6 @@ class SharpCSP(object):
         """
         self.log("Propagating ", cof)
         self.lvl += 1
-        # count = Solution(0,[])
-        # try:
-        #     choices, prop_vars = self.propagate_cof(cof)
-        #     self.vars = prop_vars
-        #     count = self.split_on_constraints(choices, others)
-        # except Unsatisfiable:
-        #     pass
-        # dom_size = cof.formula.size()+1 # n entities is the max count (open interval:+1)
-        # if cof.values.upper == P.inf:
-        #     # cof.values = cof.values.replace(upper = self.n_vars+1)
-        #     cof.values = cof.values.replace(upper = dom_size)
         max_entities = min(self.n_vars,cof.formula.size())
         if cof.values.atomic:
             lb, ub = interval_closed(cof.values, ub_default=max_entities)
@@ -204,10 +193,14 @@ class SharpCSP(object):
                     count = self.split_on_constraints(choices, others)
                 except Unsatisfiable:
                     pass
-            elif lb == 0:
+            elif lb==0 and ub>=self.n_vars:
+                #trivial
+                count = self.split_on_constraints(1, others)
+            elif lb == 0 and ub<self.n_vars:
                 # propagate n_vars-ub ¬cof.formula and leave rest unconstrained
+                ub = self.n_vars-ub
                 self.log(f"Invert {cof}: at least {ub} {cof.formula.neg()}")
-                interval_not = P.closedopen(ub+1, P.inf)
+                interval_not = P.closedopen(ub, P.inf)
                 cof_not = CountingFormula(cof.formula.neg(), interval_not)
                 count += self.apply_count(cof_not, others)
             elif len(out_values)<len(cof.values):
@@ -834,39 +827,46 @@ class SharpCSP(object):
     ## Level 1 methods ##
     #######################
     
-    def count_multisubsets(self, var_list = None):
+    def count_multisubsets_exchangeable(self, var_list = None):
         """
         Select with replacement from a set: if no indistinguishable elements use counting rule
         Otherwise for each indistinguishable set choose how many of its elements to put in the multisubset
         """
         vars = var_list if var_list is not None else self.vars
-        ex_classes = self.exchangeable_classes(vars)
         n = len(vars)
         dom = vars[0]
         indist = dom.elements.find(False)
         indist_sizes = self.get_sizes_indistinguishable(indist)
         indist_size = sum(indist_sizes)
         dist_size = dom.size() - indist_size + len(indist_sizes)
-        # if indist_size == 0:
-        if len(ex_classes) == 1:
-            count = math.comb(dist_size+n-1,n)
-        else:
-            count = 1
-            for exc in ex_classes:
-                s = self.count_multisubsets(ex_classes[exc])
-                count *= s.count
+        count = math.comb(dist_size+n-1,n)
         sol = Solution(count, self.histogram())
-        # else:
-        #     choices = self.get_group_choices([dist_size] + indist_sizes, n) 
-        #     count = 0
-        #     for choice in choices:
-        #         dist_choice = choice[0]
-        #         n_dist_choices = math.comb(dist_size+dist_choice-1, dist_choice)
-        #         # arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
-        #         count += n_dist_choices
-        #     sol = Solution(count, self.histogram())
         return sol
 
+    def count_multisubsets_non_exchangeable(self, var_list=None):
+        vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
+        indist = dom.elements.find(False)
+        indist_sizes = self.get_sizes_indistinguishable(indist)
+        indist_size = sum(indist_sizes)
+        dist_size = dom.size() - indist_size + len(indist_sizes)
+        print(indist,dist_size)
+        count = 1
+        for exc in ex_classes:
+            s = self.count_multisubsets_exchangeable(ex_classes[exc])
+            print(exc, s)
+            count *= s.count
+        # choices = self.get_group_choices([dist_size] + indist_sizes, n) 
+        # count = 0
+        # for choice in choices:
+        #     print(choice)
+        #     dist_choice = choice[0]
+        #     n_dist_choices = math.comb(dist_size, dist_choice)
+        #     arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+        #     print(n_dist_choices,arrange_indist_choices)
+        #     count += n_dist_choices
+        sol = Solution(count, self.histogram())
+        return sol
     def count_sequence(self, var_list = None):
         """
         Look at a sequence problem and figure out what to do:
@@ -958,7 +958,12 @@ class SharpCSP(object):
         vars = var_list if var_list is not None else self.vars
         f = self.fixed_choices
         if self.type == "multisubset":
-            sol = self.count_multisubsets(vars[f:])
+            ex_classes = self.exchangeable_classes(vars)
+            if len(ex_classes) == 1:
+                sol = self.count_multisubsets_exchangeable(vars[f:])
+            else:
+                self.log("Multisubsets with non-exchangeable...")
+                sol = self.count_multisubsets_non_exchangeable(vars[f:])
         else:
             ex_classes = self.exchangeable_classes(vars)
             if len(ex_classes) == 1:

@@ -1,8 +1,9 @@
 letting universe be new type enum { e1, e2, e3 }
 letting f_universe be function(e1 --> 1, e2 --> 3, e3 --> 2)
 letting l be 3
-find conf_3 : sequence (size l) of universe
-such that 
-	forAll i: int(1..l-1).
-		conf_3(i) <= conf_3(i+1)
+find conf_3 : mset(size l) of universe
+$find conf_3 : sequence (size l) of universe
+$such that 
+$	forAll i: int(1..l-1).
+$		conf_3(i) <= conf_3(i+1)
 		
