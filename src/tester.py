@@ -10,7 +10,7 @@ import random
 import signal
 import clingo
 import portion as P
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 from parser import EmptyException, Parser
 from formulas import PosFormula, And, Or, Not
 from util import interval_closed, ROOT_DIR
@@ -587,7 +587,7 @@ def run_solver(problem, log=False):
     except TimeoutError as e:
         print("CoSo timeout")
 
-@timeout(TIMEOUT)
+@timeout(TIMEOUT+1)
 def run_sat(programs):
     n = 0
     gringo = os.path.join(asp_tools, "gringo")
@@ -600,10 +600,13 @@ def run_sat(programs):
         lp = open(input, "w+")
         lp.write(program)
         lp.close()
-        p = Popen([f"{gringo} {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"], shell=True)
-        p.wait()
-        p = Popen([f"{sharp_sat} {out}"], shell=True, stdout=PIPE, stderr=PIPE)
-        std_out, std_err = p.communicate()
+        try:
+            p = Popen([f"{gringo} {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"], shell=True)
+            p.wait(timeout=TIMEOUT)
+            p = Popen([f"{sharp_sat} {out}"], shell=True, stdout=PIPE, stderr=PIPE)
+            std_out, std_err = p.communicate(timeout=TIMEOUT)
+        except TimeoutExpired:
+            p.terminate()
         sol = std_out.decode('UTF-8')
         n_string = sol[sol.find("# solutions")+11:sol.find("# END")].replace('\n','').replace(' ','')
         n_program = int(n_string)
@@ -613,7 +616,7 @@ def run_sat(programs):
     os.remove(out)
     return n
 
-@timeout(TIMEOUT)
+@timeout(TIMEOUT+1)
 def run_essence(programs):
     n = 0
     for program in programs:
@@ -627,8 +630,11 @@ def run_essence(programs):
         model.close()
         conjure_env = os.environ.copy()
         conjure_env["PATH"] = os.path.abspath(conjure) + ":" + conjure_env["PATH"]
-        p = Popen([f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --limit-time {TIMEOUT}  --log-level lognone {input}"], shell=True, env=conjure_env)
-        p.wait()
+        try:
+            p = Popen([f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --limit-time {TIMEOUT}  --log-level lognone {input}"], shell=True, env=conjure_env)
+            p.wait(timeout=TIMEOUT)
+        except TimeoutExpired:
+            p.terminate()
         if os.path.exists(output):
             with open(output, "r") as sol:
                 n_prog = sol.read().count("Solution:")
