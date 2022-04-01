@@ -16,7 +16,7 @@ from formulas import PosFormula, And, Or, Not
 from util import interval_closed, ROOT_DIR
 
 MEMOUT = 4 * 1024 * 1024 * 1024
-TIMEOUT = 20
+TIMEOUT = 300
 random.seed(123)
 
 class Context:
@@ -561,7 +561,7 @@ def problem2essence(problem):
     return essence_lengths
 
 
-@timeout(TIMEOUT)
+@timeout(TIMEOUT+1)
 def run_asp(programs):
     n = 0
     for program in programs:
@@ -570,7 +570,8 @@ def run_asp(programs):
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
         ctl.ground([("base", [])], context=Context())
-        models = ctl.solve(yield_=True)
+        models = ctl.solve(yield_=True, async_=True)
+        models.wait(TIMEOUT)
         n_length = sum(1 for _ in models)
         # print(n_length)
         n += n_length
@@ -579,13 +580,10 @@ def run_asp(programs):
 @timeout(TIMEOUT)
 def run_solver(problem, log=False):
     print("Running solver...")
-    try:
-        start = time.time()
-        count = problem.solve(log)
-        finish = time.time()
-        print(f"Solver: {count} in {finish-start:.2f}s")
-    except TimeoutError as e:
-        print("CoSo timeout")
+    start = time.time()
+    count = problem.solve(log)
+    finish = time.time()
+    print(f"Solver: {count} in {finish-start:.2f}s")
 
 @timeout(TIMEOUT+1)
 def run_sat(programs):
@@ -643,7 +641,10 @@ def run_essence(programs):
 
 def compare(problem, name, sys_name, translate, run, log=False):
     print(f"Comparing on {name}")
-    run_solver(problem, log=log)
+    try:
+        run_solver(problem, log=log)
+    except TimeoutError as e:
+        print(f"CoSo timeout")
     t = translate(problem)
     print(f"Running {sys_name}...")
     try:
@@ -876,7 +877,10 @@ def test_folder(folder, asp, sat, essence):
                 if sat:
                     compare(parser.problem, name, "SharpSAT", problem2asp, run_sat)
                 if not essence and not asp and not sat:
-                    run_solver(problem)
+                    try:
+                        run_solver(problem)
+                    except TimeoutError as e:
+                        print(f"CoSo timeout")
             except EmptyException:
                 print("Empty: skipping")
 
