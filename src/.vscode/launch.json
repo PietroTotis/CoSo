@@ -13,8 +13,8 @@
             "console": "integratedTerminal",
             // "args": ["--asp" ,"-f", "../tests/work.pl"]
             // "args": [ "--essence", "--asp", "-t", "300", "-f", "../tests/benchmarks/multisubset/multisubset_10_5.test"]
-            "args": ["-l", "-t", "300", "--asp", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
-            // "args": ["--essence", "--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/multisubset"]
+            // "args": ["-l", "-t", "300", "--asp", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
+            "args": ["--essence", "--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/multisubset"]
             // "args": ["-l", "--essence" ,"-f", "../tests/work.pl"]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
             // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_20_15.test"]

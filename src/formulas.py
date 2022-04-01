@@ -179,11 +179,12 @@ class DomainFormula(Domain):
     def neg(self):
         if isinstance(self.formula, Not):
             f = self.formula.child
+            name = str(self)[1:]
         else:
             f = Not(self)
+            name = Not(str(self))
         els = self.universe.elements.domain() - self.elements.domain()
         dom = self.universe.elements[els]
-        name = Not(str(self))
         return DomainFormula(f, dom, self.universe, name, self.labels)
 
     def indistinguishable_subsets(self, dom_formula=None):

@@ -441,10 +441,11 @@ class SharpCSP(object):
 
     def disjoint(self, classes):
         disj = True
-        indexes = range(0,len(classes))
+        vars = list(classes.keys())
+        indexes = range(0,len(vars))
         for c1 in indexes:
             for c2 in [j for j in indexes if j>c1]:
-                disj = disj and self.vars[c1].disjoint(self.vars[c2])
+                disj = disj and vars[c1].disjoint(vars[c2])
         return disj
 
     def exchangeable_classes(self, var_list = None):
@@ -829,8 +830,14 @@ class SharpCSP(object):
     
     def count_multisubsets_exchangeable(self, var_list = None):
         """
-        Select with replacement from a set: if no indistinguishable elements use counting rule
-        Otherwise for each indistinguishable set choose how many of its elements to put in the multisubset
+        Select with replacement from a multiset M: that is equivalent to select with repetition from the support of M:
+        find number of entities and apply binomial coefficient
+
+        Args:
+            var_list ([DomainFormulas]], optional): List of variables representing the mset. Defaults to None.
+
+        Returns:
+            Solution: count
         """
         vars = var_list if var_list is not None else self.vars
         n = len(vars)
@@ -840,33 +847,80 @@ class SharpCSP(object):
         indist_size = sum(indist_sizes)
         dist_size = dom.size() - indist_size + len(indist_sizes)
         count = math.comb(dist_size+n-1,n)
+        self.log(f"Multisubsets with all exchangeable: ({dist_size+n-1},{n})={count}")
         sol = Solution(count, self.histogram())
         return sol
 
     def count_multisubsets_non_exchangeable(self, var_list=None):
+        """If there are non-exchangeable variables in order to exploit exchangeability classes have to be disjoint.
+        Otherwise multiplication is introducing some order. So if dijoint apply multiplication otherwise we need to
+        refine the variables that are not disjoint with the relevant parts.
+
+        Args:
+            var_list ([DomainFormula], optional): List of variables representing the mset. Defaults to None.
+
+        Returns:
+            Solution: count
+        """
+        self.log("Multisubsets with non-exchangeable...")
         vars = var_list if var_list is not None else self.vars
         ex_classes = self.exchangeable_classes(vars)
-        indist = dom.elements.find(False)
-        indist_sizes = self.get_sizes_indistinguishable(indist)
-        indist_size = sum(indist_sizes)
-        dist_size = dom.size() - indist_size + len(indist_sizes)
-        print(indist,dist_size)
-        count = 1
-        for exc in ex_classes:
-            s = self.count_multisubsets_exchangeable(ex_classes[exc])
-            print(exc, s)
-            count *= s.count
-        # choices = self.get_group_choices([dist_size] + indist_sizes, n) 
-        # count = 0
-        # for choice in choices:
-        #     print(choice)
-        #     dist_choice = choice[0]
-        #     n_dist_choices = math.comb(dist_size, dist_choice)
-        #     arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
-        #     print(n_dist_choices,arrange_indist_choices)
-        #     count += n_dist_choices
-        sol = Solution(count, self.histogram())
+        if self.disjoint(ex_classes):
+            self.log("... but disjoint")
+            count = 1
+            for exc in ex_classes:
+                s = self.count_multisubsets_exchangeable(ex_classes[exc])
+                count *= s.count
+                sol = Solution(count, self.histogram())
+        else:
+            # if classes are not disjoint no multiplication rule
+            self.log("... and not disjoint: disjoining with relevant parts")
+            relevant = self.relevant_cases_intersection(self.universe, list(ex_classes.keys()))
+            unsplit = [ec for ec in ex_classes if ec not in relevant]
+            decompose_class = unsplit[0]
+            sol = self.shannon_indep_multisubsets(decompose_class, relevant, 0)            
         return sol
+
+    def shannon_indep_multisubsets(self, decompose_class, relevant, previous, var_list = None):
+        """If we have two non-disjoit classes for example universe U and a domain D and variables D U U U. 
+        Then multiplication cannot be applied and we need to refine U. So for each variable that is not a relevant 
+        part (D or ¬D) we specialize it with the options, e.g. D D U U and D ¬D U U. We do it recursively but 
+        we are introducing an order, e.g. we can get D D D ¬D or D ¬D D D or D D ¬D D and many other exchangeable combinations.
+        With previous we keep track of the last id of relevant part used and we make sure we use only later ones for new 
+        specializations.
+
+        Args:
+            decompose_class (DomainFormula): the domain/exchangeability class to be specialized
+            relevant ([DomainFOrmula]): the list of partitions that we use to specialize the vars in dijoint domains
+            previous (int): index of the last 
+            var_list ([DomainFormula], optional): List of variables representing the mset. Defaults to None.
+
+        Returns:
+            Solution: count
+        """
+        vars = var_list if var_list is not None else self.vars
+        ex_classes = self.exchangeable_classes(vars)
+        count = Solution(0,[])
+        for i, r in enumerate(relevant):  # specialize variable with each different relevant set
+            inter = decompose_class & r # 
+            n = len(ex_classes[decompose_class])
+            if inter.size()>0 and i>=previous: # if the specialized variable is empty or we are not following the order skip
+                vars = [ v for k in ex_classes for v in ex_classes[k] if k!=decompose_class]
+                others = [decompose_class]*(n-1) # specialize one variable with this r then the others recursively if necessary
+                vars = vars + [inter] + others
+                self.lvl +=1
+                new_ex_classes = self.exchangeable_classes(vars)
+                if len(new_ex_classes) == 1:
+                    count += self.count_multisubsets_exchangeable(vars)
+                elif self.disjoint(new_ex_classes):
+                    count += self.count_multisubsets_non_exchangeable(vars)
+                else:
+                    unsplit = [ec for ec in new_ex_classes if ec not in relevant]
+                    next_decompose_class = unsplit[0]
+                    count += self.shannon_indep_multisubsets(next_decompose_class, relevant, i, var_list=vars)
+                self.lvl-=1
+        return count
+
     def count_sequence(self, var_list = None):
         """
         Look at a sequence problem and figure out what to do:
@@ -962,7 +1016,6 @@ class SharpCSP(object):
             if len(ex_classes) == 1:
                 sol = self.count_multisubsets_exchangeable(vars[f:])
             else:
-                self.log("Multisubsets with non-exchangeable...")
                 sol = self.count_multisubsets_non_exchangeable(vars[f:])
         else:
             ex_classes = self.exchangeable_classes(vars)
