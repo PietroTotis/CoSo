@@ -1,38 +1,33 @@
-universe_0("e1",3).
+universe_0("e1",8).
 universe(X) :- universe_0(X, _).
 universe_1("e2",4).
 universe(X) :- universe_1(X, _).
-universe_2("e3", 1).
+universe_2("e3",2).
 universe(X) :- universe_2(X, _).
-universe_3("e3", 1).
+universe_3("e4", 1).
 universe(X) :- universe_3(X, _).
-universe_4("e3", 1).
-universe(X) :- universe_4(X, _).
 universe(X) :- universe(X).
-dom1_0("e3",1).
+dom1_0("e1",8).
 dom1(X) :- dom1_0(X, _).
 dom1_1("e2",4).
 dom1(X) :- dom1_1(X, _).
+dom1_2("e3",2).
+dom1(X) :- dom1_2(X, _).
 universe(X) :- dom1(X).
-subset_guess_6(A,B,C,D,E,F) :- universe(A), universe(B), universe(C), universe(D), universe(E), universe(F), A<=B, B<=C, C<=D, D<=E, E<=F.
-1{subset_6(A,B,C,D,E,F):subset_guess_6(A,B,C,D,E,F)}1.
-used_6(X,0) :- subset_6(X, _, _, _, _, _). 
-used_6(X,1) :- subset_6(_, X, _, _, _, _). 
-used_6(X,2) :- subset_6(_, _, X, _, _, _). 
-used_6(X,3) :- subset_6(_, _, _, X, _, _). 
-used_6(X,4) :- subset_6(_, _, _, _, X, _). 
-used_6(X,5) :- subset_6(_, _, _, _, _, X). 
-:- universe_0(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- universe_1(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- universe_2(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- universe_3(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- universe_4(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- dom1_0(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- dom1_1(S,SN), C = #count{N:used_6(S,N)}, C>SN.
-:- C = #count{N:used_6(S,N),dom1(S)}, C=0.
-:- C = #count{N:used_6(S,N),dom1(S)}, C=1.
-:- C = #count{N:used_6(S,N),dom1(S)}, C=2.
-:- C = #count{N:used_6(S,N),dom1(S)}, C=3.
-:- C = #count{N:used_6(S,N),dom1(S)}, C=4.
+df_0_0("e1",8).
+df_0(X) :- df_0_0(X, _).
+df_0_1("e2",4).
+df_0(X) :- df_0_1(X, _).
+df_0_2("e3",2).
+df_0(X) :- df_0_2(X, _).
+universe(X) :- df_0(X).
+sequence_guess_3(A,B,C) :- universe(A), universe(B), universe(C).
+1{sequence_3(A,B,C):sequence_guess_3(A,B,C)}1.
+used_3(X,0) :- sequence_3(X, _, _). 
+used_3(X,1) :- sequence_3(_, X, _). 
+used_3(X,2) :- sequence_3(_, _, X). 
+:- C = #count{N:used_3(S,N),df_0(S)}, C=0.
+:- C = #count{N:used_3(S,N),df_0(S)}, C=1.
+:- C = #count{N:used_3(S,N),df_0(S)}, C=2.
 
-#show subset_6/6.
+#show sequence_3/3.

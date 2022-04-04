@@ -565,16 +565,13 @@ def problem2essence(problem):
 def run_asp(programs):
     n = 0
     for program in programs:
-        # print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
         ctl.ground([("base", [])], context=Context())
-        models = ctl.solve(yield_=True, async_=True)
-        models.wait(TIMEOUT)
-        n_length = sum(1 for _ in models)
-        # print(n_length)
-        n += n_length
+        with ctl.solve(yield_=True, async_=True) as handle:
+            n_length = sum(1 for _ in handle) +1
+            n += n_length
     return n
 
 @timeout(TIMEOUT)
@@ -603,13 +600,13 @@ def run_sat(programs):
             p.wait(timeout=TIMEOUT)
             p = Popen([f"{sharp_sat} {out}"], shell=True, stdout=PIPE, stderr=PIPE)
             std_out, std_err = p.communicate(timeout=TIMEOUT)
+            sol = std_out.decode('UTF-8')
+            n_string = sol[sol.find("# solutions")+11:sol.find("# END")].replace('\n','').replace(' ','')
+            n_program = int(n_string)
+            n += n_program
         except TimeoutExpired:
             p.terminate()
-        sol = std_out.decode('UTF-8')
-        n_string = sol[sol.find("# solutions")+11:sol.find("# END")].replace('\n','').replace(' ','')
-        n_program = int(n_string)
         # print(n_program)
-        n += n_program
     os.remove(input)
     os.remove(out)
     return n

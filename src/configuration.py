@@ -250,6 +250,15 @@ class LiftedSet(object):
         return hash(str(self))
     
     def add_cof(self, cof):
+        s = self.size.values.upper 
+        s = s-1 if self.size.values.right==P.OPEN else s
+        if cof.values.upper == P.inf:
+            safe_vals = cof.values.replace(upper=s)
+        else:
+            safe_vals = cof.values
+        if cof.values.lower == P.inf:
+            safe_vals = safe_vals.replace(lower=s)
+        cof.values = safe_vals
         cofs = self.cofs + [cof]
         return LiftedSet(self.universe, self.size, cofs)
 
