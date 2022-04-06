@@ -2,6 +2,5 @@ set universe = {e1, e1, e2, e2, e2, e2, e2, e3, e3, e3, e4, e5, e5, e5, e6};
 set dom1 = {e3, e4, e5, e6};
 a in compositions(universe);
 #a <= 5;
-#a=3;
-%#a[2] & dom1 <= 2 ;
+#a[2] & dom1 <= 2 ;
 #{#dom1 > 3} > 2 ;

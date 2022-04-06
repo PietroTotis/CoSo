@@ -395,7 +395,9 @@ def problem2asp(problem):
                     dom_str, n = dom2asp(dlab, cf_1.formula)
                     n_supports[dlab] = n
                     asp += dom_str
-                vals = cf_1.values if cf_1.values.upper != P.inf else cf_1.values.replace(upper=l+1)
+                lb = cf_1.values.lower if cf_1.values.left == P.CLOSED else cf_1.values.lower+1
+                ub = max(l+1,lb+1)
+                vals = cf_1.values if cf_1.values.upper != P.inf else cf_1.values.replace(upper=ub)
                 count_pred = []
                 count_vars = []
                 for n in P.iterate(vals, step=1):
@@ -522,22 +524,23 @@ def problem2essence(problem):
                 dom = ""
                 for j, pf in enumerate(problem.pos_formulas):
                     if pf.pos == i:
-                        if pf.formula.size.values != P.closed(1,ub):
+                        if pf.formula.size.values != P.closed(1,ub) and pf.formula.size.values != P.closed(1,P.inf):
                             name = f"s_{i}"
                             essence_l += range2essence(pf.formula.size.values, name, ub)
                             size_constr = f"sum([put[e,p{i}] | e:{uni}]) in {name}"
                             constraints.append(size_constr)
                         else:
-                            for k, cof in enumerate(pf.formula):
+                            for k, cof in enumerate(pf.formula.cofs):
                                 df = cof.formula
+                                dlab = f"df_{i}_{j}_{k}"
                                 if dlab not in added_doms:
                                     dlab = f"df_{i}_{j}_{k}"
                                     dom_str = dom2essence(dlab, df)
                                     essence += dom_str
                                     added_doms.append(dlab)
                                 range_name = f"vals_{i}_{j}_{k}"
-                                essence_l += range2essence(cof.values, name)
-                                constraints.append(f"sum([put[e,p{i}] | e:{dlab}]) in {range_name}")
+                                essence_l += range2essence(cof.values, range_name, ub)
+                                constraints.append(f"sum([put[e,p{i}] | e<-{dlab}]) in {range_name}")
             for i, cf in enumerate(problem.count_formulas):
                 outer_range = range2essence(cf.values, f"vals_{i}_out", l)
                 inner_range = range2essence(cf.formula.values, f"vals_{i}_in", ub)

@@ -1,6 +1,7 @@
 set universe = {e1, e1, e1, e1, e1, e1, e2, e2, e3, e4};
 set dom1 = {e2, e3};
 a in compositions(universe);
-#a >= 5;
+#a = 5;
+%#a >= 5;
 #a[4] & dom1 != 1 ;
-#{#dom1 != 1} < 2 ;
+#{#dom1 = 1} < 2 ;
