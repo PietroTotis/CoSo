@@ -360,7 +360,7 @@ class LiftedSet(object):
                         lower=lambda v: n_class*v
                     )
                     # we would have too many elements for a counting constraint 
-                    if cof_class.empty():
+                    if cof_class.empty:
                         return False
                     lb = cof_class.lower if cof_class.left==P.CLOSED else cof_class.lower+1
                     ub = cof_class.upper if cof_class.right==P.CLOSED else cof_class.upper-1
