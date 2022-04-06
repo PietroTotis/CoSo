@@ -431,10 +431,10 @@ def dom2essence(lab, domain):
     entity_list = ", ".join(copies.keys())
     if domain.universe == domain and lab=="universe":
         dom_str += f"letting {lab} be new type enum {{ {entity_list} }}\n"
+        function_list = ", ".join([f"{e} --> {n}" for e,n in copies.items()])
+        dom_str += f"letting f_{lab} be function({function_list})\n"
     else:
         dom_str += f"letting {lab} be {{ {entity_list} }}\n"
-    function_list = ", ".join([f"{e} --> {n}" for e,n in copies.items()])
-    dom_str += f"letting f_{lab} be function({function_list})\n"
     return dom_str
 
 def range2essence(interval, name, ub):
@@ -472,9 +472,8 @@ def problem2essence(problem):
         if not composition and not partition:
             if permutation or subset:
                 mset_constraint = f"\tforAll e: {uni}.\n"
-                ub = "1" if permutation or subset else f"f_{uni}(e)"
                 if permutation:
-                    mset_constraint += f"\t\tsum([1 | i: int(1..l_{l}), {name}(i)=e]) <= {ub}\n "
+                    mset_constraint += f"\t\tsum([1 | i: int(1..l_{l}), {name}(i)=e]) <= f_{uni}(e)\n "
                 else:
                     mset_constraint += f"\t\tforAll e: universe. freq({name},e) <= f_{uni}(e)"
                 constraints.append(mset_constraint)
@@ -487,7 +486,7 @@ def problem2essence(problem):
                             dom_str = dom2essence(dlab, pf.formula)
                             essence += dom_str
                             added_doms.append(dlab)
-                        constraints.append(f"{name}({i}) in {dlab}")
+                        constraints.append(f"{name}({i+1}) in {dlab}")
             for i, cf in enumerate(problem.count_formulas):
                 dlab = f"df_{i}"
                 if dlab not in added_doms:
@@ -565,12 +564,13 @@ def problem2essence(problem):
 def run_asp(programs):
     n = 0
     for program in programs:
+        # print(program)
         ctl = clingo.Control()
         ctl.configuration.solve.models = 0
         ctl.add("base", [],program)
         ctl.ground([("base", [])], context=Context())
         with ctl.solve(yield_=True, async_=True) as handle:
-            n_length = sum(1 for _ in handle) +1
+            n_length = sum(1 for _ in handle) #+1
             n += n_length
     return n
 
