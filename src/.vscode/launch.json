@@ -12,7 +12,7 @@
             // "program": "launcher.py",
             "console": "integratedTerminal",
             // "args": ["--asp" ,"-f", "../tests/work.pl"]
-            "args": [ "--asp", "--essence", "-t", "30", "-f", "../tests/benchmarks/sequence/sequence_15_5.test"]
+            "args": [ "-l","--asp", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
             // "args": ["-l", "-t", "300", "--asp", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
             // "args": ["-l", "--essence" ,"-f", "../tests/work.pl"]
