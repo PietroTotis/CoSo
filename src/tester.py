@@ -17,7 +17,8 @@ from util import interval_closed, ROOT_DIR
 
 MEMOUT = 4 * 1024 * 1024 * 1024
 TIMEOUT = 300
-random.seed(123)
+# random.seed(123)
+random.seed(1234)
 
 class Context:
     def id(self, x):
@@ -843,12 +844,12 @@ def generate_constrained(folder, pconstr, cconstr):
                     file.close()
                     parser = Parser(str(path))
                     parser.parse()
-                    problem_asp = problem2asp(parser.problem)
-                    filename_asp = f"{case}_{d}_{s}.lp"
-                    path_asp = os.path.join(case_path, filename_asp)
-                    file_asp = open(path_asp, "w")
-                    file_asp.write(problem_asp)
-                    file_asp.close()
+                    # problem_asp = problem2asp(parser.problem)
+                    # filename_asp = f"{case}_{d}_{s}.lp"
+                    # path_asp = os.path.join(case_path, filename_asp)
+                    # file_asp = open(path_asp, "w")
+                    # file_asp.write(problem_asp)
+                    # file_asp.close()
 
 # def test_folder(folder, problog, from_file = ""):
 #     for filename in os.listdir(folder):
