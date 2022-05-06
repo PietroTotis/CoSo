@@ -1,7 +1,7 @@
-set universe = {e1, e1, e1, e2, e2, e3, e4, e4, e4, e5, e5, e6, e6, e6, e7};
-set dom1 = {e4, e5, e6};
-set dom2 = {e2, e3, e4, e5};
-set dom3 = {e5, e6};
-a in partitions(universe);
+universe u = {e1, e1, e1, e2, e2, e3, e4, e4, e4, e5, e5, e6, e6, e6, e7};
+property dom1 = {e4, e5, e6};
+property dom2 = {e2, e3, e4, e5};
+property dom3 = {e5, e6};
+a in partitions(u);
 #a < 10;
 #{#(dom1&¬dom3) != 3} != 4 ;

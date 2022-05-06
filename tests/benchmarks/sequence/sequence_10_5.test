@@ -1,4 +1,4 @@
-set universe = {e1, e2, e2, e2, e3, e4, e4, e5, e5, e6};
-set dom1 = {e4, e5, e6};
-a in [|| universe];
+universe u = {e1, e2, e2, e2, e3, e4, e4, e5, e5, e6};
+property dom1 = {e4, e5, e6};
+a in [|| u];
 #a >= 5;

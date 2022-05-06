@@ -1,6 +1,6 @@
-set universe = {e1, e1, e1, e1, e1, e2, e2, e2, e2, e2, e3, e3, e3, e3, e3, e4, e4, e4, e5, e5};
-set dom1 = {e2, e3, e4};
-a in compositions(universe);
+universe u = {e1, e1, e1, e1, e1, e2, e2, e2, e2, e2, e3, e3, e3, e3, e3, e4, e4, e4, e5, e5};
+property dom1 = {e2, e3, e4};
+a in compositions(u);
 #a >= 15;
 #a[4] & dom1 < 4 ;
 #{#dom1 > 4} > 4 ;

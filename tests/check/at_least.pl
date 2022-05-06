@@ -1,6 +1,6 @@
 
-set russians = {r1,r2};
-set americans = {a1,a2,a3};
+property russians = {r1,r2};
+property americans = {a1,a2,a3};
 % spaniards = {s1};
 selection in {| russians+americans};
 % selection in {| russians+americans+spaniards};

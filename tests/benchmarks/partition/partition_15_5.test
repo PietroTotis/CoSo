@@ -1,8 +1,8 @@
-set universe = {e1, e1, e1, e1, e1, e1, e2, e2, e2, e2, e2, e3, e4, e5, e5};
-set dom1 = {e1, e2, e3};
-set dom2 = {e4, e5};
-set dom3 = {e3, e4, e5};
-set dom4 = {e4, e5};
-a in partitions(universe);
+universe u = {e1, e1, e1, e1, e1, e1, e2, e2, e2, e2, e2, e3, e4, e5, e5};
+property dom1 = {e1, e2, e3};
+property dom2 = {e4, e5};
+property dom3 = {e3, e4, e5};
+property dom4 = {e4, e5};
+a in partitions(u);
 #a != 5;
 #{#¬(dom3) <= 3} < 1 ;

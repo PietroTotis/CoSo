@@ -1,6 +1,6 @@
-set universe = {e1, e2, e2, e2, e2, e2, e2, e2, e3, e3, e3, e3, e4, e5, e5};
-set dom1 = {e4, e5};
-a in {| universe};
+universe u = {e1, e2, e2, e2, e2, e2, e2, e2, e3, e3, e3, e3, e4, e5, e5};
+property dom1 = {e4, e5};
+a in {| u};
 #a >= 10;
 #a = 11;
 #dom1&a != 4;

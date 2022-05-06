@@ -1,10 +1,10 @@
-set universe = {e1, e1, e1, e2, e2, e2, e3, e4, e4, e4, e4, e4, e5, e5, e6, e7, e7, e8, e9, e9};
-set dom1 = {e7, e8, e9};
-set dom2 = {e2, e3, e4, e5, e6, e7, e8, e9};
-set dom3 = {e4, e5};
-set dom4 = {e8, e9};
-set dom5 = {e5, e6};
-a in [|| universe];
+universe u = {e1, e1, e1, e2, e2, e2, e3, e4, e4, e4, e4, e4, e5, e5, e6, e7, e7, e8, e9, e9};
+property dom1 = {e7, e8, e9};
+property dom2 = {e2, e3, e4, e5, e6, e7, e8, e9};
+property dom3 = {e4, e5};
+property dom4 = {e8, e9};
+property dom5 = {e5, e6};
+a in [|| u];
 #a <= 15;
 a[1] = ¬(dom2);
 a[12] = dom5;

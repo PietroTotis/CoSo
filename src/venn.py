@@ -1,78 +1,14 @@
-
+from ctypes import sizeof
 from util import *
-from configuration import Domain
+from portion.dict import IntervalDict
+from level_1 import SetFormula
 
-
-# class VennSet(object):
-#     # far sparire i Not rimiazzandoli con gli or 
-
-#     def __init__(self, set, size=None):
-#         self.formula = set
-#         self.size = size
-#         self.children = []
-
-#     # negation is always last
-#     # assume or formulae are always renamed with children 
-#     def contains(self, set):
-#         # evaluate formulae
-#         if len(self.children) > 0:
-#             contains = False
-#             for c in self.children:
-#                 contains = c.contains(set)        
-#                 return contains
-#         else:
-#             flat = flatten(And, self.formula)
-#             if isinstance(set.formula, Or):
-#                 # set is in each disjunct
-#                 pass
-#             else:
-#                 flat_set = flatten(And, set.formula)
-#                 contains = True
-#                 for conjunct in flat:
-#                     contains = contains and (conjunct in flat_set)
-
-#     def insert(self, set):
-#         # Insert set as And()
-#         # Part of the formula can be a child
-#         if len(self.children) == 0 and self.contains(set):
-#             self.children.append(set)
-#         for c in self.children:
-#             if c in set:
-#                 c.insert(set)
-
-# class Union(object):
-
-#     def __init__(self, formula):
-#         self.formula = formula
-#         self.susets = []
-#         self.size = None
-
-#     # inference: size = sum parts
-#     #            #part = size- sum other parts
-
-#     def add_part(self, p):
-#         """
-#         add a subset to the union, ignoring those already contained in another set
-#         """
-#         #se due si intersecano cmq considera le tre opzioni
-#         # intersezione: somma vettori
-#         subset = False
-#         for part in self.parts:
-#             subset_p = True
-#             for i in range(0,len(p)):
-#                 ok = p[i] == -1 and part[i] <= 0
-#                 ok = p[i] >-1 and p[i]>=part[i]
-#                 subset_p = subset_p and ok
-#             subset = subset or subset_p
-#         if not subset:
-#             self.parts.append(p)
 
 class Union(object):
-
-    def __init__(self,formula, size=None, subsets=[]):
+    def __init__(self, formula, size=None, subsets=[]):
         self.formula = formula
         self.size = size
-        self.subsets = subsets 
+        self.subsets = subsets
 
     def __repr__(self):
         descr = f"{self.formula}: {self.size}\n"
@@ -80,61 +16,76 @@ class Union(object):
             descr += f"\t{s}\n"
         return descr
 
+
 class Venn(object):
+    """
+    A class to represent a Venn diagram: the universe is divided into subsets
+    associated to the number of objects belonging to the subsets.
+
+    """
 
     def __init__(self):
         self.base_sets = []
+        self.base_indist = {}
         self.indist = {}
-        self.sizes = {}
-        self.unions = {}
-        self.parts = []
-    
+        self.sets = {}
+        self.parts = {}
+
     def __repr__(self):
         descr = ""
-        for set in self.sizes:
-            descr += f"#({self.area2formula(set)}) = {self.sizes[set]}\n"
-        # descr += str(self.partition)
-        # for u in self.unions:
-        #     descr += str(self.unions[u])
+        for set in self.sets:
+            descr += f"#({self.area2formula(set)}) = {self.sets[set]}\n"
         return descr
-    
-    def add_base_set(self, set, indist):
+
+    def add_base_set(self, set, dist):
+        """
+        Add a set which is a label and not a formula
+
+        Args:
+            set (str): label
+            dist (bool): the elements are labelled
+        """
         self.base_sets.append(set)
-        self.indist[set] = indist
+        self.base_indist[set] = not dist
 
     def add_set(self, set, size):
         dnfied = dnfy(set)
         if isinstance(dnfied, Or):
-            u = Union(dnfied, size)
-            for subset in dnfied:
-                u.subsets.append(subset)
-            self.unions[set] = u
+            subsets = [s for s in flatten(Or, dnfied)]
         else:
-            part = self.formula2area(dnfied)
-            self.sizes[tuple(part)] = size
+            subsets = []
+        u = Union(dnfied, size, subsets)
+        self.sets[set] = u
 
     def subsets(self):
-        sets = list(self.sizes.keys())+[self.formula2area(b) for b in self.base_sets]
+        """
+        For all base sets collect subsets from declared intersections
+        """
+        sets = [self.formula2area(b) for b in self.base_sets]
         for set in sets:
             subs = self.get_subsets(set)
-            if len(subs) > 0:
-                name = self.area2formula(set)
-                if name not in self.unions:
-                    u = Union(name, self.sizes.get(set,None), subs)
-                    self.unions[name] = u
-                else:
-                    self.unions[name].subsets |= subs
+            f = self.sets.get(self.area2formula(set))
+            if f is not None:
+                s = f.size
             else:
-                self.parts.append(set)
-                
+                s = None
+            name = self.area2formula(set)
+            if len(subs) > 0:
+                if name not in self.sets:
+                    self.sets[name] = Union(name, s, subs)
+                else:
+                    self.sets[name].subsets += subs
+            else:
+                self.sets[name] = Union(name, s, [])
+                # self.parts.append(set)
 
     def get_subsets(self, set1):
         """
-        Infer from self.sizes which sets are union of other subsets
+        Check which of the sets with declared size are subsets of set 1
         """
-        sets = list(self.sizes.keys())
+        declared = [self.formula2area(k) for k in self.sets.keys()]
         subsets = set()
-        for set2 in sets:
+        for set2 in declared:
             if set1 != set2:
                 if self.is_subset(set2, set1):
                     subsets2 = self.get_subsets(set2)
@@ -142,57 +93,106 @@ class Venn(object):
                         subsets.union(subsets2)
                     else:
                         subsets.add(set2)
-                    # print(self.area2formula(set2), "<=", self.area2formula(set1))
         return subsets
 
+    def build_parts(self):
+        univ_area = (0,) * len(self.base_sets)
+        parts = self.get_parts(univ_area)
+        for p in parts:
+            f = self.area2formula(p)
+            if f in self.sets:
+                self.parts[p] = self.sets[f].size
+        return parts
+
     def is_subset(self, set1, set2):
+        """
+        Checks if set1 is contained in set2 by comparing codes
+
+        Args:
+            set1 (tuple(int)): code of set 1
+            set2 (tuple(int)): code of set 2
+
+        Returns:
+            bool: set1 in set2
+        """
         subset = True
-        for i in range(0,len(self.base_sets)):
-            if set1[i]!=0 and set1[i] == -set2[i]:
+        s1 = self.pad(set1)
+        s2 = self.pad(set2)
+        for i in range(0, len(self.base_sets)):
+            if s1[i] != 0 and s1[i] == -s2[i]:
                 subset = False
-            if set1[i] == 0 and set2[i] == 1:
+            if s1[i] == 0 and s2[i] == 1:
                 subset = False
         return subset
 
     def infer_union_size(self, u):
-        # missing the case where both #A and #B are unknown but #A u B is known  
-        if u.size is None:
-            u.size = sum([self.sizes[part] for part in u.subsets])
-        else:
-            known = [p for p in u.subsets if p in self.sizes]
-            unknown = [p for p in u.subsets if p not in self.sizes]
-            known_size = sum([self.sizes[p] for p in known])
-            if len(unknown) == 0:
-                if u.size != known_size:
-                    raise Exception(f"Inconsistent size of {u.formula} (expected {u.size}, got {known_size}")
-            elif len(unknown) == 1:
-                self.sizes[unknown[0]] = known_size
+        """
+        Inference on the sizes of the sets
+
+        Args:
+            u (Union): a set
+
+        Raises:
+            Exception: we might find inconsistent sizes
+            Exception: we might miss some sizes
+        """
+        f = self.formula2area(u.formula)
+        parts = [tuple(p) for p in self.get_parts(f)]
+        known = [p for p in parts if p in self.parts]
+        ksize = sum([self.parts[part] for part in known])
+        unknown = [p for p in parts if p not in self.parts]
+        if len(unknown) == 0:
+            if u.size is None:
+                u.size = ksize
+            elif u.size != ksize:
+                raise Exception(
+                    f"Inconsistent size of {u.formula} (expected {u.size}, got {ksize})"
+                )
+        elif len(unknown) == 1:
+            if u.size is None:
+                u.size = ksize
+                self.parts[unknown[0]] = 0
             else:
-                if len(known) > 0:
-                    u_formula = nest([self.area2formula(p) for p in unknown])
-                    u = Union(u_formula, u.size-known_size, unknown)
+                self.parts[unknown[0]] = u.size - ksize
+
+        else:
+            if u.size is None:
+                if len(known) == 0:
+                    raise Exception(
+                        f"I don't know neither the size of {u.formula} nor any of its subsets"
+                    )
+                else:
+                    u.size = ksize
+            else:
+                if len(known) == 0:
+                    self.parts[f] = u.size
+                # missing the case where both #A and #B are unknown but #A u B is known
 
     def infer_indistinguishability(self):
         for p in self.parts:
-            indist = self.sizes[p] > 1 
-            sets = [self.base_sets[i] for i, s in enumerate(p) if s==1]
+            indist = self.parts[p] > 1
+            sets = [self.base_sets[i] for i, s in enumerate(p) if s == 1]
             for set in sets:
-                indist = indist and self.indist[set]
+                indist = indist and self.base_indist[set]
             self.indist[p] = indist
 
     def infer(self):
         self.subsets()
-        # for u in self.unions:
-        #     print(self.unions[u])
+        self.build_parts()
+        for set in self.sets:
+            self.infer_union_size(self.sets[set])
         self.infer_indistinguishability()
-        # print("parts: ", [self.area2formula(p) for p in self.parts])
-        # for set in self.indist:
-        #     if isinstance(set, tuple):
-        #         print(self.area2formula(set), self.indist[set])
-        for set in self.unions:
-            self.infer_union_size(self.unions[set])
 
     def area2formula(self, area):
+        """
+        Convert an area code int
+
+        Args:
+            area (tuple(-1/1/0)): whether a base set is excluded/included/neither
+
+        Returns:
+            And: intersection of base sets or their negation according to the code
+        """
         bsets = []
         for i, n in enumerate(area):
             if n == 1:
@@ -216,179 +216,77 @@ class Venn(object):
                 part[i] = 1
         return tuple(part)
 
-    # def add_set(self, set, size):
-    #     if isinstance(set, str) and not set in self.subsets:
-    #         self.subsets[set] = []
-    #         self.sizes[set] = size
-    #     elif isinstance(set, str) and set in self.subsets:
-    #         if self.sizes[set] == size:
-    #             pass
-    #         else:
-    #             print("error")
-    #     else:
-    #         dnfied = self.dnfy(set)
-    #         sets = self.flatten_and(dnfied)
-    #         if isinstance(dnfied, Or):
-    #             for s in sets:
-    #                 if s in self.subsets:
-    #                     self.sizes[s] 
-    #         else:
-                # controlla di quali set è subset
-                # trova le foglie
-                # aggiungi figlio e (fratelli?)
-            
+    def pad(self, area):
+        """
+        Add zeros to a set description created before adding all base sets
 
-         
-# class Venn(object):
+        Args:
+            area (tuple(int)): the partial encoding
+        Returns:
+            tuple(int): same encoding with additional zeros
+        """
+        padded = []
+        for id in area:
+            padded.append(id)
+        pad = len(self.base_sets) - len(area)
+        padded += [0] * pad
+        return tuple(padded)
 
-#     def __init__(self):
-#         self.partition = Partition()
-#         self.sets = {}
-#         self.sizes = {}
+    def get_parts(self, area):
+        """
+        Given a region code of the Venn diagram returns all the partition
+        codes that the area covers
 
-#     def __repr__(self):
-#         descr = ""
-#         for set in self.sets:
-#             descr += f"#{set}={self.sizes[set]} ({self.sets[set]})\n"
-#         # descr += str(self.partition)
-#         return descr
+        Args:
+            area (tuple(int)): code of the set
 
-#     def add_set(self, set, size):
-#         base_sets = self.get_base_sets(set)
-#         for bs in base_sets:
-#             if bs not in self.partition:
-#                 self.partition.add_set(bs)
-#         parts = self.get_parts(set)
-#         self.sets[set] = parts
-#         self.sizes[set] = size
+        Returns:
+            [tuple(int)]: list of parts in the set
+        """
+        if len(area) == 0:
+            return [()]
+        else:
+            try:
+                z = area.index(0)
+                p1 = [area[:z] + (1,) + r for r in self.get_parts(area[z + 1 :])]
+                p2 = [area[:z] + (-1,) + r for r in self.get_parts(area[z + 1 :])]
+                return p1 + p2
+            except ValueError:
+                return [area]
 
-#     def get_base_sets(self, set):
-#         if isinstance(set, str):
-#             return [set]
-#         elif isinstance(set, Not):
-#             return self.get_base_sets(set.child)
-#         else:
-#             return self.get_base_sets(set.left)+self.get_base_sets(set.right)
+    def update_domains(self, problem):
+        """
+        Convert a Venn diagram into domains with the correct intersections
 
-#     def get_parts(self, set):
-#         if isinstance(set, Or):
-#             return self.get_parts(set.left) + self.get_parts(set.right)
-#         elif isinstance(set, And):
-#             pleft = self.get_parts(set.left) 
-#             pright = self.get_parts(set.right)
-#             flat_pleft = []
-#             flat_pright = []
-#             for part in pleft:
-#                 flat_pleft += part.get_parts()
-#             for part in pright:
-#                 flat_pright += part.get_parts()
-#             inter = []
-#             for part in flat_pleft:
-#                 if part in flat_pright:
-#                     inter.append(part)
-#             return inter
-#         elif isinstance(set, Not):
-#             pchild = self.get_parts(set.child)
-#             all = self.partition.get_parts()
-#             compl =[]
-#             for part in all:
-#                 if part not in pchild:
-#                     compl.append(part)
-#             return compl
-#         else: # base set
-#             return self.partition.get_parts(set) 
+        Args:
+            problem (Problem): problem corresponding to the Venn diagram
 
-# class Partition(object):
-#     """
-#     Data structure to define a partition tree: level 0 partitions the universe w.r.t. a
-#     set S as S and ~S, adding a set adds a new level where the set intersects or not each
-#     leaf of the tree.
-#     Attributes
-#     ----------
-#     name : And formula representing the partition as intersection of sets/complements of sets
-#     left : name intersect the set corresponding to this level
-#     right : name intersect the complement of the set corresponding to this level
-#     size : the given size (cardinality) of the set described by name
-#     """
-#     def __init__(self, part=None, lvl=0):
-#         self.part = part
-#         self.left = None
-#         self.right = None
-#         self.size = None
-#         self.lvl = lvl
-
-#     def __repr__(self):
-#         tabs = "\t"*self.lvl
-#         header = tabs + f"{self.part}, size: {self.size}\n"
-#         if self .left is not None:
-#             return header+f"{str(self.left)} \n {str(self.right)}"
-#         else:
-#             return header
-    
-#     def __contains__(self, set):
-#         if self.part == set:
-#             return True
-#         elif self.left is None:
-#             return False
-#         elif isinstance(self.left.part, And) and self.left.part.left == set:
-#             # left starts conjoining set with upper level: it's already in
-#             return True
-#         else:
-#             return set in self.left
-    
-#     def add_set(self, set):
-#         if self.left is None:
-#             if self.part is None:
-#                 self.left = Partition(set, self.lvl+1)
-#                 self.right = Partition(Not(set), self.lvl+1)
-#             else:
-#                 self.left = Partition(And(set, self.part), self.lvl+1)
-#                 self.right = Partition(And(Not(set), self.part), self.lvl+1)
-#         else:
-#             self.left.add_set(set)
-#             self.right.add_set(set)
-
-#     def get_parts(self, set):
-#         if isinstance(set, str):
-#             return self.get_base_parts(set)
-#         elif isinstance(set, Or):
-#             lparts = self.get_parts(set.left)
-#             rparts = self.get_parts(set.right)
-#             lparts = [p for p in lparts if p not in rparts]
-#             return lparts+rparts
-#         elif isinstance(set, And):
-#             lparts = self.get_parts(set.left)
-#             rparts = self.get_parts(set.right)
-#             return [p for p in lparts if p in rparts]
-#         else: # isinstance(set, Not)
-#             childparts = self.get_parts(set.child)
-#             all = self.get_parts_base()
-#             return [p for p in all if p not in childparts]
-
-    
-#     def get_parts_base(self, set=None):
-#         """
-#         set is a base set
-#         """
-#         if set is None and self.left is None: # if set is None collect all parts
-#             return [self.part]
-#         elif set is None:
-#             return self.left.get_parts() + self.right.get_parts()
-#         else:
-#             if self.part == set:
-#                 return [self]
-#             elif self.left is None: # leaf
-#                 return []
-#             elif isinstance(self.left.part, And) and self.left.part.left == set: # base set
-#                 return [self.left]
-#             else:
-#                 return self.left.get_parts(set) + self.right.get_parts(set)
-
-#     def set_size(self, part, n):
-#         if part == self.part:
-#             self.size = n
-#         else:
-#             self.left.set_size(part)
-#             self.right.set_size(part)
-
-    
+        Returns:
+            Problem: a problem with the entities represented explicitly
+        """
+        self.infer()
+        intervals = {}
+        for part in self.parts:
+            lab = self.area2formula(part)
+            n = self.parts[part]
+            if self.indist[part]:
+                e_list = [str(lab)] * n
+            else:
+                e_list = []
+                for j in range(0, n):
+                    e = f"{lab}_{j}"
+                    e_list.append(e)
+            p_int = list2interval(problem, e_list, True)
+            intervals[part] = p_int
+        for set in self.base_sets:
+            area = self.formula2area(set)
+            if area in self.parts:
+                subsets = [intervals[area]]
+            else:
+                subsets = [intervals[p] for p in self.get_parts(area)]
+            entities = IntervalDict()
+            for sub in subsets:
+                entities = entities.combine(sub, how=is_distinguishable)
+            d = SetFormula(set, entities, problem.universe)
+            problem.add_domain(d)
+        return problem

@@ -1,5 +1,5 @@
-set universe = {e1, e1, e1, e1, e1, e1, e1, e2, e2, e3, e3, e3, e3, e4, e4, e5, e6, e7, e8, e8};
-set dom1 = {e1, e2, e3};
-a in {|| universe};
+universe u = {e1, e1, e1, e1, e1, e1, e1, e2, e2, e3, e3, e3, e3, e4, e4, e5, e6, e7, e8, e8};
+property dom1 = {e1, e2, e3};
+a in {|| u};
 #a <= 5;
 #dom1&a < 4;

@@ -1,146 +1,6 @@
-import portion as P
+import portion as Int
 from util import *
 
-
-class Domain(object):
-    """
-    Represents a domain as a portion (set of intervals) with extra info, i.e. distinguishability, size
-    and take operation
-    
-    Attributes
-    ----------
-    name : str
-        the label associated to the domains
-    elements : IntervalDict
-        intervals corresponding to the entities (mapped to integers) of the domain
-        mapped as dict to True if distinguishable False otherwise
-    """
-
-    def __init__(self, name, elems):
-        self.name = name
-        self.formula = name
-        self.elements = elems
-        self.n_elements = None
-        self.labels = {}
-
-    @staticmethod
-    def is_distinguishable(d1, d2):
-        # if e is distinguishable truth value in one domain is d1 and the other d2,
-        # if any of the two elements is distinguishable then keep distinguishing
-        return d1 or d2 
-
-    # def __and__(self, rhs):
-    #     if self.elements in rhs.elements:
-    #         i_name = self.name
-    #     elif rhs.elements in self.elements:
-    #         i_name = rhs.name
-    #     else:
-    #         i_name = f"({self.name} ∧ {rhs.name})"
-    #     i_elem = self.elements & rhs.elements
-    #     dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)
-    #     dist = dist[i_elem]
-    #     return Domain(i_name, i_elem, dist)
-
-    def __contains__(self, val):
-        return val.elements.domain() in self.elements.domain()
-
-    def __eq__(self, rhs):
-        return self.elements == rhs.elements
-
-    def __hash__(self):
-        return hash(self.name)
-
-    # def __lt__(self, rhs):
-    #     return self in rhs
-
-    # def __or__(self, rhs):
-    #     u_name = f"({self.name} ∨ {rhs.name})"
-    #     u_elem = self.elements | rhs.elements
-    #     dist = self.distinguishable.combine(rhs.distinguishable, how=Domain.is_distinguishable)  
-    #     return Domain(u_name, u_elem, dist)
-    
-    # def __sub__(self, rhs):
-    #     c_name = f"({self.name} - {rhs.name})"
-    #     diff =  self.elements - rhs.elements
-    #     return Domain(c_name, diff)
-        
-    def __repr__(self):
-        return str(self)
-    
-    def __str__(self):
-        if self.name is None:
-            label = f"{self.formula}"
-        else:
-            label = f"{self.name}"
-        if self.all_indistinguishable() and \
-            not label.startswith("indist") and \
-            len(self.elements.domain())==1:
-            n_elems = sum([1 for _ in P.iterate(self.elements.domain(),step=1)])
-            i = self.elements.domain().lower
-            e_lab = self.labels.get(i,i)
-            s = f"{n_elems}x " + str(e_lab)
-        else:
-            s = label
-        # ok for debug, not for log
-        # if self.size() > 0 :
-        #     s += f"({list(self.elements.keys())})=|{self.n_elements}|"
-        # else:
-        #     s += f"(none)"
-        return s
-
-    def all_indistinguishable(self):
-        return not (True in self.elements.values())
-
-    def max(self):
-        return self.elements.domain().upper
-
-    def min(self):
-        return self.elements.domain().lower
-
-    def disjoint(self, rhs):
-        inter = self & rhs
-        return inter.elements.domain().empty
-
-    def set_labels(self, labels):
-        self.labels = labels
-
-    def size(self):
-        if self.n_elements is None:
-            s = 0
-            for e in self.elements.domain():
-                if e.upper == P.inf:
-                    return -1
-                if not e.empty:
-                    if e.left == P.CLOSED and e.right == P.CLOSED:
-                        s += e.upper - e.lower +1
-                    elif e.left == P.OPEN and e.right == P.OPEN:
-                        s += e.upper - e.lower -1
-                    else:
-                        s += e.upper - e.lower
-            self.n_elements = s
-        return self.n_elements
-
-    def take(self, n):
-        """
-        returns a subset of itself of size n
-        if n > size returns itself
-        since we use it for shattering alldiff, assumes that all elements are distinguishable
-        """
-        iter = P.iterate(self.elements.domain(), step = 1)
-        subset = P.empty()
-        i = 0
-        hasNext = True
-        while hasNext and i<n:
-            try:
-                elem = P.singleton(next(iter))
-                subset = subset | elem
-            except StopIteration:
-                hasNext = False
-            i += 1
-        dist = P.IntervalDict()
-        dist[subset] = True
-        taken = Domain(f"{n}x {self.name}", dist)
-        return taken
 
 class Configuration(object):
     """
@@ -154,286 +14,289 @@ class Configuration(object):
         can be sequence/subset/partition/composition
     spec: bool
         each type has an alternative, if spec is true we use that:
-        sequence -> permutation 
+        sequence -> permutation
         subset -> multisubset
         composition -> multi-composition
         partition -> partition of any size up to n
-    domain: DomainFormula
+    domain: SetFormula
         source set for choices
-    size: SizeFormula
-        length of sequence/size of subset/number of compositions of partitions    
+    size: CSize
+        length of sequence/size of subset/number of compositions of partitions
     """
-    def __init__(self, name, type, domain, size = None):
+
+    def __init__(self, name, type, domain, size=None):
         self.name = name
         self.df = domain
         self.type = str(type)
         self.size = size
-        
+
     def __repr__(self):
         return str(self)
 
     def __str__(self):
         str = f"{self.type}"
-        str += f" ({self.size}) of entity {self.df} ({self.name})" 
+        str += f" ({self.size}) of entity {self.df} ({self.name})"
         return str
 
-class LiftedSet(object):
+
+class Variable:
     """
-    Represents a lifted subset of the universe/a set
+    Generic Variable of a configuration of level i: a set (domain) for level i=1 configuration or
+    a set of sets (lifted set) for level i=2 configurations
+    """
+
+    def __init__(self, universe, name):
+        self.universe = universe
+        self.name = name
+        self.labels = {}
+
+    def __and__(self, rhs):
+        """
+        Conjoin constraints with a level 1/2 variable
+
+        Args:
+            rhs (Variable): variable to conjoin
+        """
+        raise NotImplementedError()
+
+    def __contains__(self, val):
+        """
+        Check if an entity (level 1) or a set (level 2) is included in the valid values
+        represented by the variable
+
+        Args:
+            val (Level i-1): a level i-1 object
+        """
+        raise NotImplementedError()
+
+    def __hash__(self):
+        """
+        Required for dicts indexed by variables
+        """
+        return hash(self.name)
+
+    def __repr__(self):
+        """
+        Representation of the variable
+        """
+        return self.__str__(self)
+
+    def __str__(self):
+        """
+        String description
+        """
+        raise NotImplementedError()
+
+    def copy(self):
+        """
+        Copy to explicitly create a new configuration for different subproblems
+        """
+        raise NotImplementedError()
+
+    def set_labels(self, labels):
+        """
+        Update the labels of the multisets involved
+        Args:
+            labels ({int:str}): map from entity id to label
+        """
+        self.labels = labels
+
+
+class Constraint:
+    """
+    Generic constraint on a configuration
+    """
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        """
+        String representation
+        """
+        raise NotImplementedError()
+
+    def set_universe(self, universe):
+        """
+        Set universe of the constraint
+
+        Args:
+            universe (Domain): universe of the problem
+        """
+        raise NotImplementedError()
+
+    def set_labels(self, labels):
+        """
+        Set entity labels
+
+        Args:
+            labels ({int:str}): map entity id-label
+        """
+        raise NotImplementedError()
+
+
+class CCounting(Constraint):
+    """
+    Attributes
+    ----------
+    formula : SetFormula/CountingFormula/CSize
+        property to count
+    values :
+        value interval
+    """
+
+    def __init__(self, formula, interval):
+        self.formula = formula
+        self.values = interval
+
+    def __eq__(self, rhs):
+        return self.formula == rhs.formula and self.values == rhs.values
+
+    def __str__(self):
+        if self.values.lower == self.values.upper:
+            val = f"== {self.values.lower}"
+        else:
+            val = f"in {self.values}"
+        return f"Nr. ({self.formula}) {val}"
+
+    def neg(self):
+        interval = Int.closedopen(0, Int.inf) - self.values
+        return CountingFormula(self.formula, interval)
+
+    def complement(self, val, n_rest):
+        lb = self.values.lower
+        ub = self.values.upper
+        if lb == ub:
+            return Int.singleton(lb - val)
+        else:
+            comp = self.values
+            if ub == Int.inf:
+                comp = comp.replace(lower=lb - val, upper=n_rest, right=Int.CLOSED)
+            else:
+                comp = comp.replace(upper=ub - val)
+            return comp
+
+    def copy(self):
+        return CountingFormula(self.formula, self.values)
+
+    def set_universe(self, universe):
+        self.formula.set_universe(universe)
+
+    def set_labels(self, labels):
+        self.formula.set_labels(labels)
+
+
+class CPosition(Constraint):
+    """
+    Attributes
+    ----------
+    struct : str
+        name of the target configuration
+    pos : int
+        position where the property holds
+    dformula: SetFormula
+        property/allowed set of elements
+    """
+
+    def __init__(self, struct, pos, df):
+        self.struct = struct
+        self.pos = pos
+        self.formula = df
+
+    def __str__(self):
+        return f"Position {self.pos}: {self.formula}"
+
+    def set_universe(self, universe):
+        self.formula.set_universe(universe)
+
+    def set_labels(self, labels):
+        self.formula.set_labels(labels)
+
+
+class CSize(Constraint):
+    """
+    Container for valid cardinalities of lifted sets
 
     Attributes
     ----------
     name : str
-        not important at the moment
-    size : SizeFormula
-        describes the set of cardinality values that are valid for this set
-    cofs : [CountingFormulas]
-        describes properties of the set in terms of counting formulas
-    relevant : [CountingFormulas]
-        defines which groups of indistinguishable objects need to be accounted for
-    source : DomainFormula
-        the set of which the LiftedSet is subset
+        a string ignored for now
+    values : Int
+        interval representing set cardinalities allowed by constraints
+    universe : Int
+        interval representing all possible set cardinalities
     """
 
-    def __init__(self, universe, size, cofs=[]):
-        """
-        size: portion
-        cofs: [CountingFormulas]
-        """
-        self.name = f"part. of {universe}"
-        self.universe = universe
-        self.size = size
-        self.cofs = self.compact_cofs(cofs)
-        self.histogram = {}
-        self.check_bound()
+    def __init__(self, name, interval):
+        self.name = name
+        self.values = interval
+        self.universe = Int.closedopen(1, Int.inf)
 
     def __and__(self, rhs):
-        # name = f"{self.name} /\ {rhs.name}"
-        size = self.size & rhs.size
-        cofs = self.cofs + rhs.cofs 
-        cofs = self.compact_cofs(cofs)
-        return LiftedSet(self.universe, size, cofs)
-        
-    def __contains__(self, constr):
-        if hasattr(constr, "formula"):
-            for cof in self.cofs:
-                if cof.formula == constr.formula:
-                    return cof.values in constr.values
-            return False
-        else:
-            return self.size.values in constr.values
+        inter = self.values & rhs.values
+        return CSize(self.name, inter)
 
     def __eq__(self, rhs):
-        if self.size != rhs.size:
-            return False
-        elif self.cofs != rhs.cofs:
-            return False
-        elif self.histogram != rhs.histogram:
-            return False
-        else:
-            return True
-        
-    def __repr__(self):
-        return str(self)
+        return self.values == rhs.values
+
+    def __contains__(self, rhs):
+        if isinstance(rhs, CSize):
+            return rhs.values in self.values
+        else:  # rhs is int
+            return rhs in self.values
+
+    def __iter__(self):
+        return Int.iterate(self.values, step=1)
 
     def __str__(self):
-        s = f"{self.name}: {self.size}"
-        if len(self.cofs) > 0:
-            s += "\n"
-            s+= "\t counting: "
-            s+= ",".join([str(c) for c in self.cofs])
-        if len(self.histogram) > 0:
-            s+= "\n\t histogram:" + str(self.histogram)
-        return s
-
-    def __hash__(self):
-        return hash(str(self))
-    
-    def add_cof(self, cof):
-        s = self.size.values.upper 
-        s = s-1 if self.size.values.right==P.OPEN else s
-        if cof.values.upper == P.inf:
-            safe_vals = cof.values.replace(upper=s)
+        if self.values.lower == self.values.upper:
+            return f"size == {self.values.lower}"
         else:
-            safe_vals = cof.values
-        if cof.values.lower == P.inf:
-            safe_vals = safe_vals.replace(lower=s)
-        cof.values = safe_vals
-        cofs = self.cofs + [cof]
-        return LiftedSet(self.universe, self.size, cofs)
-
-    def bound(self, rv_set):
-        bound = False
-        if rv_set == self.universe:
-            bound = is_singleton(self.size)
-        else:
-            for cof in self.cofs:
-                if cof.formula == rv_set and is_singleton(cof.values):
-                    self.histogram[rv_set] = cof.values.lower
-                else:
-                    bound = bound or is_singleton(cof.values)
-        return bound
-
-    def compact_cofs(self, counts):
-        compact = []
-        remove = []
-        updated = False
-        indexes = range(0,len(counts))
-        for i in indexes:
-            cof1 = counts[i]
-            for j in [j for j in indexes if j>i]:
-                cof2 = counts[j]
-                if cof1 != cof2:
-                    if cof1.formula == cof2.formula:
-                        new_interval = cof1.values & cof2.values
-                        merged_cof = cof1.copy()
-                        merged_cof.values = new_interval
-                        compact.append(merged_cof)
-                        remove += [i,j]
-                else: # cof1 == cof2:
-                    remove += [i]
-        keep = [i for i in indexes if not i in remove]
-        compact += [counts[i] for i in keep]
-        final =  len(remove) == 0
-        result = compact if final else self.compact_cofs(compact)
-        return result
-
-    def check_bound(self):
-        """
-        Removes inf upper bound from counting constraints
-        """
-        for cof in self.cofs:
-            if cof.values.upper == P.inf:
-                ub = self.size.values.upper +1
-                max_int = P.closed(0,ub)
-                cof.values = cof.values & max_int
+            return f"size in {self.values}"
 
     def copy(self):
-        size = self.size.copy()
-        cofs = self.cofs.copy()
-        hist = self.histogram.copy()
-        ls = LiftedSet(self.universe, size, cofs)
-        ls.histogram = hist
-        return ls
+        return CSize(self.name, self.values)
 
-    def disjoint(self, constr):
-        if hasattr(constr, "formula"): # counting formula
-            dis_cofs = False
-            for cof in self.cofs:
-                if cof.formula == constr.formula:
-                    if cof.values & constr.values == P.empty():
-                        dis_cofs = True
-            return dis_cofs
-        else: # size formula
-            disj = (self.size.values & constr.values) == P.empty()
-            return disj
+    def neg(self):
+        vals = self.universe.difference(self.values)
+        neg = CSize(f"not {self.name}", vals)
+        return neg
 
-    def feasible(self, rv_set, n, n_class=1):
-        """Check if there is some incompatible constraint with the distribution of n entities of 
-        rv_set over n_class exchangeable variables
-
-        Args:
-            rv_set (DomainFormula): the domain formula being distributed
-            n (int): number of entities
-            n_class (int, optional): number of exchangeable variables together with self. Defaults to 1.
-
-        Returns:
-            Boolean: True if no constraint is violated by the distribution
-        """
-        # print("-----")
-        # print(self, rv_set, n, n_class)
-        if rv_set == self.universe:
-            # we are distributing the universe: a size constraint
-            size_class = self.size.values.replace(
-                upper=lambda v: n_class*v,
-                lower=lambda v: n_class*v
-            )
-            feasible = n in size_class
-            # if not feasible:
-                # print(f"Unfeasible size: {n} not in {size_class}")
-            return feasible
-        else:
-            for cof in self.cofs:
-                if rv_set in cof.formula:
-                    cof_class = cof.values.replace(
-                        upper=lambda v: n_class*v,
-                        lower=lambda v: n_class*v
-                    )
-                    # we would have too many elements for a counting constraint 
-                    if cof_class.empty:
-                        return False
-                    lb = cof_class.lower if cof_class.left==P.CLOSED else cof_class.lower+1
-                    ub = cof_class.upper if cof_class.right==P.CLOSED else cof_class.upper-1
-                    feasible = n<=ub
-                    if not feasible:
-                        # print(f"Unfeasible because {n} {rv_set} > {ub} {cof.formula}")
-                        return feasible
-                    # now check histograms: because rv_set in cof.formula we start with
-                    # n entities that satisfy cof.formula 
-                    n_cof = 0
-                    unfixed = []
-                    # then we count which entities are fixed that satisfy cof.formula
-                    for rvs in self.histogram:
-                        if rvs in cof.formula and rvs != rv_set:
-                            if self.histogram[rvs]==-1:
-                                unfixed.append(rvs)
-                            else:
-                                n_cof += self.histogram[rvs]
-                    if len(unfixed) == 0:
-                        # if everything is fixed then the constraint should be satisfied
-                        if n_cof + n not in cof_class:
-                            # print(f"Everything related to {cof} is fixed but still unsat")
-                            return False
-                    else:
-                        # if the sizes of the unfixed (in cof.formula) are too small to satisfy 
-                        # a lower bound of the constraint then unsat
-                        sizes = sum([rvs.size() for rvs in unfixed])
-                        if (sizes + n_cof + n)*n_class < lb:
-                            # print(f"{sizes} entities from other relevant sets and {n_class} variables are not enough for {cof}")
-                            return False
-            if len(self.histogram) > 1:
-                # check lasts unfixed value for histogram: everything not yet sat should become sat
-                vals = [n for n in self.histogram.values() if n> -1]
-                if len(vals) == len(self.histogram)-1 and self.histogram[rv_set] == -1: #last relevant set: check size
-                    fixed = sum(vals) # respect overall size
-                    if fixed+(n/n_class) not in self.size.values:
-                        # print(f"{rv_set} is the last to be fixed but {fixed+(n/n_class)} is not a valid size")
-                        return False
-            return True
+    def set_universe(self, universe):
+        self.universe = universe
 
     def set_labels(self, labels):
-        for cof in self.cofs:
-            cof.set_labels(labels)
-            
-    def rv_size(self, relevant):
-        for cof in self.cofs:
-            if cof.formula == relevant:
-                return cof.values
-                
-    def size_is_defined(self):
-        s = 0
-        for e in self.size.values:
-            if not e.empty:
-                if e.left == P.CLOSED and e.right == P.CLOSED:
-                    s += e.upper - e.lower +1
-                elif e.left == P.OPEN and e.right == P.OPEN:
-                    s += e.upper - e.lower -1
-                else:
-                    s += e.upper - e.lower
-        return s == 1
+        pass
 
-    def relevant(self):
-        relevant = set([cof.formula for cof in self.cofs])
-        if len(relevant) == 0:
-            relevant = {self.universe}
-        return relevant
 
-    def satisfies(self, constraint):
-        sat = None
-        for cof in self.cofs:
-            if cof.formula in constraint.formula :
-                if cof.values in constraint.values:
-                    sat = True
-                elif constraint.values & cof.values == P.empty:
-                    sat = False
-        return sat
+# class AggFormula(Constraint):
+#     """
+#     Attributes
+#     ----------
+#     set : DomainFOrmula
+#         set on which the constraint holds
+#     op : function {int} -> int
+#         aggregate operator
+#     values : Interval
+#         admissible values
+#     """
+
+#     def __init__(self, set, op, interval):
+#         self.set = set
+#         self.op = op
+#         self.values = interval
+
+#     #     self.fix_bound()
+
+#     # def fix_bound(self):
+#     #     if self.op == min and self.values.upper>self.set.elems.upper:
+#     #         self.values.replace(upper = self.set.elems.upper)
+
+#     def __repr__(self):
+#         if self.op == min:
+#             s = "min"
+#         elif self.op == max:
+#             s = "max"
+#         else:
+#             s = "sum"
+#         return f"{s} of {self.set} in {self.values}"

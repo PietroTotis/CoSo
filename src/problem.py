@@ -1,9 +1,15 @@
-import portion as P
-from configuration import *
+import portion as Int
 from solver import Solver
-from formulas import *
+from level_1 import SetFormula
+from configuration import CSize
+from sharpCSP import Solution
 from util import *
- 
+
+
+class EmptyException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
 
 class Problem(object):
     """
@@ -16,7 +22,7 @@ class Problem(object):
     entity_map : dict str->int
         maps each entity/constant to an integer (manipulated as intervals)
     """
-    
+
     def __init__(self):
         self.universe = None
         self.agg_formulas = []
@@ -39,33 +45,41 @@ class Problem(object):
     #         c = InFormula(self.configuration.name, df)
     #     self.choice_formulas.append(c)
 
-
     def add_domain(self, dom):
         self.domains[dom.name] = dom
 
     def add_pos_formula(self, chf):
         self.pos_formulas.append(chf)
-    
+
     def add_agg_formula(self, chf):
         self.agg_formulas.append(chf)
-        
+
     def add_counting_formula(self, cof):
         # cformula = self.build_cof(cof)
-        subsets = self.configuration.type in ["partition","composition"]
-        count_prop = isinstance(cof.formula, DomainFormula)
+        subsets = self.configuration.type in ["partition", "composition"]
+        count_prop = isinstance(cof.formula, SetFormula)
         # ignore recursive parsing of counting formulas
         if not (subsets and count_prop):
             self.count_formulas.append(cof)
 
     def add_entity(self, e):
+        """
+        Map an entity e to its internal representation (id)
+
+        Args:
+            e (str): the label of an entity
+
+        Returns:
+            int: the id representing the entity internally
+        """
         name = str(e)
         if name in self.entity_map:
             return self.entity_map[name]
         else:
-            i = len(self.entity_map) +1
+            i = len(self.entity_map) + 1
             self.entity_map[name] = i
             copy_ids = name.split("__")
-            if len(copy_ids)>1:
+            if len(copy_ids) > 1:
                 base_id, _ = copy_ids
                 if base_id in self.internal_copies:
                     self.internal_copies[base_id] += [i]
@@ -75,11 +89,11 @@ class Problem(object):
 
     def get_entity(self, e):
         name = str(e)
-        base_id = self.entity_map[name]
+        base_id = self.entity_map.get(name)
         if base_id is None:
             raise Exception(f"Unknown label {name}")
-        copy_ids = self.internal_copies.get(name,[])
-        return [base_id]+copy_ids
+        copy_ids = self.internal_copies.get(name, [])
+        return [base_id] + copy_ids
 
     # def add_query(self, q):
     #     self.queries.append(q)
@@ -102,7 +116,7 @@ class Problem(object):
     #     formula = self.compute_formula(problog_formula)
     #     interval = self.get_interval(op, val)
     #     return CountingFormula(formula, interval)
-    
+
     # def build_size(self, name, op, val):
     #     n = val.compute_value()
     #     op = op.functor
@@ -127,26 +141,35 @@ class Problem(object):
             domain = lf | rf
         elif isinstance(sformula, Not):
             arg = self.compute_dom(sformula.child)
-            domain =  arg.neg()
-        else: # base cases: universe, arrangement, user-defined, single element
+            domain = arg.neg()
+        else:  # base cases: universe, arrangement, user-defined, single element
             if sformula in self.domains:
                 domain = self.domains[sformula]
-            elif sformula == "universe" or sformula== "part" or self.configuration is not None and sformula == self.configuration.name:
+            elif (
+                sformula == "universe"
+                or sformula == "part"
+                or self.configuration is not None
+                and sformula == self.configuration.name
+            ):
                 domain = self.universe
             else:
                 id = self.get_entity(sformula)
                 if id is None:
-                    id = "" #sformula # dummy
-                    single = portion.closed(0,P.inf)
+                    id = ""  # sformula # dummy
+                    single = Int.closed(0, P.inf)
                     # raise Exception(f"Unknown constant {sformula}")
                 else:
-                    single = portion.singleton(id)
-                dist = portion.IntervalDict()
+                    single = Int.singleton(id)
+                dist = Int.IntervalDict()
                 dist[single] = True
-                domain = DomainFormula(id, dist, self.universe)
+                domain = SetFormula(id, dist, self.universe)
         return domain
 
     def compute_universe(self):
+        """
+        Once all sets are added, compute the union and update the domain formulas
+        with all info about the universe
+        """
         dom_iter = iter(self.domains.values())
         universe = next(dom_iter)
         for d in dom_iter:
@@ -184,29 +207,47 @@ class Problem(object):
     #     else:
     #         return None
 
-    def get_interval(self,op,n):
+    def get_interval(self, op, n):
+        """
+        Convert a comparison operator and a number to interval
+
+        Args:
+            op (str): a string describing a comparison
+            n (int): reference value
+
+        Returns:
+            Int: interval of values
+        """
         if op == "<":
-            interval = portion.closedopen(0,n)
+            interval = Int.closedopen(0, n)
         elif op == "<=":
-            interval = portion.closed(0,n)
+            interval = Int.closed(0, n)
         elif op == ">":
-            interval = portion.open(n,portion.inf)
+            interval = Int.open(n, Int.inf)
         elif op == ">=":
-            interval = portion.closedopen(n,portion.inf)
+            interval = Int.closedopen(n, Int.inf)
         elif op == "=":
-            interval = portion.singleton(n)
+            interval = Int.singleton(n)
         else:
-            interval = portion.closedopen(0,n) | portion.open(n,portion.inf)
+            interval = Int.closedopen(0, n) | Int.open(n, Int.inf)
         return interval
 
     def solve(self, log=True):
+        """
+        Do some sanity checks on the configuration and then call the solver
+
+        Args:
+            log (bool, optional): enable logging. Defaults to True.
+
+        Returns:
+            Solution: solution
+        """
         if self.configuration is None or len(self.domains) == 0:
-            print("empty problem!")
-            return 0
+            raise EmptyException("Empty problem!")
         else:
             if self.configuration.size is None:
-                vals = portion.closed(1, self.universe.size())
-                self.configuration.size = SizeFormula("unconstrained", vals)
+                vals = Int.closed(1, self.universe.size())
+                self.configuration.size = CSize("unconstrained", vals)
             s = Solver(self)
             return s.solve(log)
 
@@ -217,7 +258,7 @@ class Problem(object):
         for cf in self.pos_formulas:
             s += f"{cf}\n"
         for f in self.count_formulas:
-            s += f"{f}\n" 
+            s += f"{f}\n"
         for f in self.agg_formulas:
             s += f"{f}\n"
         s += f"{self.configuration}\n"
