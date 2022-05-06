@@ -16,7 +16,7 @@ from sharpCSP import Solution
 
 from util import *
 
-TIMEOUT = 10
+TIMEOUT = 300
 random.seed(1234)
 
 ops = [">", "<", "<=", ">=", "!=", "="]
@@ -786,7 +786,6 @@ def test_folder(folder, asp, sat, essence):
             try:
                 parser.parse()
                 problem = parser.problem
-                # name = os.path.join(folder, filename)
                 if essence:
                     res = run_solver(
                         parser.problem, "Essence", problem2essence, run_essence
@@ -803,13 +802,14 @@ def test_folder(folder, asp, sat, essence):
             except EmptyException:
                 print("Empty: skipping")
 
-    results_file = "bench_results.csv"
+    folder_name = os.path.basename(folder)
+    results_file = f"bench_results_{folder_name}.csv"
     with open(os.path.join(RESULTS, results_file), "w+") as f:
         f.write(f"benchmark\tsolver\tn_subproblems\tn_solutions\ttime\n")
         f.close()
     if len(results_coso) > 0:
         export_results(results_coso, results_file, "CoSo")
-        with open(os.path.join(RESULTS, "subs_results.csv"), "w+") as f:
+        with open(os.path.join(RESULTS, f"subs_results_{folder_name}.csv"), "w+") as f:
             export_coso_results(results_coso, f)
     if len(results_asp) > 0:
         export_results(results_asp, results_file, "ASP")
@@ -851,16 +851,16 @@ def coso_subproblem_stats(results):
 def present_results(results, solver):
     times = [results[name].time for name in results]
     avg_time = mean(times)
-    print(f"Average {solver} time: {avg_time}")
+    print(f"Average {solver} time: {avg_time:.2f}")
     if solver == "CoSo":
         gsn, gst = coso_subproblem_stats(results)
         for n in gsn:
-            print(f"{n} subs (n={gsn[n]}): {gst[n]}s")
+            print(f"{n} subs (n={gsn[n]}): {gst[n]:.2f}s")
 
 
 def export_coso_results(results, file):
     gsn, gst = coso_subproblem_stats(results)
-    file.write("n_subproblems\tn_solutions\ttime\n")
+    file.write("n_subproblems\tcount\ttime\n")
     for n in gsn:
         file.write(f"{n}\t{gsn[n]}\t{gst[n]}\n")
     file.close()
@@ -877,6 +877,7 @@ def run_benchmarks(plot):
     clean_essence_garbage()
     if plot:
         from gen_plots import plot as plot_results
+
         plot_results()
 
 

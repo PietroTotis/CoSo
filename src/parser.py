@@ -116,6 +116,8 @@ class Parser(object):
         with open(self.file, "r") as f:
             data = f.read()
             self.parser.parse(data)
+            if self.problem.configuration is None:
+                raise EmptyException("No configuration specified")
 
     def p_program(self, p):
         """program : statement
@@ -264,6 +266,7 @@ class Parser(object):
                 self.venn.add_set(set, self.sizes[set])
             self.problem = self.venn.update_domains(self.problem)
         if len(self.problem.domains) > 0:
+            len(self.problem.domains)
             self.problem.compute_universe()
             names = list(self.problem.domains)
             for i, d1 in enumerate(names):

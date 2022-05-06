@@ -1,7 +1,0 @@
-benchmark	solver	n_subproblems	n_solutions	time
-composition_10_5.test	CoSo	248	1796037	1.980604439999297
-composition_15_10.test	CoSo	378	190749792	1.9383530790000805
-composition_15_5.test	CoSo	0	0	0.5423710450013459
-composition_20_10.test	CoSo	0	0	0.5148885130001872
-composition_20_15.test	CoSo	-1	-1	10
-composition_20_5.test	CoSo	0	0	0.5485650900009205

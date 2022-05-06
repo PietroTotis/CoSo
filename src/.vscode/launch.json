@@ -8,9 +8,15 @@
             "name": "CoSo",
             "type": "python",
             "request": "launch",
-            "program": "tester.py",
+            // "program": "tester.py",
+            "program": "gen_plots.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
+            // "args": [
+            //     "-l",
+            //     "-f",
+            //     "../tests/examples/h837.pl"
+            // ]
             // "args": [
             //     "-b",
             //     "--plot"
@@ -19,11 +25,11 @@
             //     "--test-folder",
             //     "../tests/examples"
             // ]
-            "args": [
-                "-l",
-                "-f",
-                "../tests/benchmarks/composition/composition_20_5.test"
-            ]
+            // "args": [
+            //     "-l",
+            //     "-f",
+            //     "../tests/benchmarks/composition/composition_20_5.test"
+            // ]
             // "args": ["-t", "300", "--essence", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-t", "300", "--essence", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]

@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 from util import ROOT_DIR
 
 OUT_DIR = os.path.join(ROOT_DIR, "tests", "results")
-BENCHMARKS = os.path.join(OUT_DIR, "bench_results.csv")
-COSO_STATS = os.path.join(OUT_DIR, "subs_results.csv")
+BENCHMARKS = os.path.join(OUT_DIR, "bench_results_benchmarks.csv")
+COSO_STATS_BENCH = os.path.join(OUT_DIR, "subs_results_benchmarks.csv")
+COSO_STATS_EX = os.path.join(OUT_DIR, "subs_results_examples.csv")
 WIDTH = 430
 PGF = False
 
@@ -198,16 +199,26 @@ def plot_benchmarks_unsat(df, fig, axis):
 
 def plot_coso_stats(df, fig, axis):
 
-    ax5 = df.plot(
-        kind="bar", stacked=True, color=sns.color_palette("colorblind"), width=0.9
+    print(df)
+
+    ax5 = df.groupby(["origin", "n_subproblems"])["count"].plot(
+        x="n_subproblems",
+        kind="bar",
+        stacked=True,
+        color=sns.color_palette("colorblind"),
+        width=0.9,
     )
 
-    labels_real = []
-    labels_synth = []
-    for i in range(0, len(df)):
-        labels_real.append(df.iloc[i, 0])
-        labels_synth.append(df.iloc[i, 1])
-    labels = labels_real + labels_synth
+    # labels_real = []
+    # labels_synth = []
+    # for i in range(0, len(df)):
+    #     labels_real.append(df.iloc[i, 0])
+    #     labels_synth.append(df.iloc[i, 1])
+    # labels = labels_real + labels_synth
+
+    # print(labels)
+    labels = df["n_subproblems"]
+    print(ax5.patches)
 
     for i, patch in enumerate(ax5.patches):
         x, y = patch.get_xy()
@@ -219,7 +230,7 @@ def plot_coso_stats(df, fig, axis):
 
     ax6 = ax5.twinx()
     ax7 = ax5.twinx()
-    ax6.plot(ax5.get_xticks(), tab_time["mean"], color=sns.color_palette("Paired")[1])
+    ax6.plot(ax5.get_xticks(), df["time"], color=sns.color_palette("Paired")[1])
     ax5.set_yscale("symlog", linthresh=10)
     ax6.set_yscale("log", nonpositive="clip")
     ax7.set_yscale("log", nonpositive="clip")
@@ -269,27 +280,30 @@ def plot_coso_stats(df, fig, axis):
 
 def load_data():
 
-    df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
-    df_coso = pandas.read_csv(COSO_STATS, sep="\t")
+    # df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
+    # df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
+    df_coso_real = pandas.read_csv(COSO_STATS_EX, sep="\t")
 
-    for r1 in df_bench.index:
-        for r2 in df_bench.index:
-            if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
-                if df_bench["n_subproblems"][r1] == -1:
-                    if df_bench["n_subproblems"][r2] != -1:
-                        df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][r2]
-                if df_bench["n_solutions"][r1] == -1:
-                    if df_bench["n_solutions"][r2] != -1:
-                        df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
+    # for r1 in df_bench.index:
+    #     for r2 in df_bench.index:
+    #         if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
+    #             if df_bench["n_subproblems"][r1] == -1:
+    #                 if df_bench["n_subproblems"][r2] != -1:
+    #                     df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][r2]
+    #             if df_bench["n_solutions"][r1] == -1:
+    #                 if df_bench["n_solutions"][r2] != -1:
+    #                     df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
 
-    df_sat = df_bench[df_bench["n_solutions"] > 0]
-    df_unsat = df_bench[df_bench["n_solutions"] == 0]
+    # df_sat = df_bench[df_bench["n_solutions"] > 0]
+    # df_unsat = df_bench[df_bench["n_solutions"] == 0]
 
-    coso_synth = df_bench.loc[df_bench["solver"] == "CoSo"].drop(
-        ["benchmark", "solver"], axis=1
-    )
-    df_coso = pandas.concat([df_real, coso_synth])
-    print(df_coso)
+    # df_coso_synth["origin"] = "synthetic"
+    df_coso_real["origin"] = "real"
+    # df_coso = pandas.concat([df_coso_synth, df_coso_real])
+
+    df_sat = None
+    df_unsat = None
+    df_coso = df_coso_real
 
     return (df_sat, df_unsat, df_coso)
 
@@ -299,8 +313,8 @@ def plot(pgf=False):
     sns.set_theme(style="darkgrid", color_codes=True)
     fig, axes = plt.subplots(nrows=1, ncols=3)
     df_sat, df_unsat, df_coso = load_data()
-    plot_benchmarks_sat(df_sat, fig, axes[0])
-    plot_benchmarks_unsat(df_unsat, fig, axes[1])
+    # plot_benchmarks_sat(df_sat, fig, axes[0])
+    # plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])
     if not PGF:
         plt.show()
