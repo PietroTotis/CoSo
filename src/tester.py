@@ -14,7 +14,7 @@ from statistics import mean
 from parser import EmptyException, Parser
 from sharpCSP import Solution
 
-from gen_plots import plot
+from gen_plots import plot as plot_results
 from util import *
 
 TIMEOUT = 300
@@ -951,7 +951,7 @@ def export_coso_results(results, file):
     file.close()
 
 
-def run_benchmarks():
+def run_benchmarks(plot):
     # types = []
     # types = ["subset"]
     types = ["composition", "multisubset", "permutation", "sequence", "subset"]
@@ -960,18 +960,20 @@ def run_benchmarks():
         print(dir)
         test_folder(dir, True, True, True)
     clean_essence_garbage()
-    # plot()
+    if plot:
+        plot_results()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", help="Run solver on file")
-    parser.add_argument("-b", help="Run benchmarks")
+    parser.add_argument("-b", action="store_true", help="Run benchmarks")
     parser.add_argument("-l", action="store_true", help="Logging")
     parser.add_argument("-g", help="Geneate random tests in given folder")
     parser.add_argument(
         "-t", "--timeout", type=int, default=TIMEOUT, help="Set timeout in seconds"
     )
+    parser.add_argument("--plot", action="store_true", help="Plot benchmarks results")
     parser.add_argument("--test-folder", help="Run tool comparison on files in folder")
     parser.add_argument("--asp", action="store_true", help="Compare with 'asp'")
     parser.add_argument("--sat", action="store_true", help="Compare with 'sharpSAT'")
@@ -1013,7 +1015,7 @@ if __name__ == "__main__":
             sol = parser.problem.solve(log=args.l)
             print(f"Count: {sol}")
     elif args.b:
-        run_benchmarks()
+        run_benchmarks(args.plot)
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.test_folder:

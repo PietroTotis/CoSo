@@ -139,7 +139,7 @@ class CCounting(Constraint):
     """
     Attributes
     ----------
-    formula : SetFormula/CountingFormula/CSize
+    formula : SetFormula/CCounting/CSize
         property to count
     values :
         value interval
@@ -161,7 +161,7 @@ class CCounting(Constraint):
 
     def neg(self):
         interval = Int.closedopen(0, Int.inf) - self.values
-        return CountingFormula(self.formula, interval)
+        return CCounting(self.formula, interval)
 
     def complement(self, val, n_rest):
         lb = self.values.lower
@@ -177,7 +177,7 @@ class CCounting(Constraint):
             return comp
 
     def copy(self):
-        return CountingFormula(self.formula, self.values)
+        return CCounting(self.formula, self.values)
 
     def set_universe(self, universe):
         self.formula.set_universe(universe)

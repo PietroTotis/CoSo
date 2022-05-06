@@ -12,7 +12,7 @@ COSO_STATS = os.path.join(OUT_DIR, "subs_results.csv")
 WIDTH = 430
 PGF = False
 
-pal = sns.color_palette(n_colors=4)
+pal = sns.color_palette("colorblind")
 if PGF:
     matplotlib.use("pgf")
     matplotlib.rcParams.update(
@@ -105,7 +105,7 @@ def plot_benchmarks_sat(df, fig, axis):
         tick.label2.set_visible(False)
     axis.xaxis.tick_bottom()
     ticks = []
-    for l in df["n_solutions"].sort_values():
+    for l in sorted(df["n_solutions"].unique()):
         if l <= 10000:
             ticks.append(str(l))
         else:
@@ -144,6 +144,8 @@ def plot_benchmarks_sat(df, fig, axis):
 
 def plot_benchmarks_unsat(df, fig, axis):
 
+    print(df)
+
     sns.barplot(ax=axis, x="benchmark", y="time", hue="solver", data=df, palette=pal)
 
     axis.set_yscale("log", nonpositive="clip")
@@ -161,7 +163,8 @@ def plot_benchmarks_unsat(df, fig, axis):
         tick.label2.set_visible(False)
     axis.xaxis.tick_bottom()
     # xlabs = [f"unsat_{i}" for i, x in enumerate(axis.get_xticklabels()) ]
-    xlabs = ["ms 20/15", "pm 20/15", "sq 15/10", "sq 20/15", "cp 15/5", "cp 20/10"]
+    # xlabs = ["ms 20/15", "pm 20/15", "sq 15/10", "sq 20/15", "cp 15/5", "cp 20/10"]
+    xlabs = df["benchmark"].unique()
     axis.set_xticklabels(xlabs, va="center")
     axis.tick_params(axis="x", which="major", pad=5)
     handles, labels = axis.get_legend_handles_labels()
@@ -207,7 +210,7 @@ def plot_coso_stats(df, fig, axis):
         index=["n_subproblems"], values="mean", aggfunc="mean", fill_value=0
     )
     ax5 = tab_count.plot(
-        kind="bar", stacked=True, color=sns.color_palette("Set2"), width=0.9
+        kind="bar", stacked=True, color=sns.color_palette("colorblind"), width=0.9
     )
 
     labels_real = []
@@ -290,37 +293,8 @@ def load_data():
                     if df_bench["n_solutions"][r2] != -1:
                         df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
 
-    pivot_bench = df_bench.pivot(
-        index="benchmark",
-        columns="solver",
-        values="time",
-    )
-    solsandsubs = (
-        df_bench[["benchmark", "n_subproblems", "n_solutions"]]
-        .set_index("benchmark")
-        .drop_duplicates(keep="first")
-    )
-    df_bench = pivot_bench.join(solsandsubs)
-    df_bench.reset_index(inplace=True)
-    df_bench = df_bench.rename(columns={"index": "benchmark"})
-    print(df_bench)
-
-    df_nonzeros = df_bench[df_bench["n_solutions"] > 0]
-    df_zeros = df_bench[df_bench["n_solutions"] == 0]
-
-    df_sat = pandas.melt(
-        df_nonzeros[["n_solutions", "CoSo", "ASP", "#SAT", "Essence"]],
-        id_vars="n_solutions",
-        var_name="solver",
-        value_name="time",
-    )
-
-    df_unsat = pandas.melt(
-        df_zeros[["benchmark", "CoSo", "ASP", "#SAT", "Essence"]],
-        id_vars="benchmark",
-        var_name="solver",
-        value_name="time",
-    )
+    df_sat = df_bench[df_bench["n_solutions"] > 0]
+    df_unsat = df_bench[df_bench["n_solutions"] == 0]
 
     return (df_sat, df_unsat, df_coso)
 
@@ -331,8 +305,8 @@ def plot(pgf=False):
     fig, axes = plt.subplots(nrows=1, ncols=3)
     df_sat, df_unsat, df_coso = load_data()
     plot_benchmarks_sat(df_sat, fig, axes[0])
-    # plot_benchmarks_unsat(df_unsat, fig, axes[1])
-    # plot_coso_stats(df_coso, fig, axes[2])
+    plot_benchmarks_unsat(df_unsat, fig, axes[1])
+    plot_coso_stats(df_coso, fig, axes[2])
     if not PGF:
         plt.show()
 
