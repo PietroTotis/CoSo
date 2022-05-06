@@ -196,11 +196,12 @@ class Parser(object):
         elif p[2] == "&":
             if isinstance(p[1], LiftedSet):
                 d = self.problem.compute_dom(p[3])
-                p[1].cofs = [CCounting(d, Int.open(0, Int.inf))]
+                p[1].ccs = [CCounting(d, Int.open(0, Int.inf))]
+                print(p[1])
                 p[0] = p[1]
             elif isinstance(p[3], LiftedSet):
                 d = self.problem.compute_dom(p[1])
-                p[3].cofs = [CCounting(d, Int.open(0, Int.inf))]
+                p[3].ccs = [CCounting(d, Int.open(0, Int.inf))]
                 p[0] = p[1]
             else:
                 p[0] = And(p[1], p[3])
@@ -321,7 +322,7 @@ class Parser(object):
                     if isinstance(sc.formula.name, str):
                         df.size = CSize("", sc.values)
                     else:
-                        df.cofs.append(sc)
+                        df.ccs.append(sc)
         else:
             df = self.problem.compute_dom(p[6])
         pf = CPosition(arrangement, pos, df)

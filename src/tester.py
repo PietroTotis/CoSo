@@ -14,10 +14,9 @@ from statistics import mean
 from parser import EmptyException, Parser
 from sharpCSP import Solution
 
-from gen_plots import plot as plot_results
 from util import *
 
-TIMEOUT = 300
+TIMEOUT = 10
 random.seed(1234)
 
 ops = [">", "<", "<=", ">=", "!=", "="]
@@ -217,91 +216,6 @@ def generate_problem(
                 op = ops[random.randint(0, 5)]
                 problem += f"#{dom}&a {op} {n};\n"
     return problem
-
-
-def domf2minizinc(df, n):
-    if isinstance(df, Not):
-        aux_d, name, n = domf2minizinc(df.child, n)
-        descr = f"\nset of int: df{n+1}= uni diff {name};\n"
-        return aux_d + descr, f"df{n+1}", n + 1
-    elif isinstance(df, And):
-        aux_dl, namel, n = domf2minizinc(df.left, n)
-        aux_dr, namer, m = domf2minizinc(df.right, n)
-        descr = f"\nset of int: df{m+1}= {namel} intersect {namer};\n"
-        return aux_dl + aux_dr + descr, f"df{m+1}", m + 1
-    elif isinstance(df, Or):
-        aux_dl, namel, n = domf2minizinc(df.left, n)
-        aux_dr, namer, m = domf2minizinc(df.right, n)
-        descr = f"\nset of int: df{m+1}= {namel} union {namer};\n"
-        return aux_dl + aux_dr + descr, f"df{m+1}", m + 1
-    else:
-        return "", df, n
-
-
-def problem2minizinc(problem):
-    minizinc = 'include "globals.mzn";\n'
-    for dom in problem.domains.values():
-        minizinc += f"set of int: {dom.name} = {{"
-        minizinc += ",".join(
-            list(map(str, portion.iterate(dom.elements.domain(), step=1)))
-        )
-        minizinc += "};\n"
-    length = problem.structure.size.values.lower
-    minizinc += f"int: n = {length};\n"
-    sequence = (
-        problem.structure.type == "sequence" or problem.structure.type == "permutation"
-    )
-    subset = (
-        problem.structure.type == "subset" or problem.structure.type == "multisubset"
-    )
-    alldiff = (
-        problem.structure.type == "permutation" or problem.structure.type == "subset"
-    )
-    if sequence:
-        minizinc += f"array[1..n] of var uni: sequence;\n"
-        if alldiff:
-            minizinc += "constraint alldifferent(sequence);\n"
-    elif subset:
-        minizinc += f"var set of uni: sub;\n"
-        minizinc += f"constraint card(sub) == n;\n"
-    n = 0
-    for chf in problem.choice_formulas:
-        if isinstance(chf, CPosition):
-            aux_doms, dom_f, n = domf2minizinc(chf.dformula.name, n)
-            minizinc += aux_doms
-            minizinc += f"constraint sequence[{chf.pos}] in {dom_f};\n"
-        elif isinstance(chf, InFormula):
-            minizinc += f"constraint {chf.entity} in sets;\n"
-    for cof in problem.count_formulas:
-        if sequence:
-            range = "i in 1..n"
-            elem = "sequence[i]"
-        elif subset:
-            range = "i in sub"
-            elem = "i"
-        intv = cof.values
-        bounds = []
-        for left, lower, upper, right in portion.to_data(intv):
-            if upper > 1000:  # some issues comparing to portion.inf
-                upper = length
-            if not left:
-                lower += 1
-            if not right:
-                upper += 1
-            bounds.append((lower, upper))
-        aux_doms, dom_f, n = domf2minizinc(cof.formula.name, n)
-        for l in aux_doms.split("\n"):
-            if l not in minizinc:
-                minizinc += l + "\n"
-        minizinc += f"constraint "
-        cofs = []
-        for lower, upper in bounds:
-            cofs.append(
-                f"sum({range})(bool2int({elem} in {dom_f})) >= {lower} /\\ sum({range})(bool2int({elem} in {dom_f})) <= {upper}"
-            )
-        minizinc += "\\/\n".join(cofs) + ";\n"
-    minizinc += "solve satisfy;"
-    return minizinc
 
 
 def dom2asp(label, domain):
@@ -799,6 +713,7 @@ def run_coso(problem, log=False):
             killtree(p.pid)
             p.join()
             print("Killed")
+            res = Result("CoSo", Solution(-1, [], -1), TIMEOUT)
         else:
             sol = Solution(count.value, [], n_subproblems.value)
             res = Result("CoSo", sol, finish - start)
@@ -945,22 +860,23 @@ def present_results(results, solver):
 
 def export_coso_results(results, file):
     gsn, gst = coso_subproblem_stats(results)
-    file.write("n_subproblems\tcount\ttime\n")
+    file.write("n_subproblems\tn_solutions\ttime\n")
     for n in gsn:
         file.write(f"{n}\t{gsn[n]}\t{gst[n]}\n")
     file.close()
 
 
 def run_benchmarks(plot):
-    # types = []
+    types = []
     # types = ["subset"]
-    types = ["composition", "multisubset", "permutation", "sequence", "subset"]
+    # types = ["composition", "multisubset", "permutation", "sequence", "subset"]
     for type in types:
         dir = os.path.join(BENCHMARKS, type)
         print(dir)
         test_folder(dir, True, True, True)
     clean_essence_garbage()
     if plot:
+        from gen_plots import plot as plot_results
         plot_results()
 
 

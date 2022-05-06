@@ -1,3 +1,4 @@
+from turtle import pd
 import seaborn as sns
 import os
 import pandas
@@ -144,8 +145,6 @@ def plot_benchmarks_sat(df, fig, axis):
 
 def plot_benchmarks_unsat(df, fig, axis):
 
-    print(df)
-
     sns.barplot(ax=axis, x="benchmark", y="time", hue="solver", data=df, palette=pal)
 
     axis.set_yscale("log", nonpositive="clip")
@@ -199,25 +198,15 @@ def plot_benchmarks_unsat(df, fig, axis):
 
 def plot_coso_stats(df, fig, axis):
 
-    tab_count = df.pivot_table(
-        index=["n_subproblems"],
-        columns="Benchmark",
-        values="count",
-        aggfunc="sum",
-        fill_value=0,
-    )
-    tab_time = df.pivot_table(
-        index=["n_subproblems"], values="mean", aggfunc="mean", fill_value=0
-    )
-    ax5 = tab_count.plot(
+    ax5 = df.plot(
         kind="bar", stacked=True, color=sns.color_palette("colorblind"), width=0.9
     )
 
     labels_real = []
     labels_synth = []
-    for i in range(0, len(tab_count)):
-        labels_real.append(tab_count.iloc[i, 0])
-        labels_synth.append(tab_count.iloc[i, 1])
+    for i in range(0, len(df)):
+        labels_real.append(df.iloc[i, 0])
+        labels_synth.append(df.iloc[i, 1])
     labels = labels_real + labels_synth
 
     for i, patch in enumerate(ax5.patches):
@@ -295,6 +284,12 @@ def load_data():
 
     df_sat = df_bench[df_bench["n_solutions"] > 0]
     df_unsat = df_bench[df_bench["n_solutions"] == 0]
+
+    coso_synth = df_bench.loc[df_bench["solver"] == "CoSo"].drop(
+        ["benchmark", "solver"], axis=1
+    )
+    df_coso = pandas.concat([df_real, coso_synth])
+    print(df_coso)
 
     return (df_sat, df_unsat, df_coso)
 

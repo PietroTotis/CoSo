@@ -11,20 +11,19 @@
             "program": "tester.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": [
-                "-b",
-                "--plot"
-            ]
+            // "args": [
+            //     "-b",
+            //     "--plot"
+            // ]
             // "args": [
             //     "--test-folder",
             //     "../tests/examples"
             // ]
-            // "args": [
-            //     "-l",
-            //     "--essence",
-            //     "-f",
-            //     "../tests/benchmarks/subset/subset_20_10.test"
-            // ]
+            "args": [
+                "-l",
+                "-f",
+                "../tests/benchmarks/composition/composition_20_5.test"
+            ]
             // "args": ["-t", "300", "--essence", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-t", "300", "--essence", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
