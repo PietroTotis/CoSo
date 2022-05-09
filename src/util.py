@@ -312,26 +312,33 @@ def list2interval(problem, elems, new):
     Returns:
         IntervalDict: map from intervals to indistinguishability
     """
-    # find duplicates
-    count = Counter(elems)
-    unique = []
-    repeated = []
-    for label, n in count.items():
-        if n > 1:
-            indist_elems = [label] + [f"{label}__{i}" for i in range(1, n)]
-            repeated.append(indist_elems)
-        else:
-            unique.append(label)
-
-    # convert entities to intervals
     intervals = IntervalDict()
-    singletons = entities2intervals(problem, unique, new)
-    for iv in singletons:
-        intervals[iv] = True
-    for indist_set in repeated:
-        indist_ivs = entities2intervals(problem, indist_set, new)
-        for iv in indist_ivs:
-            intervals[iv] = False
+    # find duplicates
+    if new:
+        count = Counter(elems)
+        unique = []
+        repeated = []
+        for label, n in count.items():
+            if n > 1:
+                indist_elems = [label] + [f"{label}__{i}" for i in range(1, n)]
+                repeated.append(indist_elems)
+            else:
+                unique.append(label)
+
+        # convert entities to intervals
+        singletons = entities2intervals(problem, unique, new)
+        for iv in singletons:
+            intervals[iv] = True
+        for indist_set in repeated:
+            indist_ivs = entities2intervals(problem, indist_set, new)
+            for iv in indist_ivs:
+                intervals[iv] = False
+    else:  # list of properties without duplicates
+        for entity in elems:
+            ivs = entities2intervals(problem, [entity], new)
+            for iv in ivs:
+                dist = (iv.upper - iv.lower) == 0
+                intervals[iv] = dist
     return intervals
 
 

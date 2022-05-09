@@ -237,6 +237,7 @@ class Parser(object):
             self.problem.add_domain(d)
             if explicit_univ:
                 self.problem.universe = d
+            print(univ, d.elements)
             p[0] = d
 
     def p_arrangement(self, p):
