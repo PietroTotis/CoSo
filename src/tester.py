@@ -336,7 +336,7 @@ def problem2asp(problem):
             for i in range(0, l):
                 for pf in problem.pos_formulas:
                     if pf.pos - 1 == i:
-                        for j, cof in enumerate(pf.formula.cofs):
+                        for j, cof in enumerate(pf.formula.ccs):
                             dlab = f"df_{i}_{j}"
                             if dlab not in n_supports:
                                 dom_str, n = dom2asp(dlab, cof.formula)
@@ -520,7 +520,7 @@ def problem2essence(problem):
                             size_constr = f"sum([put[e,p{i}] | e:{uni}]) in {name}"
                             constraints.append(size_constr)
                         else:
-                            for k, cof in enumerate(pf.formula.cofs):
+                            for k, cof in enumerate(pf.formula.ccs):
                                 df = cof.formula
                                 dlab = f"df_{i}_{j}_{k}"
                                 if dlab not in added_doms:
