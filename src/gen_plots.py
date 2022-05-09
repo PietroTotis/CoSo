@@ -199,14 +199,15 @@ def plot_benchmarks_unsat(df, fig, axis):
 
 def plot_coso_stats(df, fig, axis):
 
-    print(df)
+    count = df.groupby(["n_subproblems", "origin"])["count"].sum().unstack()
+    time = df.groupby(["n_subproblems"], as_index=False)["time"].mean()
 
-    ax5 = df.groupby(["origin", "n_subproblems"])["count"].plot(
-        x="n_subproblems",
+    count.plot(
         kind="bar",
         stacked=True,
         color=sns.color_palette("colorblind"),
         width=0.9,
+        ax=axis,
     )
 
     # labels_real = []
@@ -216,37 +217,36 @@ def plot_coso_stats(df, fig, axis):
     #     labels_synth.append(df.iloc[i, 1])
     # labels = labels_real + labels_synth
 
-    # print(labels)
-    labels = df["n_subproblems"]
-    print(ax5.patches)
+    n = df.columns.get_loc("n_subproblems")
 
-    for i, patch in enumerate(ax5.patches):
+    for i, patch in enumerate(axis.patches):
         x, y = patch.get_xy()
         x += patch.get_width() / 2
         y += patch.get_height() / 2
         y = 1 if y == 0.5 else y
-        l = "" if labels[i] == 0 else labels[i]
-        ax5.annotate(l, (x, y), ha="center", va="center", c="black")
+        l = "" if df.iloc[i, n] == 0 else df.iloc[i, n]
+        axis.annotate(l, (x, y), ha="center", va="center", c="black")
 
-    ax6 = ax5.twinx()
-    ax7 = ax5.twinx()
-    ax6.plot(ax5.get_xticks(), df["time"], color=sns.color_palette("Paired")[1])
-    ax5.set_yscale("symlog", linthresh=10)
+    ax6 = axis.twinx()
+    ax7 = axis.twinx()
+    print(time)
+    ax6.plot(axis.get_xticks(), time["time"], color=sns.color_palette("colorblind")[2])
+    axis.set_yscale("symlog", linthresh=10)
     ax6.set_yscale("log", nonpositive="clip")
     ax7.set_yscale("log", nonpositive="clip")
 
     ax7.set_ylim(ax6.get_ylim())
 
-    ax5.grid(False)
+    axis.grid(False)
     ax6.grid(False)
     ax7.grid(False)
-    ax5.yaxis.set_ticks([], minor=True)
+    axis.yaxis.set_ticks([], minor=True)
     ax6.yaxis.set_ticks([], minor=True)
     ax7.yaxis.set_ticks([], minor=True)
     ticks = [10**x for x in range(0, 3)]
-    ax5.set_yticks(ticks)
-    ax5.set_yticklabels(ticks, va="center")
-    ticks = [10**x for x in range(-2, 3)]
+    axis.set_yticks(ticks)
+    axis.set_yticklabels(ticks, va="center")
+    ticks = [10**x for x in range(-1, 3)]
     ax6.set_yticks(ticks)
     ax6.set_yticklabels(ticks, va="center")
     ax7.set(yticks=ax6.get_yticks(), yticklabels=[], ylim=ax6.get_ylim())
@@ -254,14 +254,14 @@ def plot_coso_stats(df, fig, axis):
     for y in ax6.get_yticks():
         ax7.axhline(y=y, color=ax6.get_lines()[-1].get_c(), alpha=0.3, linestyle="-")
 
-    ax5.set_xlabel("\\# subproblems")
-    ax5.set_ylabel("\\# benchmarks")
+    axis.set_xlabel("\\# subproblems")
+    axis.set_ylabel("\\# benchmarks")
     ax6.set_ylabel("Seconds")
-    ax5.set_title("CoSo avg. runtime vs. \\#subproblems")
+    axis.set_title("CoSo avg. runtime vs. \\#subproblems")
 
-    ax5.set_zorder(ax7.get_zorder() + 1)
+    axis.set_zorder(ax7.get_zorder() + 1)
     ax6.set_zorder(ax7.get_zorder() + 1)
-    ax5.set_frame_on(False)
+    axis.set_frame_on(False)
     ax6.set_frame_on(False)
 
     ax7.spines["bottom"].set_color("0.5")
@@ -280,30 +280,26 @@ def plot_coso_stats(df, fig, axis):
 
 def load_data():
 
-    # df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
-    # df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
+    df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
+    df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
     df_coso_real = pandas.read_csv(COSO_STATS_EX, sep="\t")
 
-    # for r1 in df_bench.index:
-    #     for r2 in df_bench.index:
-    #         if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
-    #             if df_bench["n_subproblems"][r1] == -1:
-    #                 if df_bench["n_subproblems"][r2] != -1:
-    #                     df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][r2]
-    #             if df_bench["n_solutions"][r1] == -1:
-    #                 if df_bench["n_solutions"][r2] != -1:
-    #                     df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
+    for r1 in df_bench.index:
+        for r2 in df_bench.index:
+            if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
+                if df_bench["n_subproblems"][r1] == -1:
+                    if df_bench["n_subproblems"][r2] != -1:
+                        df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][r2]
+                if df_bench["n_solutions"][r1] == -1:
+                    if df_bench["n_solutions"][r2] != -1:
+                        df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
 
-    # df_sat = df_bench[df_bench["n_solutions"] > 0]
-    # df_unsat = df_bench[df_bench["n_solutions"] == 0]
+    df_sat = df_bench[df_bench["n_solutions"] > 0]
+    df_unsat = df_bench[df_bench["n_solutions"] == 0]
 
-    # df_coso_synth["origin"] = "synthetic"
+    df_coso_synth["origin"] = "synthetic"
     df_coso_real["origin"] = "real"
-    # df_coso = pandas.concat([df_coso_synth, df_coso_real])
-
-    df_sat = None
-    df_unsat = None
-    df_coso = df_coso_real
+    df_coso = pandas.concat([df_coso_synth, df_coso_real])
 
     return (df_sat, df_unsat, df_coso)
 
@@ -313,8 +309,8 @@ def plot(pgf=False):
     sns.set_theme(style="darkgrid", color_codes=True)
     fig, axes = plt.subplots(nrows=1, ncols=3)
     df_sat, df_unsat, df_coso = load_data()
-    # plot_benchmarks_sat(df_sat, fig, axes[0])
-    # plot_benchmarks_unsat(df_unsat, fig, axes[1])
+    plot_benchmarks_sat(df_sat, fig, axes[0])
+    plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])
     if not PGF:
         plt.show()
