@@ -690,6 +690,8 @@ def run_essence(programs, count):
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)
             count.value = -1
             break
+        finally:
+            clean_essence_garbage()
 
 
 def run_coso_timeout(problem, count, n_subproblems, log=False):
@@ -867,9 +869,9 @@ def export_coso_results(results, file):
 
 
 def run_benchmarks(plot):
-    types = []
+    # types = []
     # types = ["subset"]
-    # types = ["composition", "multisubset", "permutation", "sequence", "subset"]
+    types = ["multisubset", "permutation", "sequence", "subset", "composition"]
     for type in types:
         dir = os.path.join(BENCHMARKS, type)
         print(dir)

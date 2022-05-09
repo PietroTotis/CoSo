@@ -199,7 +199,6 @@ class Parser(object):
             if isinstance(p[1], LiftedSet):
                 d = self.problem.compute_dom(p[3])
                 p[1].ccs = [CCounting(d, Int.open(0, Int.inf))]
-                print(p[1])
                 p[0] = p[1]
             elif isinstance(p[3], LiftedSet):
                 d = self.problem.compute_dom(p[1])
