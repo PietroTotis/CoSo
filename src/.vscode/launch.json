@@ -8,8 +8,8 @@
             "name": "CoSo",
             "type": "python",
             "request": "launch",
-            // "program": "tester.py",
-            "program": "gen_plots.py",
+            "program": "tester.py",
+            // "program": "gen_plots.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
             // "args": [
@@ -17,10 +17,10 @@
             //     "-f",
             //     "../tests/examples/h837.pl"
             // ]
-            // "args": [
-            //     "-b",
-            //     "--plot"
-            // ]
+            "args": [
+                "-b",
+                "--plot"
+            ]
             // "args": [
             //     "--test-folder",
             //     "../tests/examples"

@@ -867,9 +867,9 @@ def export_coso_results(results, file):
 
 
 def run_benchmarks(plot):
-    types = []
+    # types = []
     # types = ["subset"]
-    # types = ["composition", "multisubset", "permutation", "sequence", "subset"]
+    types = ["composition", "multisubset", "permutation", "sequence", "subset"]
     for type in types:
         dir = os.path.join(BENCHMARKS, type)
         print(dir)
