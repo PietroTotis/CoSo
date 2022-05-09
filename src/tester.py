@@ -672,7 +672,8 @@ def run_essence(programs, count):
         try:
             p = Popen(
                 [
-                    f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --limit-time {TIMEOUT}  --log-level lognone {input}"
+                    # f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --limit-time {TIMEOUT}  --log-level lognone {input}"
+                    f"{exec_conjure} solve -ac -o {conjure_output} --solutions-in-one-file --number-of-solutions=all --log-level lognone {input}"
                 ],
                 start_new_session=True,
                 shell=True,
@@ -757,7 +758,7 @@ def run_solver(problem, sys_name, translate, run):
 
 def compare(problem, name, sys_name, translate, run, log=False):
     print(f"Comparing on {name}")
-    run_coso(problem, log)
+    # run_coso(problem, log)
     run_solver(problem, sys_name, translate, run)
 
 
@@ -876,24 +877,62 @@ def run_benchmarks(plot):
         dir = os.path.join(BENCHMARKS, type)
         print(dir)
         test_folder(dir, True, True, True)
-    clean_essence_garbage()
+        clean_essence_garbage()
+
+    examples = os.path.join(TESTS, "examples")
+    test_folder(examples, True, True, True)
+
+    examples = os.path.join(BENCHMARKS, "growing_domains")
+    test_folder(examples, True, True, True)
+
     if plot:
         from gen_plots import plot as plot_results
 
         plot_results()
 
 
+def translate_folder(folder, translation, out_name=None):
+    if out_name is not None:
+        out = os.path.join(folder, out_name)
+    os.makedirs(out, exist_ok=True)
+    for filename in os.listdir(folder):
+        if filename.endswith(".test") or filename.endswith(".pl"):
+            path = os.path.join(folder, filename)
+            print(f"Translating {filename}:")
+            translate(path, translation, out)
+
+
+def translate(file, translation, out=None):
+    if out is None:
+        out = os.path.dirname(file)
+    name = os.path.basename(file).split(".")[0]
+    parser = Parser(file)
+    parser.parse()
+    problem = parser.problem
+    problems_translated = translation(problem)
+    for i, pt in enumerate(problems_translated):
+        pt_name = name + f"_{i}.txt"
+        with open(os.path.join(out, pt_name), "w+") as f:
+            f.write(pt)
+            f.close()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", help="Run solver on file")
+    parser.add_argument("-d", help="Run solver on directory")
     parser.add_argument("-b", action="store_true", help="Run benchmarks")
     parser.add_argument("-l", action="store_true", help="Logging")
     parser.add_argument("-g", help="Geneate random tests in given folder")
     parser.add_argument(
         "-t", "--timeout", type=int, default=TIMEOUT, help="Set timeout in seconds"
     )
+    parser.add_argument(
+        "-e",
+        action="store_true",
+        help="Export translation only without running solvers",
+    )
     parser.add_argument("--plot", action="store_true", help="Plot benchmarks results")
-    parser.add_argument("--test-folder", help="Run tool comparison on files in folder")
     parser.add_argument("--asp", action="store_true", help="Compare with 'asp'")
     parser.add_argument("--sat", action="store_true", help="Compare with 'sharpSAT'")
     parser.add_argument("--essence", action="store_true", help="Compare with 'essence'")
@@ -909,36 +948,33 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     TIMEOUT = args.timeout
+
+    solvers = []
+    if args.asp:
+        solvers.append(("Clingo", problem2asp, run_asp))
+    if args.sat:
+        solvers.append(("SharpSAT", problem2asp, run_sat))
+    if args.essence:
+        solvers.append(("Essence", problem2essence, run_essence))
     if args.f:
-        parser = Parser(args.f)
-        parser.parse()
-        # print(parser.problem)
-        # if args.minizinc:
-        #     compare2minizinc(parser.problem, args.f)
-        if args.asp:
-            compare(parser.problem, args.f, "Clingo", problem2asp, run_asp, log=args.l)
-        if args.sat:
-            compare(
-                parser.problem, args.f, "SharpSAT", problem2asp, run_sat, log=args.l
-            )
-        if args.essence:
-            compare(
-                parser.problem,
-                args.f,
-                "Essence",
-                problem2essence,
-                run_essence,
-                log=args.l,
-            )
-        if not args.asp and not args.sat and not args.essence:
-            sol = parser.problem.solve(log=args.l)
-            print(f"Count: {sol}")
+        if args.e is None:
+            parser = Parser(args.f)
+            parser.parse()
+            run_coso(parser.problem, args.l)
+            for solver_args in solvers:
+                compare(parser.problem, args.f, *solver_args, log=args.l)
+        else:
+            for sname, translation, _ in solvers:
+                translate(args.f, translation, sname)
+    elif args.d:
+        if args.e is None:
+            test_folder(args.test_folder, args.asp, args.sat, args.essence)
+        else:
+            for sname, translation, _ in solvers:
+                translate_folder(args.d, translation, sname)
     elif args.b:
         run_benchmarks(args.plot)
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
-    elif args.test_folder:
-        # ap = 'aproblog' in args.compare
-        test_folder(args.test_folder, args.asp, args.sat, args.essence)
     else:
         pass

@@ -309,6 +309,7 @@ class Parser(object):
     def p_pos_constraint(self, p):
         """pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity
         | LABEL LSPAR NUMBER RSPAR IN set
+        | LABEL LSPAR NUMBER RSPAR EQUALS set
         | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
         """
         arrangement = p[1]

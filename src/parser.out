@@ -47,36 +47,37 @@ Rule 41    math_op -> MAX
 Rule 42    aggcmp -> math_op LRPAR set RRPAR comp NUMBER
 Rule 43    pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS entity
 Rule 44    pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set
-Rule 45    pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
-Rule 46    count_constraint -> COUNT set comp NUMBER
-Rule 47    count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER
+Rule 45    pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set
+Rule 46    pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+Rule 47    count_constraint -> COUNT set comp NUMBER
+Rule 48    count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER
 
 Terminals, with rules where they appear
 
 COMMA                : 13
 COMPOSITIONS         : 38
-COUNT                : 46 47
+COUNT                : 47 48
 DIFF                 : 19
-EQUALS               : 14 17 18 19 29 30 31 32 43 45
+EQUALS               : 14 17 18 19 29 30 31 32 43 45 46
 GT                   : 16 17
 IN                   : 35 36 37 38 44
 INTER                : 27
 LAB                  : 32 34
-LABEL                : 9 20 21 29 30 32 33 34 35 36 37 38 43 44 45
-LPAR                 : 29 30 31 32 35 45 47
+LABEL                : 9 20 21 29 30 32 33 34 35 36 37 38 43 44 45 46
+LPAR                 : 29 30 31 32 35 46 48
 LRPAR                : 25 37 38 42
-LSPAR                : 21 36 43 44 45
+LSPAR                : 21 36 43 44 45 46
 LT                   : 15 18
 MAX                  : 41
 MIN                  : 40
 NOT                  : 26
-NUMBER               : 8 21 42 43 44 45 46 47
+NUMBER               : 8 21 42 43 44 45 46 47 48
 PART                 : 24
 PARTITIONS           : 37
 PROP                 : 29 31 32 33 34
-RPAR                 : 29 30 31 32 35 45 47
+RPAR                 : 29 30 31 32 35 46 48
 RRPAR                : 25 37 38 42
-RSPAR                : 21 36 43 44 45
+RSPAR                : 21 36 43 44 45 46
 SEMI                 : 3 4 5 6 7
 SLASH                : 10 11 11
 SUM                  : 39
@@ -89,16 +90,16 @@ Nonterminals, with rules where they appear
 aggcmp               : 5
 arrangement          : 4
 base_set             : 23
-comp                 : 42 46 47
-count_constraint     : 7 47
+comp                 : 42 47 48
+count_constraint     : 7 48
 declare_set          : 3
 entity               : 12 13 43
-entity_list          : 13 29 30 31 32 45
+entity_list          : 13 29 30 31 32 46
 math_op              : 42
 pos_constraint       : 6
 program              : 2 0
 replace              : 35 36
-set                  : 25 26 27 27 28 28 35 36 37 38 42 44 46
+set                  : 25 26 27 27 28 28 35 36 37 38 42 44 45 47
 statement            : 1 2
 
 Parsing method: LALR
@@ -126,9 +127,10 @@ state 0
     (42) aggcmp -> . math_op LRPAR set RRPAR comp NUMBER
     (43) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> . LABEL LSPAR NUMBER RSPAR IN set
-    (45) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
-    (46) count_constraint -> . COUNT set comp NUMBER
-    (47) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
+    (45) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS set
+    (46) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+    (47) count_constraint -> . COUNT set comp NUMBER
+    (48) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
     (39) math_op -> . SUM
     (40) math_op -> . MIN
     (41) math_op -> . MAX
@@ -181,9 +183,10 @@ state 2
     (42) aggcmp -> . math_op LRPAR set RRPAR comp NUMBER
     (43) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> . LABEL LSPAR NUMBER RSPAR IN set
-    (45) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
-    (46) count_constraint -> . COUNT set comp NUMBER
-    (47) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
+    (45) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS set
+    (46) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+    (47) count_constraint -> . COUNT set comp NUMBER
+    (48) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
     (39) math_op -> . SUM
     (40) math_op -> . MIN
     (41) math_op -> . MAX
@@ -260,7 +263,8 @@ state 9
     (38) arrangement -> LABEL . IN COMPOSITIONS LRPAR set RRPAR
     (43) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> LABEL . LSPAR NUMBER RSPAR IN set
-    (45) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
+    (45) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS set
+    (46) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
 
     IN              shift and go to state 25
     LSPAR           shift and go to state 26
@@ -290,8 +294,8 @@ state 12
 
 state 13
 
-    (46) count_constraint -> COUNT . set comp NUMBER
-    (47) count_constraint -> COUNT . LPAR count_constraint RPAR comp NUMBER
+    (47) count_constraint -> COUNT . set comp NUMBER
+    (48) count_constraint -> COUNT . LPAR count_constraint RPAR comp NUMBER
     (23) set -> . base_set
     (24) set -> . PART
     (25) set -> . LRPAR set RRPAR
@@ -448,7 +452,8 @@ state 26
 
     (43) pos_constraint -> LABEL LSPAR . NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> LABEL LSPAR . NUMBER RSPAR IN set
-    (45) pos_constraint -> LABEL LSPAR . NUMBER RSPAR EQUALS LPAR entity_list RPAR
+    (45) pos_constraint -> LABEL LSPAR . NUMBER RSPAR EQUALS set
+    (46) pos_constraint -> LABEL LSPAR . NUMBER RSPAR EQUALS LPAR entity_list RPAR
 
     NUMBER          shift and go to state 44
 
@@ -492,7 +497,7 @@ state 29
 
 state 30
 
-    (46) count_constraint -> COUNT set . comp NUMBER
+    (47) count_constraint -> COUNT set . comp NUMBER
     (27) set -> set . INTER set
     (28) set -> set . UNION set
     (14) comp -> . EQUALS
@@ -513,9 +518,9 @@ state 30
 
 state 31
 
-    (47) count_constraint -> COUNT LPAR . count_constraint RPAR comp NUMBER
-    (46) count_constraint -> . COUNT set comp NUMBER
-    (47) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
+    (48) count_constraint -> COUNT LPAR . count_constraint RPAR comp NUMBER
+    (47) count_constraint -> . COUNT set comp NUMBER
+    (48) count_constraint -> . COUNT LPAR count_constraint RPAR comp NUMBER
 
     COUNT           shift and go to state 13
 
@@ -683,7 +688,8 @@ state 44
 
     (43) pos_constraint -> LABEL LSPAR NUMBER . RSPAR EQUALS entity
     (44) pos_constraint -> LABEL LSPAR NUMBER . RSPAR IN set
-    (45) pos_constraint -> LABEL LSPAR NUMBER . RSPAR EQUALS LPAR entity_list RPAR
+    (45) pos_constraint -> LABEL LSPAR NUMBER . RSPAR EQUALS set
+    (46) pos_constraint -> LABEL LSPAR NUMBER . RSPAR EQUALS LPAR entity_list RPAR
 
     RSPAR           shift and go to state 66
 
@@ -717,7 +723,7 @@ state 47
 
 state 48
 
-    (46) count_constraint -> COUNT set comp . NUMBER
+    (47) count_constraint -> COUNT set comp . NUMBER
 
     NUMBER          shift and go to state 70
 
@@ -800,7 +806,7 @@ state 54
 
 state 55
 
-    (47) count_constraint -> COUNT LPAR count_constraint . RPAR comp NUMBER
+    (48) count_constraint -> COUNT LPAR count_constraint . RPAR comp NUMBER
 
     RPAR            shift and go to state 76
 
@@ -979,7 +985,8 @@ state 66
 
     (43) pos_constraint -> LABEL LSPAR NUMBER RSPAR . EQUALS entity
     (44) pos_constraint -> LABEL LSPAR NUMBER RSPAR . IN set
-    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR . EQUALS LPAR entity_list RPAR
+    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR . EQUALS set
+    (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR . EQUALS LPAR entity_list RPAR
 
     EQUALS          shift and go to state 89
     IN              shift and go to state 90
@@ -1025,10 +1032,10 @@ state 69
 
 state 70
 
-    (46) count_constraint -> COUNT set comp NUMBER .
+    (47) count_constraint -> COUNT set comp NUMBER .
 
-    SEMI            reduce using rule 46 (count_constraint -> COUNT set comp NUMBER .)
-    RPAR            reduce using rule 46 (count_constraint -> COUNT set comp NUMBER .)
+    SEMI            reduce using rule 47 (count_constraint -> COUNT set comp NUMBER .)
+    RPAR            reduce using rule 47 (count_constraint -> COUNT set comp NUMBER .)
 
 
 state 71
@@ -1100,7 +1107,7 @@ state 75
 
 state 76
 
-    (47) count_constraint -> COUNT LPAR count_constraint RPAR . comp NUMBER
+    (48) count_constraint -> COUNT LPAR count_constraint RPAR . comp NUMBER
     (14) comp -> . EQUALS
     (15) comp -> . LT
     (16) comp -> . GT
@@ -1144,7 +1151,6 @@ state 79
 
     COMMA           reduce using rule 9 (entity -> LABEL .)
     RPAR            reduce using rule 9 (entity -> LABEL .)
-    SEMI            reduce using rule 9 (entity -> LABEL .)
 
 
 state 80
@@ -1237,15 +1243,31 @@ state 88
 state 89
 
     (43) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . entity
-    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . LPAR entity_list RPAR
+    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . set
+    (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . LPAR entity_list RPAR
     (8) entity -> . NUMBER
     (9) entity -> . LABEL
+    (23) set -> . base_set
+    (24) set -> . PART
+    (25) set -> . LRPAR set RRPAR
+    (26) set -> . NOT set
+    (27) set -> . set INTER set
+    (28) set -> . set UNION set
+    (20) base_set -> . LABEL
+    (21) base_set -> . LABEL LSPAR NUMBER RSPAR
+    (22) base_set -> . UNIVERSE
 
-    LPAR            shift and go to state 104
+    LPAR            shift and go to state 106
     NUMBER          shift and go to state 82
-    LABEL           shift and go to state 79
+    LABEL           shift and go to state 103
+    PART            shift and go to state 33
+    LRPAR           shift and go to state 34
+    NOT             shift and go to state 35
+    UNIVERSE        shift and go to state 37
 
-    entity                         shift and go to state 103
+    entity                         shift and go to state 104
+    set                            shift and go to state 105
+    base_set                       shift and go to state 32
 
 state 90
 
@@ -1266,14 +1288,14 @@ state 90
     LABEL           shift and go to state 36
     UNIVERSE        shift and go to state 37
 
-    set                            shift and go to state 105
+    set                            shift and go to state 107
     base_set                       shift and go to state 32
 
 state 91
 
     (30) declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list . RPAR
 
-    RPAR            shift and go to state 106
+    RPAR            shift and go to state 108
 
 
 state 92
@@ -1287,21 +1309,21 @@ state 92
     NUMBER          shift and go to state 82
     LABEL           shift and go to state 79
 
-    entity_list                    shift and go to state 107
+    entity_list                    shift and go to state 109
     entity                         shift and go to state 81
 
 state 93
 
     (42) aggcmp -> math_op LRPAR set RRPAR comp . NUMBER
 
-    NUMBER          shift and go to state 108
+    NUMBER          shift and go to state 110
 
 
 state 94
 
-    (47) count_constraint -> COUNT LPAR count_constraint RPAR comp . NUMBER
+    (48) count_constraint -> COUNT LPAR count_constraint RPAR comp . NUMBER
 
-    NUMBER          shift and go to state 109
+    NUMBER          shift and go to state 111
 
 
 state 95
@@ -1339,7 +1361,7 @@ state 97
     LABEL           shift and go to state 79
 
     entity                         shift and go to state 81
-    entity_list                    shift and go to state 110
+    entity_list                    shift and go to state 112
 
 state 98
 
@@ -1378,14 +1400,40 @@ state 102
 
 state 103
 
+    (9) entity -> LABEL .
+    (20) base_set -> LABEL .
+    (21) base_set -> LABEL . LSPAR NUMBER RSPAR
+
+  ! reduce/reduce conflict for SEMI resolved using rule 9 (entity -> LABEL .)
+    SEMI            reduce using rule 9 (entity -> LABEL .)
+    INTER           reduce using rule 20 (base_set -> LABEL .)
+    UNION           reduce using rule 20 (base_set -> LABEL .)
+    LSPAR           shift and go to state 58
+
+  ! SEMI            [ reduce using rule 20 (base_set -> LABEL .) ]
+
+
+state 104
+
     (43) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS entity .
 
     SEMI            reduce using rule 43 (pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS entity .)
 
 
-state 104
+state 105
 
-    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR . entity_list RPAR
+    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set .
+    (27) set -> set . INTER set
+    (28) set -> set . UNION set
+
+    SEMI            reduce using rule 45 (pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set .)
+    INTER           shift and go to state 49
+    UNION           shift and go to state 50
+
+
+state 106
+
+    (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR . entity_list RPAR
     (12) entity_list -> . entity
     (13) entity_list -> . entity COMMA entity_list
     (8) entity -> . NUMBER
@@ -1394,10 +1442,10 @@ state 104
     NUMBER          shift and go to state 82
     LABEL           shift and go to state 79
 
-    entity_list                    shift and go to state 111
+    entity_list                    shift and go to state 113
     entity                         shift and go to state 81
 
-state 105
+state 107
 
     (44) pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set .
     (27) set -> set . INTER set
@@ -1408,61 +1456,61 @@ state 105
     UNION           shift and go to state 50
 
 
-state 106
+state 108
 
     (30) declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR .
 
     SEMI            reduce using rule 30 (declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR .)
 
 
-state 107
+state 109
 
     (32) declare_set -> LAB PROP LABEL EQUALS LPAR entity_list . RPAR
 
-    RPAR            shift and go to state 112
+    RPAR            shift and go to state 114
 
 
-state 108
+state 110
 
     (42) aggcmp -> math_op LRPAR set RRPAR comp NUMBER .
 
     SEMI            reduce using rule 42 (aggcmp -> math_op LRPAR set RRPAR comp NUMBER .)
 
 
-state 109
+state 111
 
-    (47) count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .
+    (48) count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .
 
-    SEMI            reduce using rule 47 (count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .)
-    RPAR            reduce using rule 47 (count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .)
+    SEMI            reduce using rule 48 (count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .)
+    RPAR            reduce using rule 48 (count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER .)
 
 
-state 110
+state 112
 
     (13) entity_list -> entity COMMA entity_list .
 
     RPAR            reduce using rule 13 (entity_list -> entity COMMA entity_list .)
 
 
-state 111
+state 113
 
-    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list . RPAR
+    (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list . RPAR
 
-    RPAR            shift and go to state 113
+    RPAR            shift and go to state 115
 
 
-state 112
+state 114
 
     (32) declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR .
 
     SEMI            reduce using rule 32 (declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR .)
 
 
-state 113
+state 115
 
-    (45) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR .
+    (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR .
 
-    SEMI            reduce using rule 45 (pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR .)
+    SEMI            reduce using rule 46 (pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR .)
 
 WARNING: 
 WARNING: Conflicts:
@@ -1473,3 +1521,5 @@ WARNING: shift/reduce conflict for INTER in state 71 resolved as shift
 WARNING: shift/reduce conflict for UNION in state 71 resolved as shift
 WARNING: shift/reduce conflict for INTER in state 72 resolved as shift
 WARNING: shift/reduce conflict for UNION in state 72 resolved as shift
+WARNING: reduce/reduce conflict in state 103 resolved using rule (entity -> LABEL)
+WARNING: rejected rule (base_set -> LABEL) in state 103
