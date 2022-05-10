@@ -247,8 +247,17 @@ class SetFormula(Multiset, Variable):
             indist = self.indistinguishable_subsets(f.child)
         else:  # Domain
             df = df & self.universe  # update indistinguishability from universe
-            if [False] == list(df.elements.values()):
+            vals = list(df.elements.values())
+            if [False] == vals:
                 indist = {df}
+            elif False in vals:
+                indist_subsets = set()
+                i = 1
+                for dom in df.elements.find(False):
+                    sub = SetFormula(f"{df.formula}_{i}", df.elements[dom], df.universe)
+                    indist_subsets.add(sub)
+                    i += 1
+                return indist_subsets
             else:
                 indist = set()
         return indist

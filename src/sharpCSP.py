@@ -1395,6 +1395,7 @@ class SharpCSP(object):
         self.log("There are constraints: consider relevant sets")
         vars = var_list if var_list is not None else self.vars
         cases = self.universe.indistinguishable_subsets()
+        print("fdsolikfosd!", cases)
         for v in vars:
             cases = cases.union(v.relevant())
         cases = list(cases)

@@ -12,11 +12,6 @@
             // "program": "gen_plots.py",
             // "program": "launcher.py",
             "console": "integratedTerminal",
-            "args": [
-                "-e",
-                "-d",
-                "../tests/benchmarks/permutation/"
-            ]
             // "args": [
             //     "-l",
             //     "-f",
@@ -33,17 +28,18 @@
             // "args": [
             //     "-l",
             //     "-f",
-            //     "../tests/benchmarks/permutation/permutation_20_5.test"
+            //     "../tests/benchmarks/composition/composition_10_5.test",
+            //     "--asp"
             // ]
             // "args": ["-t", "300", "--essence", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-t", "300", "--essence", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
-            // "args": [
-            //     "-l",
-            //     "--asp",
-            //     "-f",
-            //     "../tests/work.pl"
-            // ]
+            "args": [
+                "-l",
+                "--asp",
+                "-f",
+                "../tests/work.pl"
+            ]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
             // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": [

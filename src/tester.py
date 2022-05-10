@@ -870,8 +870,8 @@ def export_coso_results(results, file):
 
 
 def run_benchmarks(plot):
-    # types = []
-    types = ["subset", "composition", "sequence"]
+    types = []
+    # types = ["subset", "composition", "sequence"]
     # types = ["multisubset", "permutation", "sequence", "subset", "composition"]
     for type in types:
         dir = os.path.join(BENCHMARKS, type)
@@ -879,16 +879,16 @@ def run_benchmarks(plot):
         test_folder(dir, True, True, True)
         clean_essence_garbage()
 
-    examples = os.path.join(TESTS, "examples")
-    test_folder(examples, True, True, True)
+    # examples = os.path.join(TESTS, "examples")
+    # test_folder(examples, True, True, True)
 
-    examples = os.path.join(BENCHMARKS, "growing_domains")
-    test_folder(examples, True, True, True)
+    # examples = os.path.join(BENCHMARKS, "growing_domains")
+    # test_folder(examples, True, True, True)
 
     if plot:
         from gen_plots import plot as plot_results
 
-        plot_results()
+        plot_results(BENCHMARKS)
 
 
 def translate_folder(folder, translation, out_name=None):
@@ -957,21 +957,21 @@ if __name__ == "__main__":
     if args.essence:
         solvers.append(("Essence", problem2essence, run_essence))
     if args.f:
-        if args.e is None:
+        if args.e:
+            for sname, translation, _ in solvers:
+                translate(args.f, translation, sname)
+        else:
             parser = Parser(args.f)
             parser.parse()
             run_coso(parser.problem, args.l)
             for solver_args in solvers:
                 compare(parser.problem, args.f, *solver_args, log=args.l)
-        else:
-            for sname, translation, _ in solvers:
-                translate(args.f, translation, sname)
     elif args.d:
-        if args.e is None:
-            test_folder(args.test_folder, args.asp, args.sat, args.essence)
-        else:
+        if args.e:
             for sname, translation, _ in solvers:
                 translate_folder(args.d, translation, sname)
+        else:
+            test_folder(args.test_folder, args.asp, args.sat, args.essence)
     elif args.b:
         run_benchmarks(args.plot)
     elif args.g:

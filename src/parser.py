@@ -264,25 +264,25 @@ class Parser(object):
             for set in self.sizes:
                 self.venn.add_set(set, self.sizes[set])
             self.problem = self.venn.update_domains(self.problem)
-        if len(self.problem.domains) > 0:
-            len(self.problem.domains)
-            self.problem.compute_universe()
-            names = list(self.problem.domains)
-            for i, d1 in enumerate(names):
-                for d2 in names[i:]:
-                    dom1 = self.problem.domains[d1]
-                    dom2 = self.problem.domains[d2]
-                    if dom1.elements.domain() in dom2.elements.domain():
-                        dom1.elements.combine(
-                            dom2.elements, how=is_distinguishable
-                        )  # update indistinguishable
-                    if dom2.elements.domain() in dom1.elements.domain():
-                        self.problem.domains[d1] = dom1 | dom2
-        else:
-            raise EmptyException("No sets found")
         dom = self.problem.compute_dom(set)
         s = Configuration(name, type, dom)
         self.problem.configuration = s
+        if len(self.problem.domains) > 0:
+            if self.problem.universe is not None:
+                self.problem.compute_universe()
+                names = list(self.problem.domains)
+                for i, d1 in enumerate(names):
+                    for d2 in names[i:]:
+                        dom1 = self.problem.domains[d1]
+                        dom2 = self.problem.domains[d2]
+                        if dom1.elements.domain() in dom2.elements.domain():
+                            dom1.elements.combine(
+                                dom2.elements, how=is_distinguishable
+                            )  # update indistinguishable
+                        if dom2.elements.domain() in dom1.elements.domain():
+                            self.problem.domains[d1] = dom1 | dom2
+        else:
+            raise EmptyException("No sets found")
         p[0] = s
 
     def p_math_op(self, p):

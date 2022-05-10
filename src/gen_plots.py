@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from util import ROOT_DIR
 
 OUT_DIR = os.path.join(ROOT_DIR, "tests", "results")
-BENCHMARKS = os.path.join(OUT_DIR, "bench_results_benchmarks.csv")
+# BENCHMARKS = os.path.join(OUT_DIR, "bench_results_benchmarks.csv")
+BENCHMARKS = os.path.join(ROOT_DIR, "tests", "benchmarks")
 COSO_STATS_BENCH = os.path.join(OUT_DIR, "subs_results_benchmarks.csv")
 COSO_STATS_EX = os.path.join(OUT_DIR, "subs_results_examples.csv")
 WIDTH = 430
@@ -278,37 +279,64 @@ def plot_coso_stats(df, fig, axis):
         plt.savefig(path, bbox_inches="tight")
 
 
-def load_data():
+def load_folder(folder):
+    b_name = f"bench_results_{folder}.csv"
+    b_path = os.path.join(OUT_DIR, b_name)
+    s_name = f"subs_results_{folder}.csv"
+    s_path = os.path.join(OUT_DIR, s_name)
+    if os.path.exists(b_path):
+        df_bench = pandas.read_csv(b_path, sep="\t")
+        df_subs = pandas.read_csv(s_path, sep="\t")
+        for r1 in df_bench.index:
+            for r2 in df_bench.index:
+                if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
+                    if df_bench["n_subproblems"][r1] == -1:
+                        if df_bench["n_subproblems"][r2] != -1:
+                            df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][
+                                r2
+                            ]
+                    if df_bench["n_solutions"][r1] == -1:
+                        if df_bench["n_solutions"][r2] != -1:
+                            df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
+        return (df_bench, df_subs)
+    else:
+        p = pandas.DataFrame()
+        return (p, p)
 
-    df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
-    df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
-    df_coso_real = pandas.read_csv(COSO_STATS_EX, sep="\t")
 
-    for r1 in df_bench.index:
-        for r2 in df_bench.index:
-            if df_bench["benchmark"][r1] == df_bench["benchmark"][r2]:
-                if df_bench["n_subproblems"][r1] == -1:
-                    if df_bench["n_subproblems"][r2] != -1:
-                        df_bench["n_subproblems"][r1] = df_bench["n_subproblems"][r2]
-                if df_bench["n_solutions"][r1] == -1:
-                    if df_bench["n_solutions"][r2] != -1:
-                        df_bench["n_solutions"][r1] = df_bench["n_solutions"][r2]
+def load_data(bench_dir):
 
-    df_sat = df_bench[df_bench["n_solutions"] > 0]
-    df_unsat = df_bench[df_bench["n_solutions"] == 0]
+    examples_dir = os.path.join(bench_dir, "examples")
+    df_bench_real, df_coso_real = load_folder(examples_dir)
+    df_coso_synth = pandas.DataFrame()
+    df_bench_synth = pandas.DataFrame()
+
+    for folder in os.listdir(bench_dir):
+        if folder != "examples":
+            df_bench_folder, df_subs_folder = load_folder(folder)
+            df_bench_synth = pandas.concat([df_bench_synth, df_bench_folder])
+            df_coso_synth = pandas.concat([df_coso_synth, df_subs_folder])
+
+    # df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
+    # df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
+    # df_coso_real = pandas.read_csv(COSO_STATS_EX, sep="\t")
+
+    df_sat = df_bench_synth[df_bench_synth["n_solutions"] > 0]
+    df_unsat = df_bench_synth[df_bench_synth["n_solutions"] == 0]
 
     df_coso_synth["origin"] = "synthetic"
     df_coso_real["origin"] = "real"
     df_coso = pandas.concat([df_coso_synth, df_coso_real])
+    df_coso = df_coso[df_coso["n_subproblems"] >= 0]
 
-    return (df_sat, df_unsat, df_coso)
+    return (df_sat, df_unsat, df_coso, df_bench_real)
 
 
-def plot(pgf=False):
+def plot(bench_dir, pgf=False):
     PGF = pgf
     sns.set_theme(style="darkgrid", color_codes=True)
     fig, axes = plt.subplots(nrows=1, ncols=3)
-    df_sat, df_unsat, df_coso = load_data()
+    df_sat, df_unsat, df_coso, df_real = load_data(bench_dir)
     plot_benchmarks_sat(df_sat, fig, axes[0])
     plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])

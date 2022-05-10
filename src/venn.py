@@ -289,4 +289,5 @@ class Venn(object):
                 entities = entities.combine(sub, how=is_distinguishable)
             d = SetFormula(set, entities, problem.universe)
             problem.add_domain(d)
+        problem.compute_universe()
         return problem
