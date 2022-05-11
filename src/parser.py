@@ -268,7 +268,7 @@ class Parser(object):
         s = Configuration(name, type, dom)
         self.problem.configuration = s
         if len(self.problem.domains) > 0:
-            if self.problem.universe is not None:
+            if self.problem.universe is None:
                 self.problem.compute_universe()
                 names = list(self.problem.domains)
                 for i, d1 in enumerate(names):

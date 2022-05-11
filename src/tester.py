@@ -405,7 +405,7 @@ def dom2essence(lab, domain):
             e = domain.labels.get(n, n)
             copies[e] = 1
     entity_list = ", ".join(copies.keys())
-    if domain.universe == domain and domain.formula == "u":
+    if domain.universe == domain or domain.formula == "u":
         dom_str += f"letting universe be new type enum {{ {entity_list} }}\n"
         function_list = ", ".join([f"{e} --> {n}" for e, n in copies.items()])
         dom_str += f"letting f_universe be function({function_list})\n"
