@@ -879,11 +879,11 @@ def run_benchmarks(plot):
         test_folder(dir, True, True, True)
         clean_essence_garbage()
 
-    # examples = os.path.join(TESTS, "examples")
-    # test_folder(examples, True, True, True)
+    examples = os.path.join(TESTS, "examples")
+    test_folder(examples, True, True, True)
 
-    # examples = os.path.join(BENCHMARKS, "growing_domains")
-    # test_folder(examples, True, True, True)
+    examples = os.path.join(BENCHMARKS, "growing_domains")
+    test_folder(examples, True, True, True)
 
     if plot:
         from gen_plots import plot as plot_results

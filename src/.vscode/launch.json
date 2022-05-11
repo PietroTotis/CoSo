@@ -17,10 +17,10 @@
             //     "-f",
             //     "../tests/examples/h837.pl"
             // ]
-            // "args": [
-            //     "-b",
-            //     "--plot"
-            // ]
+            "args": [
+                "-b",
+                "--plot"
+            ]
             // "args": [
             //     "--test-folder",
             //     "../tests/examples"
@@ -28,18 +28,17 @@
             // "args": [
             //     "-l",
             //     "-f",
-            //     "../tests/benchmarks/composition/composition_10_5.test",
-            //     "--asp"
+            //     "../tests/benchmarks/composition/composition_20_10.test"
             // ]
             // "args": ["-t", "300", "--essence", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": ["-l", "-t", "300", "--essence", "-f", "../tests/benchmarks/multisubset/multisubset_20_5.test"]
             // "args": ["--asp", "--test-folder",  "/media/windows/Users/pietr/Desktop/PhD/CoSo/tests/benchmarks/composition"]
-            "args": [
-                "-l",
-                "--asp",
-                "-f",
-                "../tests/work.pl"
-            ]
+            // "args": [
+            //     "-l",
+            //     "--asp",
+            //     "-f",
+            //     "../tests/work.pl"
+            // ]
             // "args": ["-l", "-f", "../tests/benchmarks/composition/composition_10_5.test"]
             // "args": ["-l", "--asp", "-f", "../tests/benchmarks/composition/composition_20_15.test"]
             // "args": [
