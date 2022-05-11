@@ -6,6 +6,7 @@ tools/
 src/.vscode/
 *.solution
 *.fuse*
+*.MINIONSOLS*
 tests/examples
 src/data.out
 

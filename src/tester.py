@@ -394,7 +394,7 @@ def dom2essence(lab, domain):
     indist_intervals = domain.elements.find(False)
     copies = {}
     for atomic_interval in indist_intervals:
-        e = domain.labels.get(atomic_interval.lower, atomic_interval.lower)
+        e = domain.labels.get(atomic_interval.lower, "e_" + str(atomic_interval.lower))
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
             n_copies = u - l + 1
@@ -402,7 +402,7 @@ def dom2essence(lab, domain):
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
         for n in portion.iterate(atomic_interval, step=1):
-            e = domain.labels.get(n, n)
+            e = domain.labels.get(n, "e_" + str(n))
             copies[e] = 1
     entity_list = ", ".join(copies.keys())
     if domain.universe == domain or domain.formula == "u":
@@ -425,6 +425,8 @@ def range2essence(interval, name, ub):
 def problem2essence(problem):
     essence = ""
     added_doms = []
+    univ_str = dom2essence("universe", problem.universe)
+    essence += univ_str
     for lab, dom in problem.domains.items():
         dom_str = dom2essence(lab, dom)
         added_doms.append(lab)
@@ -879,8 +881,8 @@ def run_benchmarks(plot):
         test_folder(dir, True, True, True)
         clean_essence_garbage()
 
-    examples = os.path.join(TESTS, "examples")
-    test_folder(examples, True, True, True)
+    # examples = os.path.join(TESTS, "examples")
+    # test_folder(examples, True, True, True)
 
     examples = os.path.join(BENCHMARKS, "growing_domains")
     test_folder(examples, True, True, True)

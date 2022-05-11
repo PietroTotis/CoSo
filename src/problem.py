@@ -177,6 +177,7 @@ class Problem(object):
         universe.name = "universe"
         dom_iter = iter(self.domains.values())
         self.label_map = {v: k for k, v in self.entity_map.items()}
+        universe.set_labels(self.label_map)
         for d in dom_iter:
             d.set_universe(universe)
             d.set_labels(self.label_map)
