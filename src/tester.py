@@ -955,7 +955,7 @@ def translate(file, translation, tool=None):
                 f.close()
     else:
         p = problems_translated[0]
-        out = os.path.join(loc, f"{name}_{folder_name}.{extension}")
+        out = os.path.join(loc, f"{name}.{extension}")
         with open(out, "w+") as f:
             f.write(p)
             f.close()
