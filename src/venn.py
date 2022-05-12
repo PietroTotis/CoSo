@@ -267,7 +267,8 @@ class Venn(object):
         self.infer()
         intervals = {}
         for part in self.parts:
-            lab = self.area2formula(part)
+            lab = str(self.area2formula(part))
+            lab = lab.replace(" ", "").replace("(", "").replace(")", "")
             n = self.parts[part]
             if self.indist[part]:
                 e_list = [str(lab)] * n

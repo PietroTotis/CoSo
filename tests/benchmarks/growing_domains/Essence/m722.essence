@@ -1,0 +1,11 @@
+letting l_3 be 3
+letting myparts be new type enum {p1,p2,p3}
+letting n be 14
+letting workers be domain int(1..n)
+
+find put: function (surjective, total) workers --> myparts
+such that
+	|preImage(put,p1)| = 7 /\
+	|preImage(put,p2)| = 5 /\
+	|preImage(put,p3)| = 2 
+

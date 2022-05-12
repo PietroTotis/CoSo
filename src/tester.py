@@ -884,8 +884,36 @@ def run_benchmarks(plot):
     # examples = os.path.join(TESTS, "examples")
     # test_folder(examples, True, True, True)
 
-    examples = os.path.join(BENCHMARKS, "growing_domains")
-    test_folder(examples, True, True, True)
+    grow_doms = os.path.join(BENCHMARKS, "growing_domains")
+    results_asp = {}
+    results_sat = {}
+    results_essence = {}
+    test_folder(grow_doms, False, False, False)
+    asp_dir = os.path.join(grow_doms, "ASP")
+    essence_dir = os.path.join(grow_doms, "Essence")
+    translate = lambda x: [str(x)]
+    for asp_problem in os.listdir(asp_dir):
+        with open(os.path.join(asp_dir, asp_problem), "r") as f:
+            problem = f.read()
+            f.close()
+            res_asp = run_solver(problem, "Clingo", translate, run_asp)
+            res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
+            results_asp[asp_problem] = res_asp
+            results_sat[asp_problem] = res_sat
+
+    for essence_problem in os.listdir(os.path.join(grow_doms, "Essence")):
+        with open(os.path.join(essence_dir, essence_problem), "r") as f:
+            problem = f.read()
+            f.close()
+            res_essence = run_solver(problem, "Conjure", translate, run_essence)
+            results_essence[essence_problem] = res_essence
+    results_file = f"growing_domains.csv"
+    if len(results_asp) > 0:
+        export_results(results_asp, results_file, "ASP")
+    if len(results_sat) > 0:
+        export_results(results_sat, results_file, "#SAT")
+    if len(results_essence) > 0:
+        export_results(results_essence, results_file, "Essence")
 
     if plot:
         from gen_plots import plot as plot_results
@@ -893,29 +921,43 @@ def run_benchmarks(plot):
         plot_results(BENCHMARKS)
 
 
-def translate_folder(folder, translation, out_name=None):
-    if out_name is not None:
-        out = os.path.join(folder, out_name)
-    os.makedirs(out, exist_ok=True)
+def translate_folder(folder, translation, extension=None):
     for filename in os.listdir(folder):
         if filename.endswith(".test") or filename.endswith(".pl"):
             path = os.path.join(folder, filename)
             print(f"Translating {filename}:")
-            translate(path, translation, out)
+            translate(path, translation, extension)
 
 
-def translate(file, translation, out=None):
-    if out is None:
-        out = os.path.dirname(file)
+def translate(file, translation, tool=None):
     name = os.path.basename(file).split(".")[0]
+    if tool == "Clingo":
+        extension = "lp"
+    elif tool == "SharpSAT":
+        extension = "cnf"
+    elif tool == "Essence":
+        extension = "essence"
+    else:
+        extension = "txt"
+    loc = os.path.dirname(file)
     parser = Parser(file)
     parser.parse()
     problem = parser.problem
     problems_translated = translation(problem)
-    for i, pt in enumerate(problems_translated):
-        pt_name = name + f"_{i}.txt"
-        with open(os.path.join(out, pt_name), "w+") as f:
-            f.write(pt)
+    if len(problems_translated) > 1:
+        out = os.path.join(loc, f"{name}.{extension}")
+        os.makedirs(out, exist_ok=True)
+        for i, pt in enumerate(problems_translated):
+            pt_name = name + f"_{i}.txt"
+            pt_path = os.path.join(out, pt_name)
+            with open(pt_path, "w+") as f:
+                f.write(pt)
+                f.close()
+    else:
+        p = problems_translated[0]
+        out = os.path.join(loc, f"{name}_{folder_name}.{extension}")
+        with open(out, "w+") as f:
+            f.write(p)
             f.close()
 
 

@@ -1,0 +1,11 @@
+letting universe be new type enum { bs, as, ns }
+letting f_universe be function(bs --> 2, as --> 6, ns --> 4)
+letting bs be { bs }
+letting as be { as }
+letting ns be { ns }
+letting l_8 be 8
+find conf_8 : sequence (size l_8) of universe
+such that 
+	forAll e: universe.
+		sum([1 | i: int(1..l_8), conf_8(i)=e]) <= f_universe(e)
+ 
