@@ -307,11 +307,11 @@ def plot_growing_doms(df, fig, axis, name, plot_legend=False):
         # palette=pal,
     )
 
-    axis.set_yscale("symlog", linthresh=10)
+    # axis.set_yscale("symlog", linthresh=10)
 
     if plot_legend:
         handles, labels = axis.get_legend_handles_labels()
-        axis.legend(
+        fig.legend(
             handles,
             ["CoSo", "ASP", "sharpSAT", "Essence"],
             bbox_to_anchor=(0.2, -0.5),
@@ -409,7 +409,7 @@ def plot(bench_dir, pgf=False):
     plot_benchmarks_sat(df_sat, fig, axes[0])
     plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])
-    fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
+    fig_g, axes_g = plt.subplots(nrows=1, ncols=3)
     plot_growing_doms(df_growing[1], fig_g, axes_g[0], "h730", plot_legend=True)
     plot_growing_doms(df_growing[2], fig_g, axes_g[1], "m722")
     plot_growing_doms(df_growing[3], fig_g, axes_g[2], "m617")

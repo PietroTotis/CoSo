@@ -1,5 +1,6 @@
 import os
 import signal
+from numpy import outer
 import psutil
 import argparse
 import time
@@ -499,7 +500,7 @@ def problem2essence(problem):
                 essence_l += f"find {name} : mset (size l_{l}) of {uni}\n"
             if len(constraints) > 0:
                 essence_l += "such that \n"
-        else:
+        elif composition:
             myparts = [f"p{i}" for i in range(1, l + 1)]
             essence_l += (
                 "letting myparts be new type enum {" + ",".join(myparts) + "}\n"
@@ -553,6 +554,8 @@ def problem2essence(problem):
                 f"find put: matrix indexed by [universe, myparts] of int(0..n)\n"
             )
             essence_l += "such that \n"
+        else:
+            essence_l += ""
         constraint_str = "\n\t/\ ".join(constraints)
         essence_l += constraint_str
         essence_l += "\n"
@@ -790,7 +793,6 @@ def test_folder(folder, asp, sat, essence, start_from=None):
         run = False
     else:
         run = True
-    print(start_from)
     for filename in os.listdir(folder):
         run = run or (filename == start_from)
         if run and (filename.endswith(".test") or filename.endswith(".pl")):
@@ -799,17 +801,21 @@ def test_folder(folder, asp, sat, essence, start_from=None):
             try:
                 parser.parse()
                 problem = parser.problem
-                if essence:
-                    res = run_solver(
-                        parser.problem, "Essence", problem2essence, run_essence
-                    )
-                    results_essence[filename] = res
-                if asp:
-                    res = run_solver(parser.problem, "Clingo", problem2asp, run_asp)
-                    results_asp[filename] = res
-                if sat:
-                    res = run_solver(parser.problem, "SharpSAT", problem2asp, run_sat)
-                    results_sat[filename] = res
+                partition = problem.configuration.type == "partition"
+                if not partition:
+                    if essence:
+                        res = run_solver(
+                            parser.problem, "Essence", problem2essence, run_essence
+                        )
+                        results_essence[filename] = res
+                    if asp:
+                        res = run_solver(parser.problem, "Clingo", problem2asp, run_asp)
+                        results_asp[filename] = res
+                    if sat:
+                        res = run_solver(
+                            parser.problem, "SharpSAT", problem2asp, run_sat
+                        )
+                        results_sat[filename] = res
                 res = run_coso(problem)
                 results_coso[filename] = res
             except EmptyException:
