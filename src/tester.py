@@ -898,8 +898,8 @@ def run_benchmarks(plot, start_from):
         test_folder(dir, True, True, True, start_from)
         clean_essence_garbage()
 
-    # examples = os.path.join(TESTS, "examples")
-    # test_folder(examples, True, True, True, start_from)
+    examples = os.path.join(TESTS, "examples")
+    test_folder(examples, True, True, True, start_from)
 
     # grow_doms = os.path.join(BENCHMARKS, "growing_domains")
     # results_asp = {}
