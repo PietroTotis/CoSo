@@ -1,4 +1,3 @@
-from turtle import pd
 import seaborn as sns
 import os
 import pandas
@@ -8,8 +7,7 @@ import matplotlib.pyplot as plt
 from util import ROOT_DIR
 
 OUT_DIR = os.path.join(ROOT_DIR, "tests", "results")
-# BENCHMARKS = os.path.join(OUT_DIR, "bench_results_benchmarks.csv")
-BENCHMARKS = os.path.join(ROOT_DIR, "tests", "benchmarks")
+BENCHMARKS = os.path.join(ROOT_DIR, "tests", "benchmarks", "synthetic")
 COSO_STATS_BENCH = os.path.join(OUT_DIR, "subs_results_benchmarks.csv")
 COSO_STATS_EX = os.path.join(OUT_DIR, "subs_results_examples.csv")
 WIDTH = 430
@@ -164,9 +162,16 @@ def plot_benchmarks_unsat(df, fig, axis):
         tick.label2.set_visible(False)
     axis.xaxis.tick_bottom()
     # xlabs = [f"unsat_{i}" for i, x in enumerate(axis.get_xticklabels()) ]
-    # xlabs = ["ms 20/15", "pm 20/15", "sq 15/10", "sq 20/15", "cp 15/5", "cp 20/10"]
-    xlabs = df["benchmark"].unique()
-    axis.set_xticklabels(xlabs, va="center")
+    xlabs = [
+        "cp 15/5",
+        "cp 20/10",
+        "ms 20/15",
+        "pm 20/15",
+        "sq 15/10",
+        "sq 20/15",
+    ]
+    # xlabs = df["benchmark"].unique()
+    axis.set_xticklabels(xlabs, va="top")
     axis.tick_params(axis="x", which="major", pad=5)
     handles, labels = axis.get_legend_handles_labels()
     lgd = axis.legend(
@@ -200,7 +205,7 @@ def plot_benchmarks_unsat(df, fig, axis):
 
 def plot_coso_stats(df, fig, axis):
 
-    count = df.groupby(["n_subproblems", "origin"])["count"].sum().unstack()
+    count = df.groupby(["n_subproblems", "origin"])["count"].sum().unstack(fill_value=0)
     time = df.groupby(["n_subproblems"], as_index=False)["time"].mean()
 
     count.plot(
@@ -218,19 +223,19 @@ def plot_coso_stats(df, fig, axis):
     #     labels_synth.append(df.iloc[i, 1])
     # labels = labels_real + labels_synth
 
-    n = df.columns.get_loc("n_subproblems")
-
+    n = len(count)
     for i, patch in enumerate(axis.patches):
+        c = 0 if i < n else 1
+        r = i if i < n else i - n
         x, y = patch.get_xy()
         x += patch.get_width() / 2
         y += patch.get_height() / 2
-        y = 1 if y == 0.5 else y
-        l = "" if df.iloc[i, n] == 0 else df.iloc[i, n]
-        axis.annotate(l, (x, y), ha="center", va="center", c="black")
+        # y = 0.8 if y == 0.5 else y
+        l = "" if count.iloc[r, c] == 0 else count.iloc[r, c]
+        axis.annotate(l, (x, y), ha="center", va="center", c="black", fontsize=10)
 
     ax6 = axis.twinx()
     ax7 = axis.twinx()
-    print(time)
     ax6.plot(axis.get_xticks(), time["time"], color=sns.color_palette("colorblind")[2])
     axis.set_yscale("symlog", linthresh=10)
     ax6.set_yscale("log", nonpositive="clip")
@@ -279,6 +284,61 @@ def plot_coso_stats(df, fig, axis):
         plt.savefig(path, bbox_inches="tight")
 
 
+#####################
+## growing domains ##
+#####################
+
+
+def plot_growing_doms(df, fig, axis, name, plot_legend=False):
+
+    for ind in df.index:
+        s = df["benchmark"][ind]
+        df["benchmark"][ind] = 0
+        for i in range(1, 6):
+            if f"_{i}" in s:
+                df["benchmark"][ind] = i
+
+    sns.lineplot(
+        ax=axis,
+        x="benchmark",
+        y="time",
+        hue="solver",
+        data=df,
+        # palette=pal,
+    )
+
+    axis.set_yscale("symlog", linthresh=10)
+
+    if plot_legend:
+        handles, labels = axis.get_legend_handles_labels()
+        axis.legend(
+            handles,
+            ["CoSo", "ASP", "sharpSAT", "Essence"],
+            bbox_to_anchor=(0.2, -0.5),
+            loc="lower center",
+            ncol=2,
+            frameon=True,
+            title="Framework",
+            fontsize="x-small",
+            title_fontsize="small",
+            borderaxespad=0,
+        )
+
+    axis.axhline(y=300, color="r", linestyle="--")
+    axis.set_xlabel(name)
+    axis.set_ylabel("Seconds (log)")
+
+    ticks = [10**x for x in range(0, 3)]
+    axis.set_yticks(ticks)
+    axis.set_yticklabels(ticks, va="center")
+
+    if PGF:
+        w, h = set_size(WIDTH)
+        fig.set_size_inches(w, h)
+        path = os.path.join(OUT_DIR, "subproblems.pgf")
+        plt.savefig(path, bbox_inches="tight")
+
+
 def load_folder(folder):
     b_name = f"bench_results_{folder}.csv"
     b_path = os.path.join(OUT_DIR, b_name)
@@ -306,8 +366,8 @@ def load_folder(folder):
 
 def load_data(bench_dir):
 
-    examples_dir = os.path.join(bench_dir, "examples")
-    df_bench_real, df_coso_real = load_folder(examples_dir)
+    # examples_dir = os.path.join(bench_dir, "examples")
+    df_bench_real, df_coso_real = load_folder("examples")
     df_coso_synth = pandas.DataFrame()
     df_bench_synth = pandas.DataFrame()
 
@@ -317,32 +377,45 @@ def load_data(bench_dir):
             df_bench_synth = pandas.concat([df_bench_synth, df_bench_folder])
             df_coso_synth = pandas.concat([df_coso_synth, df_subs_folder])
 
-    # df_bench = pandas.read_csv(BENCHMARKS, sep="\t")
-    # df_coso_synth = pandas.read_csv(COSO_STATS_BENCH, sep="\t")
-    # df_coso_real = pandas.read_csv(COSO_STATS_EX, sep="\t")
-
     df_sat = df_bench_synth[df_bench_synth["n_solutions"] > 0]
     df_unsat = df_bench_synth[df_bench_synth["n_solutions"] == 0]
+    # df_unknown = df_bench_synth[df_bench_synth["n_solutions"] == -1]
 
     df_coso_synth["origin"] = "synthetic"
     df_coso_real["origin"] = "real"
     df_coso = pandas.concat([df_coso_synth, df_coso_real])
     df_coso = df_coso[df_coso["n_subproblems"] >= 0]
 
-    return (df_sat, df_unsat, df_coso, df_bench_real)
+    df_bench_growing = {}
+    df_bench_growing_all, _ = load_folder("growing_domains")
+    df_bench_growing[1] = df_bench_growing_all[
+        df_bench_growing_all["benchmark"].str.startswith("h730")
+    ]
+    df_bench_growing[2] = df_bench_growing_all[
+        df_bench_growing_all["benchmark"].str.startswith("m722")
+    ]
+    df_bench_growing[3] = df_bench_growing_all[
+        df_bench_growing_all["benchmark"].str.startswith("m617")
+    ]
+
+    return (df_sat, df_unsat, df_coso, df_bench_real, df_bench_growing)
 
 
 def plot(bench_dir, pgf=False):
     PGF = pgf
     sns.set_theme(style="darkgrid", color_codes=True)
     fig, axes = plt.subplots(nrows=1, ncols=3)
-    df_sat, df_unsat, df_coso, df_real = load_data(bench_dir)
+    df_sat, df_unsat, df_coso, df_real, df_growing = load_data(bench_dir)
     plot_benchmarks_sat(df_sat, fig, axes[0])
     plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])
+    fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
+    plot_growing_doms(df_growing[1], fig_g, axes_g[0], "h730", plot_legend=True)
+    plot_growing_doms(df_growing[2], fig_g, axes_g[1], "m722")
+    plot_growing_doms(df_growing[3], fig_g, axes_g[2], "m617")
     if not PGF:
         plt.show()
 
 
 if __name__ == "__main__":
-    plot()
+    plot("")

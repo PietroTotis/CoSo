@@ -23,6 +23,7 @@ ops = [">", "<", "<=", ">=", "!=", "="]
 TOOLS = os.path.join(ROOT_DIR, "tools")
 TESTS = os.path.join(ROOT_DIR, "tests")
 BENCHMARKS = os.path.join(TESTS, "benchmarks")
+BENCHMARKS_SYNTH = os.path.join(BENCHMARKS, "synthetic")
 RESULTS = os.path.join(TESTS, "results")
 ASP_TOOLS = os.path.join(TOOLS, "ASP_tools")
 SHARP_SAT = os.path.join(TOOLS, "sharpSAT", "build", "Release", "sharpSAT")
@@ -429,8 +430,9 @@ def problem2essence(problem):
     essence += univ_str
     for lab, dom in problem.domains.items():
         dom_str = dom2essence(lab, dom)
-        added_doms.append(lab)
-        essence += dom_str
+        if dom_str != univ_str:
+            added_doms.append(lab)
+            essence += dom_str
     sizes = problem.configuration.size.values
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
@@ -779,13 +781,19 @@ def count_sols(filename):
 ##################
 
 
-def test_folder(folder, asp, sat, essence):
+def test_folder(folder, asp, sat, essence, start_from=None):
     results_coso = {}
     results_asp = {}
     results_sat = {}
     results_essence = {}
+    if start_from is not None:
+        run = False
+    else:
+        run = True
+    print(start_from)
     for filename in os.listdir(folder):
-        if filename.endswith(".test") or filename.endswith(".pl"):
+        run = run or (filename == start_from)
+        if run and (filename.endswith(".test") or filename.endswith(".pl")):
             print(f"Test {filename}:")
             parser = Parser(os.path.join(folder, filename))
             try:
@@ -871,54 +879,54 @@ def export_coso_results(results, file):
     file.close()
 
 
-def run_benchmarks(plot):
+def run_benchmarks(plot, start_from):
     types = []
     # types = ["subset", "composition", "sequence"]
     # types = ["multisubset", "permutation", "sequence", "subset", "composition"]
     for type in types:
-        dir = os.path.join(BENCHMARKS, type)
+        dir = os.path.join(BENCHMARKS_SYNTH, type)
         print(dir)
-        test_folder(dir, True, True, True)
+        test_folder(dir, True, True, True, start_from)
         clean_essence_garbage()
 
-    # examples = os.path.join(TESTS, "examples")
-    # test_folder(examples, True, True, True)
+    examples = os.path.join(TESTS, "examples")
+    test_folder(examples, True, True, True, start_from)
 
-    grow_doms = os.path.join(BENCHMARKS, "growing_domains")
-    results_asp = {}
-    results_sat = {}
-    results_essence = {}
-    test_folder(grow_doms, False, False, False)
-    asp_dir = os.path.join(grow_doms, "ASP")
-    essence_dir = os.path.join(grow_doms, "Essence")
-    translate = lambda x: [str(x)]
-    for asp_problem in os.listdir(asp_dir):
-        with open(os.path.join(asp_dir, asp_problem), "r") as f:
-            problem = f.read()
-            f.close()
-            res_asp = run_solver(problem, "Clingo", translate, run_asp)
-            res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
-            results_asp[asp_problem] = res_asp
-            results_sat[asp_problem] = res_sat
+    # grow_doms = os.path.join(BENCHMARKS, "growing_domains")
+    # results_asp = {}
+    # results_sat = {}
+    # results_essence = {}
+    # test_folder(grow_doms, False, False, False)
+    # asp_dir = os.path.join(grow_doms, "ASP")
+    # essence_dir = os.path.join(grow_doms, "Essence")
+    # translate = lambda x: [str(x)]
+    # for asp_problem in os.listdir(asp_dir):
+    #     with open(os.path.join(asp_dir, asp_problem), "r") as f:
+    #         problem = f.read()
+    #         f.close()
+    #         res_asp = run_solver(problem, "Clingo", translate, run_asp)
+    #         res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
+    #         results_asp[asp_problem] = res_asp
+    #         results_sat[asp_problem] = res_sat
 
-    for essence_problem in os.listdir(os.path.join(grow_doms, "Essence")):
-        with open(os.path.join(essence_dir, essence_problem), "r") as f:
-            problem = f.read()
-            f.close()
-            res_essence = run_solver(problem, "Conjure", translate, run_essence)
-            results_essence[essence_problem] = res_essence
-    results_file = f"growing_domains.csv"
-    if len(results_asp) > 0:
-        export_results(results_asp, results_file, "ASP")
-    if len(results_sat) > 0:
-        export_results(results_sat, results_file, "#SAT")
-    if len(results_essence) > 0:
-        export_results(results_essence, results_file, "Essence")
+    # for essence_problem in os.listdir(os.path.join(grow_doms, "Essence")):
+    #     with open(os.path.join(essence_dir, essence_problem), "r") as f:
+    #         problem = f.read()
+    #         f.close()
+    #         res_essence = run_solver(problem, "Conjure", translate, run_essence)
+    #         results_essence[essence_problem] = res_essence
+    # results_file = f"growing_domains.csv"
+    # if len(results_asp) > 0:
+    #     export_results(results_asp, results_file, "ASP")
+    # if len(results_sat) > 0:
+    #     export_results(results_sat, results_file, "#SAT")
+    # if len(results_essence) > 0:
+    #     export_results(results_essence, results_file, "Essence")
 
     if plot:
         from gen_plots import plot as plot_results
 
-        plot_results(BENCHMARKS)
+        plot_results(BENCHMARKS_SYNTH)
 
 
 def translate_folder(folder, translation, extension=None):
@@ -981,6 +989,9 @@ if __name__ == "__main__":
     parser.add_argument("--sat", action="store_true", help="Compare with 'sharpSAT'")
     parser.add_argument("--essence", action="store_true", help="Compare with 'essence'")
     parser.add_argument(
+        "--sf", help="Start running benchmark in folder after given filename"
+    )
+    parser.add_argument(
         "--noposconstr",
         action="store_false",
         help="Disable positional constraint generation when -g",
@@ -1017,7 +1028,7 @@ if __name__ == "__main__":
         else:
             test_folder(args.test_folder, args.asp, args.sat, args.essence)
     elif args.b:
-        run_benchmarks(args.plot)
+        run_benchmarks(args.plot, args.sf)
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     else:
