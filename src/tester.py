@@ -445,17 +445,13 @@ def problem2essence(problem):
 
     if problem.configuration.size is None:
         ub = problem.universe.size() + 1
-        sizes = problem.configuration.size.values.replace(upper=ub)
-        vals = P.closed(1, problem.universe.size())
-        problem.configuration.size = CSize("unconstrained", vals)
+        sizes = P.closed(1, problem.universe.size())
+        problem.configuration.size = CSize("unconstrained", sizes)
     elif problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
         sizes = problem.configuration.size.values.replace(upper=ub)
     else:
         sizes = problem.configuration.size.values
-    if problem.configuration.size.values.upper == P.inf:
-        ub = problem.universe.size() + 1
-        sizes = problem.configuration.size.values.replace(upper=ub)
     lenghts = P.iterate(sizes, step=1)
     sequence = problem.configuration.type == "sequence"
     permutation = problem.configuration.type == "permutation"
