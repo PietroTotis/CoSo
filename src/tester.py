@@ -657,7 +657,7 @@ def run_sat(programs, count):
             )
             n_program = int(n_string)
             count.value += n_program
-        except TimeoutExpired:
+        except Exception:
             p.terminate()
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)
             count.value = -1
@@ -696,7 +696,7 @@ def run_essence(programs, count):
                     n_prog = sol.read().count("Solution:")
                     n += n_prog
             count.value += n
-        except TimeoutExpired:
+        except Exception:
             p.terminate()
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)
             count.value = -1
