@@ -255,6 +255,10 @@ def problem2asp(problem):
         n_supports[lab] = n_support
         asp += str
     sizes = problem.configuration.size.values
+
+    if problem.configuration.size is None:
+        vals = P.closed(1, problem.universe.size())
+        problem.configuration.size = CSize("unconstrained", vals)
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
         sizes = problem.configuration.size.values.replace(upper=ub)
@@ -440,9 +444,15 @@ def problem2essence(problem):
             essence += dom_str
 
     if problem.configuration.size is None:
+        ub = problem.universe.size() + 1
+        sizes = problem.configuration.size.values.replace(upper=ub)
         vals = P.closed(1, problem.universe.size())
         problem.configuration.size = CSize("unconstrained", vals)
-    sizes = problem.configuration.size.values
+    elif problem.configuration.size.values.upper == P.inf:
+        ub = problem.universe.size() + 1
+        sizes = problem.configuration.size.values.replace(upper=ub)
+    else:
+        sizes = problem.configuration.size.values
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
         sizes = problem.configuration.size.values.replace(upper=ub)
