@@ -14,6 +14,7 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from statistics import mean
 from parser import EmptyException, Parser
 from sharpCSP import Solution
+from configuration import CSize
 
 from util import *
 
@@ -437,6 +438,10 @@ def problem2essence(problem):
         if dom_str != univ_str:
             added_doms.append(lab)
             essence += dom_str
+
+    if problem.configuration.size is None:
+        vals = P.closed(1, problem.universe.size())
+        problem.configuration.size = CSize("unconstrained", vals)
     sizes = problem.configuration.size.values
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
