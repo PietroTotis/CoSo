@@ -1,5 +1,5 @@
-tvs(1..16).
-defective(1..6).
+tvs(1..14).
+defective(1..4).
 subset_guess_5(A,B,C,D,E) :- tvs(A), tvs(B), tvs(C), tvs(D), tvs(E), A<B, B<C, C<D, D<E.
 1{subset_5(A,B,C,D,E):subset_guess_5(A,B,C,D,E)}1.
 used_5(X,0) :- subset_5(X, _, _, _, _). 

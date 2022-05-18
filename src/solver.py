@@ -12,7 +12,7 @@ class Solver(object):
 
     def __init__(self, problem):
         self.problem = problem
-        self.universe = problem.configuration.df
+        self.universe = problem.universe
         self.size = problem.configuration.size
         if self.size.values.upper == P.inf:
             n = self.universe.size()

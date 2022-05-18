@@ -326,3 +326,13 @@ class SetFormula(Multiset, Variable):
         else:
             name = op(str(self), str(rhs))
         return name
+
+    # def take(self, n):
+    #     taken = Multiset.take(n)
+    #     return SetFormula(
+    #         self.formula,
+    #         taken.elements,
+    #         self.universe,
+    #         name=taken.name,
+    #         labels=self.labels,
+    #     )

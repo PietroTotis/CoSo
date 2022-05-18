@@ -3,9 +3,9 @@ letting f_universe be function(bs --> 2, as --> 6, ns --> 4)
 letting bs be { bs }
 letting as be { as }
 letting ns be { ns }
-letting l_11 be 12
-find conf_11 : sequence (size l_11) of universe
+letting l_10 be 14
+find conf_10 : sequence (size l_10) of universe
 such that 
 	forAll e: universe.
-		sum([1 | i: int(1..l_11), conf_11(i)=e]) <= f_universe(e)
+		sum([1 | i: int(1..l_10), conf_10(i)=e]) <= f_universe(e)
  

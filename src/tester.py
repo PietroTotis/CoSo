@@ -910,7 +910,7 @@ def run_benchmarks(plot, start_from):
         clean_essence_garbage()
 
     # examples = os.path.join(TESTS, "examples")
-    # test_folder(examples, True, True, True, start_from)
+    # test_folder(examples, False, False, False, start_from)
 
     grow_doms = os.path.join(BENCHMARKS, "growing_domains")
     results_asp = {}
@@ -935,7 +935,7 @@ def run_benchmarks(plot, start_from):
             f.close()
             res_essence = run_solver(problem, "Conjure", translate, run_essence)
             results_essence[essence_problem] = res_essence
-    results_file = f"growing_domains.csv"
+    results_file = f"bench_results_growing_domains.csv"
     if len(results_asp) > 0:
         export_results(results_asp, results_file, "ASP")
     if len(results_sat) > 0:

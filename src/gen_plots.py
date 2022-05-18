@@ -294,7 +294,7 @@ def plot_growing_doms(df, fig, axis, name, plot_legend=False):
     for ind in df.index:
         s = df["benchmark"][ind]
         df["benchmark"][ind] = 0
-        for i in range(1, 6):
+        for i in range(1, 7):
             if f"_{i}" in s:
                 df["benchmark"][ind] = i
 
