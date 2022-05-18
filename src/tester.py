@@ -19,6 +19,8 @@ from configuration import CSize
 from util import *
 
 TIMEOUT = 300
+# MB_CACHE =16384
+MB_CACHE = 64
 random.seed(1234)
 
 ops = [">", "<", "<=", ">=", "!=", "="]
@@ -650,14 +652,16 @@ def run_sat(programs, count):
             p = Popen(
                 [f"{gringo} {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"],
                 shell=True,
+                preexec_fn=os.setsid,
             )
             p.wait(timeout=TIMEOUT)
             p = Popen(
-                [f"{SHARP_SAT} {out}"],
+                [f"{SHARP_SAT} -t {TIMEOUT} -cs {MB_CACHE} {out}"],
                 shell=True,
                 stdout=PIPE,
                 stderr=PIPE,
                 start_new_session=True,
+                preexec_fn=os.setsid,
             )
             std_out, std_err = p.communicate(timeout=TIMEOUT)
             sol = std_out.decode("UTF-8")
