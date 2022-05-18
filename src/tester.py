@@ -19,8 +19,6 @@ from configuration import CSize
 from util import *
 
 TIMEOUT = 300
-# MB_CACHE =16384
-MB_CACHE = 64
 random.seed(1234)
 
 ops = [">", "<", "<=", ">=", "!=", "="]
@@ -644,24 +642,32 @@ def run_sat(programs, count):
     lp2atomic = os.path.join(ASP_TOOLS, "lp2atomic-1.17")
     input = os.path.join(ASP_TOOLS, "tmp.lp")
     out = os.path.join(ASP_TOOLS, "out.cnf")
+    gringo_out = os.path.join(ASP_TOOLS, "gringo_out.lp")
+    nor_out = os.path.join(ASP_TOOLS, "nor_out.lp")
+    at_out = os.path.join(ASP_TOOLS, "at_out.cnf")
     for program in programs:
         lp = open(input, "w+")
         lp.write(program)
         lp.close()
         try:
             p = Popen(
-                [f"{gringo} {input} | {lp2normal} | {lp2atomic} | {lp2sat} > {out}"],
+                [f"{gringo} {input} > {gringo_out}"],
                 shell=True,
-                preexec_fn=os.setsid,
             )
-            p.wait(timeout=TIMEOUT)
+            p.wait()
+            p = Popen([f"{lp2normal} {gringo_out} > {nor_out}"], shell=True)
+            p.wait()
+            p = Popen([f"{lp2atomic} {nor_out} > {at_out}"], shell=True)
+            p.wait()
+            p = Popen([f"{lp2sat} {at_out} > {out}"], shell=True)
+            p.wait()
+
             p = Popen(
-                [f"{SHARP_SAT} -t {TIMEOUT} -cs {MB_CACHE} {out}"],
+                [f"{SHARP_SAT} -t {TIMEOUT} {out}"],
                 shell=True,
                 stdout=PIPE,
                 stderr=PIPE,
                 start_new_session=True,
-                preexec_fn=os.setsid,
             )
             std_out, std_err = p.communicate(timeout=TIMEOUT)
             sol = std_out.decode("UTF-8")
@@ -680,6 +686,9 @@ def run_sat(programs, count):
         # print(n_program)
     os.remove(input)
     os.remove(out)
+    os.remove(gringo_out)
+    os.remove(nor_out)
+    os.remove(at_out)
 
 
 def run_essence(programs, count):
