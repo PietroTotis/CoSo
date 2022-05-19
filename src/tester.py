@@ -66,6 +66,13 @@ def killtree(pid):
 
 
 def clean_essence_garbage():
+    for file in os.listdir(ROOT_DIR):
+        if file.startswith(".MINION"):
+            # print(f"Cleaning {file}")
+            try:
+                os.remove(file)
+            except OSError:
+                pass
     for file in os.listdir(os.path.join(ROOT_DIR, "src")):
         if file.startswith(".MINION"):
             # print(f"Cleaning {file}")
@@ -785,8 +792,9 @@ def run_solver(problem, sys_name, translate, run):
     except:
         res = Result(sys_name, -1, TIMEOUT)
         print(f"{sys_name} timeout")
-    if sys_name == "Essence":
-        clean_essence_garbage()
+    finally:
+        if sys_name == "Essence":
+            clean_essence_garbage()
     return res
 
 
@@ -933,14 +941,14 @@ def run_benchmarks(plot, start_from):
     asp_dir = os.path.join(grow_doms, "ASP")
     essence_dir = os.path.join(grow_doms, "Essence")
     translate = lambda x: [str(x)]
-    for asp_problem in os.listdir(asp_dir):
-        with open(os.path.join(asp_dir, asp_problem), "r") as f:
-            problem = f.read()
-            f.close()
-            res_asp = run_solver(problem, "Clingo", translate, run_asp)
-            res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
-            results_asp[asp_problem] = res_asp
-            results_sat[asp_problem] = res_sat
+    # for asp_problem in os.listdir(asp_dir):
+    #     with open(os.path.join(asp_dir, asp_problem), "r") as f:
+    #         problem = f.read()
+    #         f.close()
+    #         res_asp = run_solver(problem, "Clingo", translate, run_asp)
+    #         res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
+    #         results_asp[asp_problem] = res_asp
+    #         results_sat[asp_problem] = res_sat
 
     for essence_problem in os.listdir(os.path.join(grow_doms, "Essence")):
         with open(os.path.join(essence_dir, essence_problem), "r") as f:
