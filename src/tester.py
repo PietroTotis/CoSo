@@ -747,7 +747,6 @@ def run_essence(programs, count):
             count.value = -1
             break
         finally:
-            time.sleep(2)
             clean_essence_garbage()
     clean_essence_garbage()
 
@@ -967,7 +966,7 @@ def run_benchmarks(plot, start_from):
     #         results_asp[asp_problem] = res_asp
     #         results_sat[asp_problem] = res_sat
 
-    for essence_problem in os.listdir(os.path.join(grow_doms, "Essence")):
+    for essence_problem in sorted(os.listdir(os.path.join(grow_doms, "Essence"))):
         with open(os.path.join(essence_dir, essence_problem), "r") as f:
             problem = f.read()
             f.close()
