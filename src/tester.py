@@ -790,6 +790,7 @@ def run_solver(problem, sys_name, translate, run):
             res = Result(sys_name, count.value, finish - start)
             print(res)
     except:
+        killtree(p.pid)
         res = Result(sys_name, -1, TIMEOUT)
         print(f"{sys_name} timeout")
     finally:
@@ -938,9 +939,9 @@ def run_benchmarks(plot, start_from):
     results_sat = {}
     results_essence = {}
     test_folder(grow_doms, False, False, False)
-    asp_dir = os.path.join(grow_doms, "ASP")
-    essence_dir = os.path.join(grow_doms, "Essence")
-    translate = lambda x: [str(x)]
+    # asp_dir = os.path.join(grow_doms, "ASP")
+    # essence_dir = os.path.join(grow_doms, "Essence")
+    # translate = lambda x: [str(x)]
     # for asp_problem in os.listdir(asp_dir):
     #     with open(os.path.join(asp_dir, asp_problem), "r") as f:
     #         problem = f.read()

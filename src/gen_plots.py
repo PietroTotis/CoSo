@@ -91,7 +91,7 @@ def plot_benchmarks_sat(df, fig, axis):
     )
 
     axis.set_yscale("log", nonpositive="clip")
-    axis.set(ylabel="Seconds")
+    axis.set(ylabel="Seconds (log)")
     axis.set(xlabel="\\# solutions")
 
     axis.axhline(y=300, color="r", linestyle="--")
@@ -148,7 +148,7 @@ def plot_benchmarks_unsat(df, fig, axis):
     sns.barplot(ax=axis, x="benchmark", y="time", hue="solver", data=df, palette=pal)
 
     axis.set_yscale("log", nonpositive="clip")
-    axis.set(ylabel="Seconds")
+    axis.set(ylabel="Seconds (log)")
 
     axis.axhline(y=300, color="r", linestyle="--")
 
@@ -262,7 +262,7 @@ def plot_coso_stats(df, fig, axis):
 
     axis.set_xlabel("\\# subproblems")
     axis.set_ylabel("\\# benchmarks")
-    ax6.set_ylabel("Seconds")
+    ax6.set_ylabel("Seconds (log)")
     axis.set_title("CoSo avg. runtime vs. \\#subproblems")
 
     axis.set_zorder(ax7.get_zorder() + 1)
@@ -289,12 +289,12 @@ def plot_coso_stats(df, fig, axis):
 #####################
 
 
-def plot_growing_doms(df, fig, axis, name, plot_legend=False):
+def plot_growing_doms(df, fig, axis, name):
 
     for ind in df.index:
         s = df["benchmark"][ind]
         df["benchmark"][ind] = 0
-        for i in range(1, 7):
+        for i in range(1, 11):
             if f"_{i}" in s:
                 df["benchmark"][ind] = i
 
@@ -309,7 +309,15 @@ def plot_growing_doms(df, fig, axis, name, plot_legend=False):
 
     # axis.set_yscale("symlog", linthresh=10)
 
-    if plot_legend:
+    axis.axhline(y=300, color="r", linestyle="--")
+    axis.set_xlabel(name, fontsize="small")
+
+    if name == "P3":
+        axis.set_ylabel("Seconds", fontsize="small")
+        ticks = [1] + [y * 10**x for x in range(1, 3) for y in range(1, 10)] + [300]
+        axis.set_yticks(ticks)
+        axis.set_yticklabels(ticks, va="center", fontsize="small")
+    if name == "P5":
         handles, labels = axis.get_legend_handles_labels()
         fig.legend(
             handles,
@@ -323,14 +331,8 @@ def plot_growing_doms(df, fig, axis, name, plot_legend=False):
             title_fontsize="small",
             borderaxespad=0,
         )
-
-    axis.axhline(y=300, color="r", linestyle="--")
-    axis.set_xlabel(name)
-    axis.set_ylabel("Seconds (log)")
-
-    ticks = [10**x for x in range(0, 3)]
-    axis.set_yticks(ticks)
-    axis.set_yticklabels(ticks, va="center")
+    else:
+        axis.get_legend().remove()
 
     if PGF:
         w, h = set_size(WIDTH)
@@ -403,16 +405,18 @@ def load_data(bench_dir):
 
 def plot(bench_dir, pgf=False):
     PGF = pgf
-    sns.set_theme(style="darkgrid", color_codes=True)
+    sns.set_theme(style="darkgrid", color_codes=True, palette=pal)
     fig, axes = plt.subplots(nrows=1, ncols=3)
     df_sat, df_unsat, df_coso, df_real, df_growing = load_data(bench_dir)
     plot_benchmarks_sat(df_sat, fig, axes[0])
     plot_benchmarks_unsat(df_unsat, fig, axes[1])
     plot_coso_stats(df_coso, fig, axes[2])
-    fig_g, axes_g = plt.subplots(nrows=1, ncols=3)
-    plot_growing_doms(df_growing[1], fig_g, axes_g[0], "h730", plot_legend=True)
-    plot_growing_doms(df_growing[2], fig_g, axes_g[1], "m722")
-    plot_growing_doms(df_growing[3], fig_g, axes_g[2], "m617")
+    fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
+    plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
+    plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
+    plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
+    fig_g.suptitle("Growing domains on real-world problems", y=0.93, fontsize=12)
+    fig_g.tight_layout()
     if not PGF:
         plt.show()
 
