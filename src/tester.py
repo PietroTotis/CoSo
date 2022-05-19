@@ -1,6 +1,5 @@
 import os
 import signal
-from numpy import outer
 import psutil
 import argparse
 import time
@@ -8,6 +7,7 @@ import portion
 import random
 import signal
 import clingo
+import time
 import portion as P
 from multiprocessing import Process, Value
 from subprocess import Popen, PIPE, TimeoutExpired
@@ -747,6 +747,7 @@ def run_essence(programs, count):
             count.value = -1
             break
         finally:
+            time.sleep(2)
             clean_essence_garbage()
     clean_essence_garbage()
 
