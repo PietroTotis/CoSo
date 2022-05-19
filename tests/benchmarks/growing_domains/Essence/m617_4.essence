@@ -3,7 +3,7 @@ letting f_universe be function(bs --> 2, as --> 6, ns --> 4)
 letting bs be { bs }
 letting as be { as }
 letting ns be { ns }
-letting l_10 be 10
+letting l_10 be 6
 find conf_10 : sequence (size l_10) of universe
 such that 
 	forAll e: universe.

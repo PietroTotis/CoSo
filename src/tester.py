@@ -950,21 +950,21 @@ def run_benchmarks(plot, start_from):
     # test_folder(examples, False, False, False, start_from)
 
     grow_doms = os.path.join(BENCHMARKS, "growing_domains")
-    # results_asp = {}
-    # results_sat = {}
+    results_asp = {}
+    results_sat = {}
     results_essence = {}
-    # test_folder(grow_doms, False, False, False)
-    # asp_dir = os.path.join(grow_doms, "ASP")
+    test_folder(grow_doms, False, False, False)
+    asp_dir = os.path.join(grow_doms, "ASP")
     essence_dir = os.path.join(grow_doms, "Essence")
     translate = lambda x: [str(x)]
-    # for asp_problem in os.listdir(asp_dir):
-    #     with open(os.path.join(asp_dir, asp_problem), "r") as f:
-    #         problem = f.read()
-    #         f.close()
-    #         res_asp = run_solver(problem, "Clingo", translate, run_asp)
-    #         res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
-    #         results_asp[asp_problem] = res_asp
-    #         results_sat[asp_problem] = res_sat
+    for asp_problem in os.listdir(asp_dir):
+        with open(os.path.join(asp_dir, asp_problem), "r") as f:
+            problem = f.read()
+            f.close()
+            res_asp = run_solver(problem, "Clingo", translate, run_asp)
+            res_sat = run_solver(problem, "SharpSAT", translate, run_sat)
+            results_asp[asp_problem] = res_asp
+            results_sat[asp_problem] = res_sat
 
     for essence_problem in sorted(os.listdir(os.path.join(grow_doms, "Essence"))):
         with open(os.path.join(essence_dir, essence_problem), "r") as f:
@@ -972,13 +972,13 @@ def run_benchmarks(plot, start_from):
             f.close()
             res_essence = run_solver(problem, "Conjure", translate, run_essence)
             results_essence[essence_problem] = res_essence
-    # results_file = f"bench_results_growing_domains.csv"
-    # if len(results_asp) > 0:
-    #     export_results(results_asp, results_file, "ASP")
-    # if len(results_sat) > 0:
-    #     export_results(results_sat, results_file, "#SAT")
-    # if len(results_essence) > 0:
-    #     export_results(results_essence, results_file, "Essence")
+    results_file = f"bench_results_growing_domains.csv"
+    if len(results_asp) > 0:
+        export_results(results_asp, results_file, "ASP")
+    if len(results_sat) > 0:
+        export_results(results_sat, results_file, "#SAT")
+    if len(results_essence) > 0:
+        export_results(results_essence, results_file, "Essence")
 
     if plot:
         from gen_plots import plot as plot_results

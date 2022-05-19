@@ -8,4 +8,4 @@ property as;
 property ns;
 #ns = 4;
 words in [| bs+as+ns];
-#words = 8;
+#words = 4;
