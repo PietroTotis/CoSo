@@ -973,6 +973,7 @@ def run_benchmarks(plot, start_from):
             res_essence = run_solver(problem, "Conjure", translate, run_essence)
             results_essence[essence_problem] = res_essence
     results_file = f"bench_results_growing_domains.csv"
+    clean_essence_garbage()
     if len(results_asp) > 0:
         export_results(results_asp, results_file, "ASP")
     if len(results_sat) > 0:
@@ -983,7 +984,7 @@ def run_benchmarks(plot, start_from):
     if plot:
         from gen_plots import plot as plot_results
 
-        plot_results(BENCHMARKS_SYNTH)
+        plot_results(BENCHMARKS_SYNTH, pgf=True)
 
 
 def translate_folder(folder, translation, extension=None):

@@ -129,7 +129,7 @@ def plot_benchmarks_sat(df, fig, axis):
 
     axis.set_title("Satisfiable problems")
 
-    plt.subplots_adjust(bottom=0.35, left=0.1)
+    # plt.subplots_adjust(bottom=0.35, left=0.1)
 
     if PGF:
         w, h = set_size(WIDTH)
@@ -334,12 +334,6 @@ def plot_growing_doms(df, fig, axis, name):
     else:
         axis.get_legend().remove()
 
-    if PGF:
-        w, h = set_size(WIDTH)
-        fig.set_size_inches(w, h)
-        path = os.path.join(OUT_DIR, "subproblems.pgf")
-        plt.savefig(path, bbox_inches="tight")
-
 
 def load_folder(folder):
     b_name = f"bench_results_{folder}.csv"
@@ -406,19 +400,32 @@ def load_data(bench_dir):
 def plot(bench_dir, pgf=False):
     PGF = pgf
     sns.set_theme(style="darkgrid", color_codes=True, palette=pal)
-    fig, axes = plt.subplots(nrows=1, ncols=3)
     df_sat, df_unsat, df_coso, df_real, df_growing = load_data(bench_dir)
-    plot_benchmarks_sat(df_sat, fig, axes[0])
-    plot_benchmarks_unsat(df_unsat, fig, axes[1])
-    plot_coso_stats(df_coso, fig, axes[2])
-    fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
-    plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
-    plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
-    plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
-    fig_g.suptitle("Growing domains on real-world problems", y=0.93, fontsize=12)
-    fig_g.tight_layout()
-    if not PGF:
-        plt.show()
+    if PGF:
+        fig1, ax1 = plt.subplots()
+        plot_benchmarks_sat(df_sat, fig1, ax1)
+        fig2, ax2 = plt.subplots()
+        plot_benchmarks_unsat(df_unsat, fig2, ax2)
+        fig3, ax3 = plt.subplots()
+        plot_coso_stats(df_coso, fig3, ax3)
+    else:
+        fig, axes = plt.subplots(nrows=1, ncols=3)
+        plot_benchmarks_sat(df_sat, fig, axes[0])
+        plot_benchmarks_unsat(df_unsat, fig, axes[1])
+        plot_coso_stats(df_coso, fig, axes[2])
+    # fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
+    # plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
+    # plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
+    # plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
+    # fig_g.suptitle("Growing domains on real-world problems", y=0.93, fontsize=12)
+    # fig_g.tight_layout()
+    # if not PGF:
+    #     plt.show()
+    # else:
+    #     w, h = set_size(WIDTH)
+    #     fig_g.set_size_inches(w, h)
+    #     path = os.path.join(OUT_DIR, "growing_domains.pgf")
+    #     plt.savefig(path, bbox_inches="tight")
 
 
 if __name__ == "__main__":
