@@ -980,11 +980,13 @@ def run_benchmarks(plot, start_from):
         export_results(results_sat, results_file, "#SAT")
     if len(results_essence) > 0:
         export_results(results_essence, results_file, "Essence")
+    plot(True)
 
-    if plot:
-        from gen_plots import plot as plot_results
 
-        plot_results(BENCHMARKS_SYNTH, pgf=True)
+def plot(export):
+    from gen_plots import plot as plot_results
+
+    plot_results(BENCHMARKS_SYNTH, pgf=True)
 
 
 def translate_folder(folder, translation, extension=None):
@@ -1089,5 +1091,7 @@ if __name__ == "__main__":
         run_benchmarks(args.plot, args.sf)
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
+    elif args.plot:
+        plot(False)
     else:
         pass

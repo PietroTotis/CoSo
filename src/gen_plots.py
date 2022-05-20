@@ -14,16 +14,6 @@ WIDTH = 430
 PGF = False
 
 pal = sns.color_palette("colorblind")
-if PGF:
-    matplotlib.use("pgf")
-    matplotlib.rcParams.update(
-        {
-            "pgf.texsystem": "pdflatex",
-            "font.family": "serif",
-            "text.usetex": True,
-            "pgf.rcfonts": False,
-        }
-    )
 
 
 def autolabel(rects, fmt=".2f"):
@@ -78,7 +68,7 @@ def set_size(width_pt, fraction=1, subplots=(1, 1)):
 ########################
 
 
-def plot_benchmarks_sat(df, fig, axis):
+def plot_benchmarks_sat(df, fig, axis, save):
 
     sns.barplot(
         ax=axis,
@@ -114,14 +104,15 @@ def plot_benchmarks_sat(df, fig, axis):
     axis.set_xticklabels(ticks)
     axis.tick_params(axis="x", labelrotation=90)
     handles, labels = axis.get_legend_handles_labels()
+    ph = [plt.plot([], marker="", ls="")[0]]
+    handles = ph + handles
     axis.legend(
         handles,
-        ["CoSo", "ASP", "sharpSAT", "Essence"],
-        bbox_to_anchor=(0.2, -0.5),
+        ["Framework:", "CoSo", "ASP", "sharpSAT", "Essence"],
+        bbox_to_anchor=(0.5, -0.5),
         loc="lower center",
-        ncol=2,
+        ncol=5,
         frameon=True,
-        title="Framework",
         fontsize="x-small",
         title_fontsize="small",
         borderaxespad=0,
@@ -131,11 +122,12 @@ def plot_benchmarks_sat(df, fig, axis):
 
     # plt.subplots_adjust(bottom=0.35, left=0.1)
 
-    if PGF:
+    if save:
         w, h = set_size(WIDTH)
-        fig.set_size_inches(w, h)
+        fig.set_size_inches(w + 0.1, h)
         path = os.path.join(OUT_DIR, "sat.pgf")
         plt.savefig(path, bbox_inches="tight")
+        plt.close(fig)
 
 
 ##########################
@@ -143,7 +135,7 @@ def plot_benchmarks_sat(df, fig, axis):
 ##########################
 
 
-def plot_benchmarks_unsat(df, fig, axis):
+def plot_benchmarks_unsat(df, fig, axis, save):
 
     sns.barplot(ax=axis, x="benchmark", y="time", hue="solver", data=df, palette=pal)
 
@@ -191,11 +183,12 @@ def plot_benchmarks_unsat(df, fig, axis):
 
     plt.subplots_adjust(left=0.15)
 
-    if PGF:
+    if save:
         w, h = set_size(WIDTH)
         fig.set_size_inches(w, h)
         path = os.path.join(OUT_DIR, "unsat.pgf")
         plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches="tight")
+        plt.close(fig)
 
 
 ############################
@@ -203,7 +196,7 @@ def plot_benchmarks_unsat(df, fig, axis):
 ############################
 
 
-def plot_coso_stats(df, fig, axis):
+def plot_coso_stats(df, fig, axis, save):
 
     count = df.groupby(["n_subproblems", "origin"])["count"].sum().unstack(fill_value=0)
     time = df.groupby(["n_subproblems"], as_index=False)["time"].mean()
@@ -214,14 +207,7 @@ def plot_coso_stats(df, fig, axis):
         color=sns.color_palette("colorblind"),
         width=0.9,
         ax=axis,
-    )
-
-    # labels_real = []
-    # labels_synth = []
-    # for i in range(0, len(df)):
-    #     labels_real.append(df.iloc[i, 0])
-    #     labels_synth.append(df.iloc[i, 1])
-    # labels = labels_real + labels_synth
+    ).legend(loc="upper center")
 
     n = len(count)
     for i, patch in enumerate(axis.patches):
@@ -230,7 +216,6 @@ def plot_coso_stats(df, fig, axis):
         x, y = patch.get_xy()
         x += patch.get_width() / 2
         y += patch.get_height() / 2
-        # y = 0.8 if y == 0.5 else y
         l = "" if count.iloc[r, c] == 0 else count.iloc[r, c]
         axis.annotate(l, (x, y), ha="center", va="center", c="black", fontsize=10)
 
@@ -261,7 +246,7 @@ def plot_coso_stats(df, fig, axis):
         ax7.axhline(y=y, color=ax6.get_lines()[-1].get_c(), alpha=0.3, linestyle="-")
 
     axis.set_xlabel("\\# subproblems")
-    axis.set_ylabel("\\# benchmarks")
+    axis.set_ylabel("\\# benchmarks (log)")
     ax6.set_ylabel("Seconds (log)")
     axis.set_title("CoSo avg. runtime vs. \\#subproblems")
 
@@ -277,15 +262,16 @@ def plot_coso_stats(df, fig, axis):
 
     plt.subplots_adjust(bottom=0.15, left=0.1)
 
-    if PGF:
+    if save:
         w, h = set_size(WIDTH)
         fig.set_size_inches(w, h)
         path = os.path.join(OUT_DIR, "subproblems.pgf")
         plt.savefig(path, bbox_inches="tight")
+        plt.close(fig)
 
 
 #####################
-## growing domains ##
+## Growing domains ##
 #####################
 
 
@@ -317,22 +303,22 @@ def plot_growing_doms(df, fig, axis, name):
         ticks = [1] + [y * 10**x for x in range(1, 3) for y in range(1, 10)] + [300]
         axis.set_yticks(ticks)
         axis.set_yticklabels(ticks, va="center", fontsize="small")
-    if name == "P5":
-        handles, labels = axis.get_legend_handles_labels()
-        fig.legend(
-            handles,
-            ["CoSo", "ASP", "sharpSAT", "Essence"],
-            bbox_to_anchor=(0.2, -0.5),
-            loc="lower center",
-            ncol=2,
-            frameon=True,
-            title="Framework",
-            fontsize="x-small",
-            title_fontsize="small",
-            borderaxespad=0,
-        )
-    else:
-        axis.get_legend().remove()
+    # if name == "P5":
+    #     handles, labels = axis.get_legend_handles_labels()
+    #     fig.legend(
+    #         handles,
+    #         ["CoSo", "ASP", "sharpSAT", "Essence"],
+    #         bbox_to_anchor=(0.2, -0.5),
+    #         loc="lower center",
+    #         ncol=2,
+    #         frameon=True,
+    #         title="Framework",
+    #         fontsize="x-small",
+    #         title_fontsize="small",
+    #         borderaxespad=0,
+    #     )
+    # else:
+    axis.get_legend().remove()
 
 
 def load_folder(folder):
@@ -398,34 +384,59 @@ def load_data(bench_dir):
 
 
 def plot(bench_dir, pgf=False):
-    PGF = pgf
     sns.set_theme(style="darkgrid", color_codes=True, palette=pal)
     df_sat, df_unsat, df_coso, df_real, df_growing = load_data(bench_dir)
-    if PGF:
+
+    if pgf:
+        matplotlib.use("pgf")
+        matplotlib.rcParams.update(
+            {
+                "pgf.texsystem": "pdflatex",
+                "font.family": "serif",
+                "text.usetex": True,
+                "pgf.rcfonts": False,
+            }
+        )
+
+    if pgf:
         fig1, ax1 = plt.subplots()
-        plot_benchmarks_sat(df_sat, fig1, ax1)
+        plot_benchmarks_sat(df_sat, fig1, ax1, pgf)
         fig2, ax2 = plt.subplots()
-        plot_benchmarks_unsat(df_unsat, fig2, ax2)
+        plot_benchmarks_unsat(df_unsat, fig2, ax2, pgf)
         fig3, ax3 = plt.subplots()
-        plot_coso_stats(df_coso, fig3, ax3)
+        plot_coso_stats(df_coso, fig3, ax3, pgf)
     else:
         fig, axes = plt.subplots(nrows=1, ncols=3)
         plot_benchmarks_sat(df_sat, fig, axes[0])
         plot_benchmarks_unsat(df_unsat, fig, axes[1])
         plot_coso_stats(df_coso, fig, axes[2])
-    # fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
-    # plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
-    # plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
-    # plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
-    # fig_g.suptitle("Growing domains on real-world problems", y=0.93, fontsize=12)
-    # fig_g.tight_layout()
-    # if not PGF:
-    #     plt.show()
-    # else:
-    #     w, h = set_size(WIDTH)
-    #     fig_g.set_size_inches(w, h)
-    #     path = os.path.join(OUT_DIR, "growing_domains.pgf")
-    #     plt.savefig(path, bbox_inches="tight")
+    fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
+    plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
+    plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
+    plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
+    handles, labels = axes_g[2].get_legend_handles_labels()
+    ph = [plt.plot([], marker="", ls="")[0]]
+    handles = ph + handles
+    labels = ["Framework:"] + labels
+    fig_g.legend(
+        handles,
+        labels,
+        bbox_to_anchor=(0.5, 1),
+        loc="center",
+        ncol=4,
+        frameon=True,
+        fontsize="x-small",
+        title_fontsize="small",
+        borderaxespad=0,
+    )
+    fig_g.tight_layout()
+    if pgf:
+        w, h = set_size(WIDTH)
+        fig_g.set_size_inches(w, h + 0.3)
+        path = os.path.join(OUT_DIR, "growing_domains.pgf")
+        plt.savefig(path, bbox_inches="tight")
+    else:
+        plt.show()
 
 
 if __name__ == "__main__":
