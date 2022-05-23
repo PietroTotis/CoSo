@@ -412,6 +412,8 @@ def dom2essence(lab, domain):
     copies = {}
     for atomic_interval in indist_intervals:
         e = domain.labels.get(atomic_interval.lower, "e_" + str(atomic_interval.lower))
+        if e in [str(i) for i in range(0, 10)]:
+            e = f"e_{e}"
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
             n_copies = u - l + 1
@@ -420,7 +422,12 @@ def dom2essence(lab, domain):
     for atomic_interval in dist_intervals:
         for n in portion.iterate(atomic_interval, step=1):
             e = domain.labels.get(n, "e_" + str(n))
+            if e in [str(i) for i in range(0, 10)]:
+                e = f"e_{e}"
             copies[e] = 1
+    lab = lab.replace("∧", "and")
+    lab = lab.replace("¬", "not")
+    lab = lab.replace("∨", "or")
     entity_list = ", ".join(copies.keys())
     if domain.universe == domain or domain.formula == "u":
         dom_str += f"letting universe be new type enum {{ {entity_list} }}\n"
@@ -564,11 +571,14 @@ def problem2essence(problem):
                 inner_range = range2essence(cf.formula.values, f"vals_{i}_in", ub)
                 essence_l += outer_range + inner_range
                 dlab = f"df_{i}"
-                if dlab not in added_doms:
-                    dom_str = dom2essence(dlab, cf.formula.formula)
-                    essence += dom_str
-                    added_doms.append(dlab)
-                cf_constraint = f"|[p | p:myparts, sum([put[e,p] | e <- df_{i}]) in vals_{i}_in]| in vals_{i}_out"
+                if isinstance(cf.formula, CSize):
+                    dom_str = "universe"
+                else:
+                    if dlab not in added_doms:
+                        dom_str = dom2essence(dlab, cf.formula.formula)
+                        essence += dom_str
+                        added_doms.append(dlab)
+                cf_constraint = f"|[p | p:myparts, sum([put[e,p] | e <- {dom_str}]) in vals_{i}_in]| in vals_{i}_out"
                 constraints.append(cf_constraint)
 
             essence_l += (
@@ -980,13 +990,13 @@ def run_benchmarks(plot, start_from):
         export_results(results_sat, results_file, "#SAT")
     if len(results_essence) > 0:
         export_results(results_essence, results_file, "Essence")
-    plot(True)
+    plot(False)
 
 
 def plot(export):
     from gen_plots import plot as plot_results
 
-    plot_results(BENCHMARKS_SYNTH, pgf=True)
+    plot_results(BENCHMARKS_SYNTH, pgf=export)
 
 
 def translate_folder(folder, translation, extension=None):

@@ -397,7 +397,6 @@ def plot(bench_dir, pgf=False):
                 "pgf.rcfonts": False,
             }
         )
-
     if pgf:
         fig1, ax1 = plt.subplots()
         plot_benchmarks_sat(df_sat, fig1, ax1, pgf)
@@ -407,9 +406,9 @@ def plot(bench_dir, pgf=False):
         plot_coso_stats(df_coso, fig3, ax3, pgf)
     else:
         fig, axes = plt.subplots(nrows=1, ncols=3)
-        plot_benchmarks_sat(df_sat, fig, axes[0])
-        plot_benchmarks_unsat(df_unsat, fig, axes[1])
-        plot_coso_stats(df_coso, fig, axes[2])
+        plot_benchmarks_sat(df_sat, fig, axes[0], pgf)
+        plot_benchmarks_unsat(df_unsat, fig, axes[1], pgf)
+        plot_coso_stats(df_coso, fig, axes[2], pgf)
     fig_g, axes_g = plt.subplots(nrows=1, ncols=3, sharey=True)
     plot_growing_doms(df_growing[1], fig_g, axes_g[0], "P3")
     plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
