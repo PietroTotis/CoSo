@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE, TimeoutExpired
 from statistics import mean
 from parser import EmptyException, Parser
 from sharpCSP import Solution
-from configuration import CSize
+from configuration import CCounting, CSize
 
 from util import *
 
@@ -372,11 +372,14 @@ def problem2asp(problem):
 
             for i, cf_2 in enumerate(problem.count_formulas):
                 cf_1 = cf_2.formula
-                dlab = f"df_{i}"
-                if dlab not in n_supports:
-                    dom_str, n = dom2asp(dlab, cf_1.formula)
-                    n_supports[dlab] = n
-                    asp += dom_str
+                if isinstance(cf_2.formula, CCounting):
+                    dlab = f"df_{i}"
+                    if dlab not in n_supports:
+                        dom_str, n = dom2asp(dlab, cf_1.formula)
+                        n_supports[dlab] = n
+                        asp += dom_str
+                else:
+                    dlab = "universe"
                 lb = (
                     cf_1.values.lower
                     if cf_1.values.left == P.CLOSED
@@ -412,12 +415,7 @@ def dom2essence(lab, domain):
     copies = {}
     for atomic_interval in indist_intervals:
         e = domain.labels.get(atomic_interval.lower, "e_" + str(atomic_interval.lower))
-        if e in [str(i) for i in range(0, 10)]:
-            e = f"e_{e}"
-        if e == "true":
-            e = "MYtrue"
-        if e == "false":
-            e = "MYfalse"
+        e = essence_name(e)
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
             n_copies = u - l + 1
@@ -426,17 +424,10 @@ def dom2essence(lab, domain):
     for atomic_interval in dist_intervals:
         for n in portion.iterate(atomic_interval, step=1):
             e = domain.labels.get(n, "e_" + str(n))
-            if e in [str(i) for i in range(0, 10)]:
-                e = f"e_{e}"
-            if e == "true":
-                e = "MYtrue"
-            if e == "false":
-                e = "MYfalse"
+            e = essence_name(e)
             copies[e] = 1
-    lab = lab.replace("∧", "and")
-    lab = lab.replace("¬", "not")
-    lab = lab.replace("∨", "or")
     entity_list = ", ".join(copies.keys())
+    lab = essence_name(lab)
     if domain.universe == domain or domain.formula == "u":
         dom_str += f"letting universe be new type enum {{ {entity_list} }}\n"
         function_list = ", ".join([f"{e} --> {n}" for e, n in copies.items()])
@@ -452,6 +443,19 @@ def range2essence(interval, name, ub):
     range_vals = ",".join([str(i) for i in P.iterate(interval, step=1)])
     let_str = f"letting {name} be {{ {range_vals} }}\n"
     return let_str
+
+
+def essence_name(lab):
+    if lab in [str(i) for i in range(0, 10)]:
+        lab = f"e_{lab}"
+    if lab == "true":
+        lab = "MYtrue"
+    if lab == "false":
+        lab = "MYfalse"
+    lab = lab.replace("∧", "and")
+    lab = lab.replace("¬", "not")
+    lab = lab.replace("∨", "or")
+    return lab
 
 
 def problem2essence(problem):
@@ -1060,7 +1064,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-e",
         action="store_true",
-        help="Export translation only without running solvers",
+        help="Export plots or translation only without running solvers",
     )
     parser.add_argument("--plot", action="store_true", help="Plot benchmarks results")
     parser.add_argument("--asp", action="store_true", help="Compare with 'asp'")
@@ -1110,6 +1114,6 @@ if __name__ == "__main__":
     elif args.g:
         generate_constrained(args.g, args.noposconstr, args.nocountconstr)
     elif args.plot:
-        plot(False)
+        plot(args.e)
     else:
         pass

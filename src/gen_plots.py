@@ -422,7 +422,7 @@ def plot(bench_dir, pgf=False):
         labels,
         bbox_to_anchor=(0.5, 1),
         loc="center",
-        ncol=4,
+        ncol=5,
         frameon=True,
         fontsize="x-small",
         title_fontsize="small",
