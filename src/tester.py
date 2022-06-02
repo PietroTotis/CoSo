@@ -1108,7 +1108,7 @@ if __name__ == "__main__":
             for sname, translation, _ in solvers:
                 translate_folder(args.d, translation, sname)
         else:
-            test_folder(args.test_folder, args.asp, args.sat, args.essence)
+            test_folder(args.d, args.asp, args.sat, args.essence)
     elif args.b:
         run_benchmarks(args.plot, args.sf)
     elif args.g:

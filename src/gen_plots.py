@@ -300,7 +300,7 @@ def plot_growing_doms(df, fig, axis, name):
 
     if name == "P3":
         axis.set_ylabel("Seconds", fontsize="small")
-        ticks = [1] + [y * 10**x for x in range(1, 3) for y in range(1, 10)] + [300]
+        ticks = [1, 10, 50, 100, 200, 300]
         axis.set_yticks(ticks)
         axis.set_yticklabels(ticks, va="center", fontsize="small")
     # if name == "P5":
@@ -431,7 +431,7 @@ def plot(bench_dir, pgf=False):
     fig_g.tight_layout()
     if pgf:
         w, h = set_size(WIDTH)
-        fig_g.set_size_inches(w, h + 0.3)
+        fig_g.set_size_inches(w, h)
         path = os.path.join(OUT_DIR, "growing_domains.pgf")
         plt.savefig(path, bbox_inches="tight")
     else:
