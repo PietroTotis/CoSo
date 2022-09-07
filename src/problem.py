@@ -25,7 +25,7 @@ class Problem(object):
 
     def __init__(self):
         self.universe = None
-        self.agg_formulas = []
+        # self.agg_formulas = []
         self.pos_formulas = []
         self.count_formulas = []
         self.domains = {}
@@ -190,6 +190,7 @@ class Problem(object):
             # cof.formula.universe = universe
         self.universe = universe
         self.universe.set_universe(universe)
+        print("dsdsmpc", self.universe, self.universe.universe)
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -250,7 +251,7 @@ class Problem(object):
                 vals = Int.closed(1, self.universe.size())
                 self.configuration.size = CSize("unconstrained", vals)
             s = Solver(self)
-            return s.solve(log)
+            return s.solve()
 
     def __str__(self):
         s = ""

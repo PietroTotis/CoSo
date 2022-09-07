@@ -794,13 +794,13 @@ def run_coso(problem, log=False):
             killtree(p.pid)
             p.join()
             print("Killed")
-            res = Result("CoSo", Solution(-1, [], -1), TIMEOUT)
+            res = Result("CoSo", Solution(-1, [], None, -1), TIMEOUT)
         else:
-            sol = Solution(count.value, [], n_subproblems.value)
+            sol = Solution(count.value, [], None, n_subproblems.value)
             res = Result("CoSo", sol, finish - start)
             print(res)
     except:
-        res = Result("CoSo", Solution(-1, [], -1), TIMEOUT)
+        res = Result("CoSo", Solution(-1, [], None, -1), TIMEOUT)
         print(f"CoSo timeout")
     return res
 

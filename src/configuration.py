@@ -79,7 +79,7 @@ class Variable:
         """
         Representation of the variable
         """
-        return self.__str__(self)
+        return self.__str__()
 
     def __str__(self):
         """

@@ -237,6 +237,7 @@ class Parser(object):
             self.problem.add_domain(d)
             if explicit_univ:
                 self.problem.universe = d
+                self.problem.universe.universe = d
             p[0] = d
 
     def p_arrangement(self, p):
@@ -267,20 +268,20 @@ class Parser(object):
         dom = self.problem.compute_dom(set)
         s = Configuration(name, type, dom)
         self.problem.configuration = s
+        if self.problem.universe is None:
+            self.problem.compute_universe()
         if len(self.problem.domains) > 0:
-            if self.problem.universe is None:
-                self.problem.compute_universe()
-                names = list(self.problem.domains)
-                for i, d1 in enumerate(names):
-                    for d2 in names[i:]:
-                        dom1 = self.problem.domains[d1]
-                        dom2 = self.problem.domains[d2]
-                        if dom1.elements.domain() in dom2.elements.domain():
-                            dom1.elements.combine(
-                                dom2.elements, how=is_distinguishable
-                            )  # update indistinguishable
-                        if dom2.elements.domain() in dom1.elements.domain():
-                            self.problem.domains[d1] = dom1 | dom2
+            names = list(self.problem.domains)
+            for i, d1 in enumerate(names):
+                for d2 in names[i:]:
+                    dom1 = self.problem.domains[d1]
+                    dom2 = self.problem.domains[d2]
+                    if dom1.elements.domain() in dom2.elements.domain():
+                        dom1.elements.combine(
+                            dom2.elements, how=is_distinguishable
+                        )  # update indistinguishable
+                    if dom2.elements.domain() in dom1.elements.domain():
+                        self.problem.domains[d1] = dom1 | dom2
         else:
             raise EmptyException("No sets found")
         p[0] = s

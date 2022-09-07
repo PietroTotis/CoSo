@@ -1,9 +1,24 @@
-set universe = {e1,e1,e1,e1, e2, e2, e3};
-set df = {e2,e3};
+universe u = {e1,e1,e1,e1, e2, e2, e3};
+property df = {e2,e3};
 
-sbs in compositions(universe);
+sbs in compositions(u);
 #sbs = 2;
 #sbs[2] > 2;
 #{#part&df = 2} = 1;
 
 % sol: 14
+
+% e2 e3 | e1,e1,e1,e1,e2
+% e2 e2 | e1,e1,e1,e1,e3
+% e1 e2 e3 | e1,e1,e1,e2
+% e1 e2 e2 | e1,e1,e1,e3
+% e1,e1,e1,e2 | e1 e2 e3
+% e1,e1,e1,e3 | e1 e2 e2
+% e1 e1 e2 e3 | e1,e1,e2
+% e1 e1 e2 e2 | e1,e1,e3
+% e1,e1,e2 | e1 e1 e2 e3
+% e1,e1,e3 | e1 e1 e2 e2
+% e1,e2 | e1 e1 e1 e2 e3
+% e1,e3 | e1 e1 e1 e2 e2
+% e2 | e1 e1 e1 e1 e2 e3 
+% e3 | e1 e1 e1 e1 e2 e2 

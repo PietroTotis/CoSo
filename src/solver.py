@@ -3,6 +3,7 @@ import portion as P
 from configuration import *
 from sharpCSP import SharpCSP, Solution
 from level_2 import LiftedSet
+from util import ProblemLog
 
 
 class Solver(object):
@@ -10,7 +11,7 @@ class Solver(object):
     Sets up the decision variables from the problem
     """
 
-    def __init__(self, problem):
+    def __init__(self, problem, text=True, xml=False, outfile=None):
         self.problem = problem
         self.universe = problem.universe
         self.size = problem.configuration.size
@@ -18,10 +19,12 @@ class Solver(object):
             n = self.universe.size()
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.configuration.type
+        self.log = ProblemLog()
+        self.log.description("Root problem")
 
-    def solve(self, log=True):
+    def solve(self):
         if not self.trivial_unsat():
-            count = Solution(0, [], subproblems=0)
+            count = Solution(0, [], subproblems=0, log=self.log)
             for n in self.size:
                 if self.type in ["sequence", "subset", "permutation", "multisubset"]:
                     vars = [self.universe] * n
@@ -35,13 +38,19 @@ class Solver(object):
                     self.problem.pos_formulas,
                     self.problem.count_formulas,
                     self.universe,
+                    caption=f"Configuration of size {n}",
+                    lvl=1,
                 )
-                count += csp.solve(log)
+                size_count = csp.solve()
+                self.log.add_subproblem("add", size_count.log)
+                count += size_count
+            self.log.solution = count
         else:
-            count = Solution(0, [], subproblems=1)
+            count = Solution(0, [], subproblems=1, log=self.log)
+        print(count.log)
         return count
 
-    def trivial_unsat(self, log=True):
+    def trivial_unsat(self):
         """
         Check if there is some constraint unsatisfiable because of domains, regardless of the number of variables
 
@@ -56,10 +65,7 @@ class Solver(object):
                 )
                 available_elems = count_constr.formula.size()
                 if available_elems < atleast:
-                    if log:
-                        print(
-                            f"\tTrivially unsat because we want at least {atleast} {count_constr.formula} but we have only {available_elems}"
-                        )
+                    self.log.description = f"Trivially unsat because we want at least {atleast} {count_constr.formula} but we have only {available_elems}"
                     return True
         else:
             # TODO

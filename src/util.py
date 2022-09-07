@@ -1,3 +1,5 @@
+from argparse import Action
+from pandas import describe_option
 import portion as P
 import os
 import sys
@@ -385,3 +387,126 @@ def list2Int(entities):
             ivs.append(P.singleton(low))
         i += 1
     return ivs
+
+
+class ActionLog(object):
+    def __init__(self, description):
+        self.description = description
+        self.details = []
+
+    def detail(self, msg):
+        self.details.append(msg)
+
+
+class ProblemLog(object):
+    def __init__(
+        self,
+        vars=[],
+        type=None,
+        pos_constraints=[],
+        constraints=[],
+        universe=None,
+        level=0,
+        id="1",
+    ):
+        self.id = id
+        self.vars = [v.copy() for v in vars]
+        self.type = type
+        self.pos_constraints = pos_constraints
+        self.constraints = constraints
+        self.universe = universe
+        self.caption = "Problem"
+        self.actions = []
+        self.subproblems = []
+        self.solution = None
+        self.level = level
+        self.shattering = []
+
+    def __str__(self):
+        space = "  "  # "\t"
+        # self.set_ids()
+        tabs = f"{space}" * self.level
+        msg = tabs + f"### ({self.id}) {self.caption} ###\n"
+        if len(self.vars) > 0:
+            for i, v in enumerate(self.vars):
+                msg += tabs + f"Obj {i+1}:  {v}\n"
+        if len(self.pos_constraints) > 0:
+            msg += tabs + "Positional constraints:\n"
+            for c in self.pos_constraints:
+                msg += tabs + f"{space}{c}\n"
+        if len(self.constraints) > 0:
+            msg += tabs + "Counting constraints:\n"
+            for c in self.constraints:
+                msg += tabs + f"{space}{c}\n"
+        msg += tabs + "%%%%%%%\n"
+        for i, action in enumerate(self.actions):
+            msg += tabs + f"A{i+1}) {action.description}\n"
+            if len(action.details) > 0:
+                msg += tabs + "------\n"
+                for detail in action.details:
+                    msg += tabs + "  " + detail + "\n"
+        if len(self.subproblems) > 0:
+            op, _ = self.subproblems[0]
+            if op == "add":
+                msg += f"{tabs}Summing:\n"
+            elif op == "mul":
+                msg += f"{tabs}Multiplying:\n"
+            elif op == "sub":
+                msg += f"{tabs}Subtracting:\n"
+            else:
+                msg += f"{tabs}Subproblem:\n"
+            for op, problem in self.subproblems:
+                msg += str(problem)
+        msg += tabs + "========\n"
+        msg += f"{tabs}({self.id}) Solution: {self.solution}\n"
+        return msg
+
+    def copy(self):
+        copy = ProblemLog(
+            self.vars,
+            self.type,
+            self.pos_constraints,
+            self.constraints,
+            self.universe,
+            self.level,
+            self.id,
+        )
+        copy.caption = self.caption
+        return copy
+
+    def propagation(self, constraint):
+        al = ActionLog("propagate")
+        al.detail(constraint)
+        return al
+
+    def warning(self, msg):
+        al = ActionLog("warning")
+        al.detail(msg)
+
+    def detail(self, action, msg):
+        if isinstance(msg, str):
+            action.detail(msg)
+        elif isinstance(msg, list):
+            for elem in msg:
+                action.detail(str(elem))
+
+    def description(self, msg):
+        self.caption = msg
+
+    def action(self, msg):
+        al = ActionLog(msg)
+        self.actions.append(al)
+        return al
+
+    def shatter_case(self, action, n, split, rest):
+        self.shattering.append(n, split, rest)
+
+    def add_subproblem(self, op, sub_log):
+        # sub_log.id = f"{self.id}.{len(self.subproblems)+1}"
+        # sub_log.level = self.level + 1
+        self.subproblems.append((op, sub_log))
+
+    # def set_ids(self):
+    #     for i, sp in enumerate(self.subproblems):
+    #         _, p = sp
+    #         p.id = f"{self.id}.{i+1}"
