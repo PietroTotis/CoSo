@@ -408,6 +408,7 @@ class ProblemLog(object):
         universe=None,
         level=0,
         id="1",
+        debug=True,
     ):
         self.id = id
         self.vars = [v.copy() for v in vars]
@@ -420,45 +421,21 @@ class ProblemLog(object):
         self.subproblems = []
         self.solution = None
         self.level = level
-        self.shattering = []
+        self.shatter_cases = {}
+        self.shatter_subproblems = {}
+        self.space = "  "  # "\t"
+        self.indent = f"{self.space}" * self.level
+        self.debug = debug
+        if debug:
+            print(self.configuration2text())
 
     def __str__(self):
-        space = "  "  # "\t"
-        # self.set_ids()
-        tabs = f"{space}" * self.level
-        msg = tabs + f"### ({self.id}) {self.caption} ###\n"
-        if len(self.vars) > 0:
-            for i, v in enumerate(self.vars):
-                msg += tabs + f"Obj {i+1}:  {v}\n"
-        if len(self.pos_constraints) > 0:
-            msg += tabs + "Positional constraints:\n"
-            for c in self.pos_constraints:
-                msg += tabs + f"{space}{c}\n"
-        if len(self.constraints) > 0:
-            msg += tabs + "Counting constraints:\n"
-            for c in self.constraints:
-                msg += tabs + f"{space}{c}\n"
-        msg += tabs + "%%%%%%%\n"
-        for i, action in enumerate(self.actions):
-            msg += tabs + f"A{i+1}) {action.description}\n"
-            if len(action.details) > 0:
-                msg += tabs + "------\n"
-                for detail in action.details:
-                    msg += tabs + "  " + detail + "\n"
-        if len(self.subproblems) > 0:
-            op, _ = self.subproblems[0]
-            if op == "add":
-                msg += f"{tabs}Summing:\n"
-            elif op == "mul":
-                msg += f"{tabs}Multiplying:\n"
-            elif op == "sub":
-                msg += f"{tabs}Subtracting:\n"
-            else:
-                msg += f"{tabs}Subproblem:\n"
-            for op, problem in self.subproblems:
-                msg += str(problem)
-        msg += tabs + "========\n"
-        msg += f"{tabs}({self.id}) Solution: {self.solution}\n"
+        msg = self.configuration2text() + "\n"
+        msg += self.actions2text()
+        msg += self.subproblems2text()
+        msg += self.shatter2text()
+        msg += self.indent + "========\n"
+        msg += f"{self.indent}({self.id}) Solution: {self.solution}\n"
         return msg
 
     def copy(self):
@@ -475,8 +452,10 @@ class ProblemLog(object):
         return copy
 
     def propagation(self, constraint):
-        al = ActionLog("propagate")
-        al.detail(constraint)
+        al = self.action("Propagate")
+        al.detail(str(constraint))
+        if self.debug:
+            print(f"{self.indent}- Propagating {constraint}")
         return al
 
     def warning(self, msg):
@@ -486,9 +465,13 @@ class ProblemLog(object):
     def detail(self, action, msg):
         if isinstance(msg, str):
             action.detail(msg)
+            if self.debug:
+                print(f"{self.indent}{self.space} {msg}")
         elif isinstance(msg, list):
             for elem in msg:
                 action.detail(str(elem))
+                if self.debug:
+                    print(f"{self.indent}{self.space} {elem}")
 
     def description(self, msg):
         self.caption = msg
@@ -496,17 +479,93 @@ class ProblemLog(object):
     def action(self, msg):
         al = ActionLog(msg)
         self.actions.append(al)
+        if self.debug:
+            print(f"{self.indent}- {msg}")
         return al
 
     def shatter_case(self, action, n, split, rest):
-        self.shattering.append(n, split, rest)
+        self.shatter_cases[n] = (split, rest)
+        if self.debug:
+            print(f"{self.indent}C{n}) {split} // {rest}")
 
     def add_subproblem(self, op, sub_log):
-        # sub_log.id = f"{self.id}.{len(self.subproblems)+1}"
-        # sub_log.level = self.level + 1
         self.subproblems.append((op, sub_log))
+        if self.debug:
+            print(f"{sub_log.indent}========")
+            print(f"{sub_log.indent}({sub_log.id}) Solution: {sub_log.solution}")
 
-    # def set_ids(self):
-    #     for i, sp in enumerate(self.subproblems):
-    #         _, p = sp
-    #         p.id = f"{self.id}.{i+1}"
+    def add_split_left(self, subproblem, shatter_id):
+        self.shatter_subproblems[shatter_id] = (subproblem, [])
+        if self.debug:
+            print(f"{subproblem.indent}========")
+            print(
+                f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.solution}"
+            )
+
+    def add_split_right(self, subproblem, shatter_id):
+        _, right = self.shatter_subproblems[shatter_id]
+        right.append(subproblem)
+        if self.debug:
+            print(f"{subproblem.indent}========")
+            print(
+                f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.solution}"
+            )
+
+    def configuration2text(self):
+        text = self.indent + f"### ({self.id}) {self.caption} ({self.type}) ###\n"
+        if len(self.vars) > 0:
+            for i, v in enumerate(self.vars):
+                text += self.indent + f"Obj {i+1}:  {v}\n"
+        if len(self.pos_constraints) > 0:
+            text += self.indent + "Positional constraints:\n"
+            for c in self.pos_constraints:
+                text += self.indent + f"{self.space}{c}\n"
+        if len(self.constraints) > 0:
+            text += self.indent + "Counting constraints:\n"
+            for c in self.constraints:
+                text += self.indent + f"{self.space}{c}\n"
+        text += self.indent + "%%%%%%%"
+        return text
+
+    def action2text(self, action):
+        text = self.indent + f"- {action.description}\n"
+        if len(action.details) > 0:
+            text += self.indent + "--------\n"
+            for detail in action.details:
+                text += self.indent + self.space + detail + "\n"
+        return text
+
+    def actions2text(self):
+        text = ""
+        for action in self.actions:
+            text += self.action2text(action)
+        if len(self.actions) > 0:
+            text += self.indent + "~~~~~~~~\n"
+        return text
+
+    def subproblems2text(self):
+        text = ""
+        for op, subproblem in self.subproblems:
+            if op == "add":
+                text += f"{self.indent}Summing:\n"
+            elif op == "mul":
+                text += f"{self.indent}Multiplying:\n"
+            elif op == "sub":
+                text += f"{self.indent}Subtracting:\n"
+            else:
+                text += f"{self.indent}Subproblem:\n"
+            text += str(subproblem)
+        return text
+
+    def shatter2text(self):
+        text = ""
+        if len(self.shatter_subproblems) > 0:
+            text = f"{self.indent}Summing\n"
+            for id in self.shatter_subproblems:
+                left, right = self.shatter_subproblems[id]
+                text += str(left)
+                if len(right) > 0:  # right might be missing if left=0
+                    text += f"{self.indent}Times\n"
+                    for rest_subproblem in right:
+                        text += str(rest_subproblem)
+        return text

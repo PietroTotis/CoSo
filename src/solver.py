@@ -47,7 +47,7 @@ class Solver(object):
             self.log.solution = count
         else:
             count = Solution(0, [], subproblems=1, log=self.log)
-        print(count.log)
+        # print(count.log)
         return count
 
     def trivial_unsat(self):
