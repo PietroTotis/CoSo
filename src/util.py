@@ -409,6 +409,7 @@ class ProblemLog(object):
         level=0,
         id="1",
         debug=True,
+        caption="Problem",
     ):
         self.id = id
         self.vars = [v.copy() for v in vars]
@@ -416,7 +417,7 @@ class ProblemLog(object):
         self.pos_constraints = pos_constraints
         self.constraints = constraints
         self.universe = universe
-        self.caption = "Problem"
+        self.caption = caption
         self.actions = []
         self.subproblems = []
         self.solution = None
@@ -447,8 +448,9 @@ class ProblemLog(object):
             self.universe,
             self.level,
             self.id,
+            self.debug,
+            self.caption,
         )
-        copy.caption = self.caption
         return copy
 
     def propagation(self, constraint):
@@ -496,7 +498,7 @@ class ProblemLog(object):
 
     def add_split_left(self, subproblem, shatter_id):
         self.shatter_subproblems[shatter_id] = (subproblem, [])
-        if self.debug:
+        if self.debug and subproblem.solution is not None:
             print(f"{subproblem.indent}========")
             print(
                 f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.solution}"

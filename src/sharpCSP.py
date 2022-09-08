@@ -13,6 +13,8 @@ class Unsatisfiable(Exception):
     def __init__(self, value, log=None):
         self.value = value
         self.log = log
+        if self.log is not None:
+            self.log.solution = 0
 
     def __str__(self):
         return repr(self.value)
@@ -132,8 +134,8 @@ class SharpCSP(object):
             universe=None,
             level=lvl,
             id=id,
+            caption=caption,
         )
-        self.log.description(caption)
         self.id = id
         self.lvl = lvl
         self.n_vars = len(vars)
@@ -182,7 +184,7 @@ class SharpCSP(object):
                 # self.debug(f"Ignoring {chf} because out of range ({self.n_vars})")
                 self.log.warning(f"Ignoring {chf} because out of range ({self.n_vars})")
 
-    def apply_count(self, cc, others):
+    def apply_count_constraint(self, cc, others):
         """
         Applies the constraints to satisfy 'current' count: for each admissible value n (lb<=n<=ub)
         of the property p in cc, constrain the problem to n variables satisfying p and sum over the
@@ -239,7 +241,7 @@ class SharpCSP(object):
                 self.log.detail(al, f"Invert {cc}: at least {ub} {cc.formula.neg()}")
                 interval_not = Int.closedopen(ub, Int.inf)
                 cc_not = CCounting(cc.formula.neg(), interval_not)
-                count = self.apply_count(cc_not, others)
+                count = self.apply_count_constraint(cc_not, others)
             elif len(out_values) < len(cc.values):
                 # ignore and then remove the unsat cases
                 # self.debug(f"Relax {cc} and remove unsat")
@@ -298,12 +300,12 @@ class SharpCSP(object):
                     op="add",
                     id=str(i),
                 )
-                # partial_count = self.apply_count(partial_cc, others)
+                # partial_count = self.apply_count_constraint(partial_cc, others)
                 # self.log.add_subproblem("add", partial_count.log)
                 count += partial_count
         return count
 
-    def apply_counts(self):
+    def apply_constraints(self):
         """
         If vars are exchangeable we can apply a count otherwise we need to split and consider the combinations of count constraints
 
@@ -318,6 +320,7 @@ class SharpCSP(object):
                 count = self.count_exchangeable()
         else:
             count = self.shatter_partitions()
+        self.log.solution = count.count
         return count
 
     def choose_cc(self):
@@ -399,7 +402,7 @@ class SharpCSP(object):
         """
         # self.debug("Counting exchangeable...")
         cc, others = self.choose_cc()
-        count = self.apply_count(cc, others)
+        count = self.apply_count_constraint(cc, others)
         return count
 
     def count_non_exchangeable(self, ex_classes):
@@ -901,7 +904,7 @@ class SharpCSP(object):
         except Unsatisfiable as u:
             return Solution(0, [], u.log, 0)
         if len(self.count_f) > 0:
-            count = self.apply_counts()
+            count = self.apply_constraints()
         # elif len(self.agg_f) > 0:
         #     count = self.apply_aggs()
         else:
@@ -931,8 +934,8 @@ class SharpCSP(object):
             op="split-left",
             # id=f"{id}",
             shatter_id=shatter_id,
+            caption="Split class",
         )
-        split_class_count.log.description("Split class")
         if split_class_count != 0:
             # self.debug("Rest class: ")
             rest_classes_count = self.solve_subproblem(
@@ -943,8 +946,8 @@ class SharpCSP(object):
                 op="split-right",
                 # id=f"{id}",
                 shatter_id=shatter_id,
+                caption="Rest class",
             )
-            rest_classes_count.log.description("Rest class")
             count = split_class_count * rest_classes_count
             # self.debug("==========")
             return count
@@ -1544,8 +1547,7 @@ class SharpCSP(object):
         #     "Counting fixed partitions on histogram ",
         #     [k for k in vars[0].histogram.keys()],
         # )
-        c_log = ProblemLog(vars)
-        c_log.caption = caption
+        c_log = ProblemLog(vars, caption=caption)
         al = c_log.action("Counting fixed partitions from histograms")
         c_log.detail(al, [k for k in vars[0].histogram.keys()])
         choices = {rvs: rvs.size() for rvs in relevant}
