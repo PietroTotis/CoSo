@@ -3,7 +3,7 @@ import portion as P
 from configuration import *
 from sharpCSP import SharpCSP, Solution
 from level_2 import LiftedSet
-from util import ProblemLog
+from logger import ProblemLog
 
 
 class Solver(object):

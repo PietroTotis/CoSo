@@ -6,7 +6,7 @@ import itertools
 from configuration import *
 from level_1 import *
 from level_2 import *
-from util import ProblemLog, ActionLog
+from logger import ProblemLog
 
 
 class Unsatisfiable(Exception):
@@ -1547,7 +1547,9 @@ class SharpCSP(object):
         #     "Counting fixed partitions on histogram ",
         #     [k for k in vars[0].histogram.keys()],
         # )
-        c_log = ProblemLog(vars, caption=caption)
+        c_log = ProblemLog(
+            vars, caption=caption, id=id, level=self.lvl + 1, type=self.type
+        )
         al = c_log.action("Counting fixed partitions from histograms")
         c_log.detail(al, [k for k in vars[0].histogram.keys()])
         choices = {rvs: rvs.size() for rvs in relevant}
@@ -1575,6 +1577,7 @@ class SharpCSP(object):
                 )  # should be int anyways
             # self.debug(f"\tcount = {count}")
             c_log.detail(al, f"Count = {count}")
+        c_log.solution = count
         return count
 
     def count_partitions(self, var_list=None):
@@ -1752,9 +1755,12 @@ class SharpCSP(object):
         for i, fix_vars in enumerate(fixed):
             e, prop_vars = fix_vars
             c_fix = self.count_fixed_partitions(
-                relevant, prop_vars, caption=f"Fixed {i}", op="add", id=str(i)
+                relevant,
+                prop_vars,
+                caption=f"Fixed {i+1}",
+                id=f"{self.log.id}.{str(i + 1)}",
             )
-            # self.log.add_subproblem("add", c_fix.log)
+            self.log.add_subproblem("add", c_fix.log)
             count += c_fix.with_choices(e)
         return count
 
