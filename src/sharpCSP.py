@@ -27,16 +27,23 @@ class Solution(object):
     For each histogram keep track of the corresponding number of (partial) solutions.
     """
 
-    def __init__(self, count, histogram, log, subproblems=1):
+    def __init__(self, count, histogram, log, subproblems=1, symbolic=None):
         self.count = count
         self.histograms = [[count, histogram]]
         self.subproblems = subproblems
         self.log = log
+        self.symbolic = symbolic if symbolic is not None else str(count)
 
     def __add__(self, rhs):
         self.count += rhs.count
         self.histograms += rhs.histograms
         self.subproblems += rhs.subproblems
+        if self.symbolic == "":
+            self.symbolic = rhs.symbolic
+        elif rhs.symbolic == "":
+            pass
+        else:
+            self.symbolic = f"{self.symbolic} + {rhs.symbolic}"
         return self
 
     def __mul__(self, rhs):
@@ -50,6 +57,12 @@ class Solution(object):
         prod.count = self.count * rhs.count
         prod.histograms = histograms
         prod.subproblems = self.subproblems + rhs.subproblems
+        if self.symbolic == "":
+            prod.symbolic = rhs.symbolic
+        elif rhs.symbolic == "":
+            prod.symbolic = self.symbolic
+        else:
+            prod.symbolic = f"{self.symbolic} \cdot {rhs.symbolic}"
         return prod
 
     def __sub__(self, rhs):
@@ -59,6 +72,7 @@ class Solution(object):
             self.count -= rhs.count
             # self.histograms -= rhs.histograms
             self.subproblems += rhs.subproblems
+            self.symbolic = f"{self.symbolic} - {rhs.symbolic}"
             return self
 
     def __repr__(self):
@@ -66,6 +80,13 @@ class Solution(object):
 
     def __str__(self):
         return f"{self.count} ({self.subproblems} subproblems)"
+
+    def __floordiv__(self, rhs):
+        self.count = self.count // rhs.count
+        self.histograms += rhs.histograms
+        self.subproblems += rhs.subproblems
+        self.symbolic = f"\\frac{{{self.symbolic}}}{{{rhs.symbolic}}}"
+        return self
 
     def add_histograms(self, h1, h2):
         sum = {}
@@ -86,6 +107,7 @@ class Solution(object):
             updated_hst.append([c, hst])
         self.count *= n_choices
         self.histograms = updated_hst
+        self.symbolic = f"{n_choices} \cdot {self.symbolic}"
         return self
 
 
@@ -120,12 +142,13 @@ class SharpCSP(object):
         lvl=0,
         caption="Subproblem",
         id="1",
+        debug=True,
     ):
         # self.agg_f = agg_f
         self.choice_f = choice_f
         self.count_f = count_f
+        self.debug = debug
         self.fixed_choices = 0
-        self.dolog = True
         self.log = ProblemLog(
             vars,
             type,
@@ -135,6 +158,7 @@ class SharpCSP(object):
             level=lvl,
             id=id,
             caption=caption,
+            debug=debug,
         )
         self.id = id
         self.lvl = lvl
@@ -214,7 +238,7 @@ class SharpCSP(object):
                     count = self.split_on_constraints(choices, others)
                 except Unsatisfiable:
                     # self.log.add_subproblem("unsat", self.log)
-                    print(self.log)
+                    # print(self.log)
                     count = Solution(0, [], self.log, 0)
             elif self.type != "subset" and (
                 cc.values.upper == Int.inf or ub == self.n_vars
@@ -288,7 +312,7 @@ class SharpCSP(object):
         else:
             # there are multiple separate intervals
             self.log.detail(al, f"Breaking intervals into equalities")
-            count = Solution(0, [], None, 0)
+            count = Solution(0, [], None, 0, "")
             for interval in cc.values:
                 partial_cc = CCounting(cc.formula, interval)
                 partial_count = self.solve_subproblem(
@@ -320,7 +344,7 @@ class SharpCSP(object):
                 count = self.count_exchangeable()
         else:
             count = self.shatter_partitions()
-        self.log.solution = count.count
+        self.log.solution = count
         return count
 
     def choose_cc(self):
@@ -428,7 +452,7 @@ class SharpCSP(object):
             split_class_vars, rest_classes_vars
         )
         al = self.log.action("Shattering constraints")
-        tot_count = Solution(0, [], self.log, 0)
+        tot_count = Solution(0, [], self.log, 0, "")
         for i in range(0, len(combs_rest_classes)):
             try:
                 comb_split_class = self.compact_ccs(combs_split_class[i])
@@ -514,7 +538,7 @@ class SharpCSP(object):
             count = self.count_partitions(vars)
         else:
             count = -1
-        self.log.solution = count.count
+        self.log.solution = count
         return count
 
     def count_satisfied(self, cc, var_list=None):
@@ -770,15 +794,15 @@ class SharpCSP(object):
             return False
         return True
 
-    def debug(self, s, *args):
-        if self.dolog:
-            strargs = " ".join(list(map(str, args)))
-            flat = str(s) + strargs
-            ind = "\t" * self.lvl
-            lines = flat.split("\n")
-            indented = list(map(lambda l: ind + l, lines))
-            final = "\n".join(indented)
-            print(final)
+    # def debug(self, s, *args):
+    #     if self.debug:
+    #         strargs = " ".join(list(map(str, args)))
+    #         flat = str(s) + strargs
+    #         ind = "\t" * self.lvl
+    #         lines = flat.split("\n")
+    #         indented = list(map(lambda l: ind + l, lines))
+    #         final = "\n".join(indented)
+    #         print(final)
 
     def propagate(self, var, property):
         if isinstance(property, SetFormula):
@@ -894,9 +918,7 @@ class SharpCSP(object):
         # self.debug(f"\t{res}")
         return res
 
-    def solve(self, log=True):
-        self.dolog = log
-        # self.debug(self)
+    def solve(self):
         for c in self.choice_f:
             self.apply_choice(c)
         try:
@@ -1000,9 +1022,10 @@ class SharpCSP(object):
             self.lvl + 1,
             caption,
             id=sub_id,
+            debug=self.debug,
         )
         try:
-            count = subproblem.solve(self.dolog)
+            count = subproblem.solve()
             if shatter_id is None:
                 self.log.add_subproblem(op, count.log)
             else:
@@ -1104,11 +1127,12 @@ class SharpCSP(object):
         indist_sizes = self.get_sizes_indistinguishable(indist)
         indist_size = sum(indist_sizes)
         dist_size = dom.size() - indist_size + len(indist_sizes)
-        count = math.comb(dist_size + n - 1, n)
+        m = dist_size + n - 1
+        count = math.comb(m, n)
         # self.debug(f"Multisubsets with all exchangeable: ({dist_size+n-1},{n})={count}")
         al = self.log.action(f"Counting multisubsets with all exchangeable")
-        self.log.detail(al, f"{dist_size+n-1},{n})={count}")
-        sol = Solution(count, self.histogram(), self.log)
+        self.log.detail(al, f"With binomial coefficient ({m} {n})")
+        sol = Solution(count, self.histogram(), self.log, f"\\binom{{{m}}}{{{n}}}")
         return sol
 
     def count_multisubsets_non_exchangeable(self, var_list=None):
@@ -1129,12 +1153,11 @@ class SharpCSP(object):
         if self.disjoint(ex_classes):
             # self.debug("... but disjoint")
             self.log.detail(al, "... but disjoint")
-            count = 1
+            count = Solution(1, self.histogram(), self.log)
             for exc in ex_classes:
                 s = self.count_multisubsets_exchangeable(ex_classes[exc])
-                count *= s.count
+                count *= s
                 self.log.detail(al, "Product of multisets of each class")
-                sol = Solution(count, self.histogram(), self.log)
         else:
             # if classes are not disjoint no multiplication rule
             # self.debug("... and not disjoint: disjoining with relevant parts")
@@ -1144,8 +1167,8 @@ class SharpCSP(object):
             )
             unsplit = [ec for ec in ex_classes if ec not in relevant]
             decompose_class = unsplit[0]
-            sol = self.shannon_indep_multisubsets(decompose_class, relevant, 0)
-        return sol
+            count = self.shannon_indep_multisubsets(decompose_class, relevant, 0)
+        return count
 
     def shannon_indep_multisubsets(
         self, decompose_class, relevant, previous, var_list=None
@@ -1169,7 +1192,7 @@ class SharpCSP(object):
         vars = var_list if var_list is not None else self.vars
         ex_classes = self.exchangeable_classes(vars)
         self.log.action("Shattering multiset choices")
-        count = Solution(0, [], self.log, 0)
+        count = Solution(0, [], self.log, 0, "")
         for i, r in enumerate(
             relevant
         ):  # specialize variable with each different relevant set
@@ -1235,7 +1258,7 @@ class SharpCSP(object):
         Indistinguishable elements collapse to one in terms of possible choiches
         """
         vars = var_list if var_list is not None else self.vars
-        count = 1
+        count = Solution(1, self.histogram(), 0, "")
         al = self.log.action("Counting regular sequence")
         for v in vars:
             # the available choices are all dist. elems + each distinguishable property
@@ -1247,13 +1270,12 @@ class SharpCSP(object):
             )  # do not count each indistinguishable as a different choice
             # self.debug(f"\t{dist_size} different choices for {v}")
             self.log.detail(al, f"\t{dist_size} different choices for {v}")
-            count *= (
-                dist_size + indist_size
-            )  # but each set of indistinguishable counts as one possible choice
+            # but each set of indistinguishable counts as one possible choice
+            choices = dist_size + indist_size
+            count *= Solution(choices, [], self.log)
         # self.debug(f"\tDomain product: {count}")
         self.log.detail(al, f"\tDomain product: {count}")
-        sol = Solution(count, self.histogram(), self.log)
-        return sol
+        return count
 
     def count_permutation_exchangeable(self, var_list=None):
         """
@@ -1269,7 +1291,13 @@ class SharpCSP(object):
         if extra >= 0:  # are there enough elements to fill the permutation?
             indist = dom.elements.find(False)
             if indist.empty:
-                count = math.factorial(size) // math.factorial(extra)
+                num = Solution(
+                    math.factorial(size), self.histogram(), 0, symbolic=f"{size}!"
+                )
+                denom = Solution(
+                    math.factorial(extra), self.histogram(), 0, symbolic=f"{extra}!"
+                )
+                count = num // denom
                 # self.debug(f"Falling factorial: {count}")
                 self.log.detail(
                     al, f"Without indistinguishable: applying falling factorial"
@@ -1282,28 +1310,36 @@ class SharpCSP(object):
                 indist_sizes = self.get_sizes_indistinguishable(indist)
                 dist_size = size - sum(indist_sizes)
                 choices = self.get_group_choices([dist_size] + indist_sizes, n)
-                count = 0
-                for (
-                    choice
-                ) in (
-                    choices
-                ):  # each combination of choices is a valid disjoint subproblem
+                count = Solution(1, self.histogram(), self.log, 0)
+                for choice in choices:
+                    # each combination of choices is a valid disjoint subproblem
                     dist_choice = choice[0]
                     n_dist_choices = math.comb(dist_size, dist_choice)
                     arrange_all = math.factorial(n)  # count = n! / n1!*n2!*...*nm!
-                    arrange_indist_choices = [math.factorial(ic) for ic in choice[1:]]
+                    arrange_indist_choices = [
+                        Solution(math.factorial(ic), [], self.log, symbolic=f"{ic}!")
+                        for ic in choice[1:]
+                    ]
+                    prod_indist_choices = Solution(1, self.histogram(), self.log, 0)
+                    for aic in arrange_indist_choices:
+                        prod_indist_choices *= aic
                     count += (
-                        n_dist_choices
-                        * arrange_all
-                        // math.prod(arrange_indist_choices)
+                        Solution(
+                            n_dist_choices,
+                            [],
+                            self.log,
+                            symbolic=f"\\binom{{{dist_size}}} {{{dist_choice}}}",
+                        )
+                        * Solution(arrange_all, [], self.log, symbolic=f"{n}!")
+                        // prod_indist_choices
                     )
+                count.histogram = self.histogram()
                 # self.debug(f"Permutations with indistinguishable elements: {count}")
         else:  # not enough elements in dom to make a n_vars long permutation
-            count = 0
+            count = Solution(0, self.histogram(), 0)
             # self.debug(f"{len(vars)} different vars for {size} values!")
             self.log.detail(al, f"{len(vars)} different vars for {size} values!")
-        sol = Solution(count, self.histogram(), self.log)
-        return sol
+        return count
 
     def count_subsets(self, var_list=None):
         """
@@ -1348,14 +1384,20 @@ class SharpCSP(object):
         if extra >= 0:
             indist = dom.elements.find(False)
             if indist.empty:
-                count = math.comb(size, n)
+                combs = math.comb(size, n)
+                count = Solution(
+                    combs,
+                    self.histogram(),
+                    self.log,
+                    symbolic=f"\\binom{{{size}}} {{{n}}}",
+                )
                 # self.debug(f"Binomial coefficient: {count}")
                 self.log.detail(al, f"With binomial coefficient: ({size} {n})")
             else:
                 indist_sizes = self.get_sizes_indistinguishable(indist)
                 dist_size = size - sum(indist_sizes)
                 choices = self.get_group_choices([dist_size] + indist_sizes, n)
-                count = 0
+                count = count = Solution(0, [], 0, "")
                 self.log.detail(
                     al, f"With indistinguishable elements: accounting for histograms"
                 )
@@ -1364,15 +1406,19 @@ class SharpCSP(object):
                     self.log.detail(al, str(choice))
                     dist_choice = choice[0]
                     n_dist_choices = math.comb(dist_size, dist_choice)
-                    count += n_dist_choices
+                    count += Solution(
+                        n_dist_choices,
+                        [],
+                        self.log,
+                        symbolic=f"\\binom{{{dist_size}}} {{{dist_choice}}}",
+                    )
                 # self.debug(f"Subsets with indistinguishable elements: {count}")
-            sol = Solution(count, self.histogram(), self.log)
+            count.histogram = self.histogram()
         else:  # not enough elements in dom to make a n sized subset
-            count = 0
             self.log.detail(al, f"{len(vars)} different vars for {size} values!")
-            sol = Solution(count, self.histogram(), self.log)
+            count = Solution(0, self.histogram(), self.log)
             # self.debug(f"{len(vars)} different vars for {size} values!")
-        return sol
+        return count
 
     def get_sizes_indistinguishable(self, indistinguishable):
         """
@@ -1524,17 +1570,24 @@ class SharpCSP(object):
             f"Dividing {n_elems} from {formula} in {n_partitions} {self.type} of size {size}"
         )
         if size == 0:
-            return 1
+            return Solution(1, [], self.log)
         pick = size * n_partitions
+        count_pick = Solution(math.factorial(pick), [], self.log, 0, f"{pick}!")
         pick_choice = math.comb(n_elems, pick)
+        count_pick_choice = Solution(
+            pick_choice, [], self.log, 0, f"\\binom{{{n_elems}}} {{{pick}}}"
+        )
         # counting rule
         d1 = math.factorial(size) ** n_partitions
         d2 = math.factorial(n_partitions)
-        count = math.factorial(pick) // (d1 * d2)
-        # se ho indist allora devo aggiustare
+        count_d1 = Solution(d1, [], self.log, 0, f"({size}!)^{n_partitions}")
+        count_d2 = Solution(d2, [], self.log, 0, f"{n_partitions}!")
+        count = count_pick // (count_d1 * count_d2)
+        # TODO: with indist elements?
         if self.type == "composition":
-            count = count * math.factorial(n_partitions)
-        return pick_choice * count
+            ex_comp = math.factorial(n_partitions)
+            count = count * Solution(ex_comp, [], self.log, 0, symbolic=f"{ex_comp}!")
+        return count_pick_choice * count
 
     def count_fixed_partitions(self, relevant, var_list=None, caption="", id="1"):
         """
@@ -1548,12 +1601,17 @@ class SharpCSP(object):
         #     [k for k in vars[0].histogram.keys()],
         # )
         c_log = ProblemLog(
-            vars, caption=caption, id=id, level=self.lvl + 1, type=self.type
+            vars,
+            caption=caption,
+            id=id,
+            level=self.lvl + 1,
+            type=self.type,
+            debug=self.debug,
         )
         al = c_log.action("Counting fixed partitions from histograms")
         c_log.detail(al, [k for k in vars[0].histogram.keys()])
         choices = {rvs: rvs.size() for rvs in relevant}
-        count = Solution(1, [], c_log)
+        count = Solution(1, [], c_log, 1)
         for i, v in enumerate(vars):
             # self.debug(f"Histogram V{i+1} = {[val for val in v.histogram.values()]}")
             al2 = c_log.action(
@@ -1563,18 +1621,25 @@ class SharpCSP(object):
                 if not rvs.all_indistinguishable():
                     n = choices.get(rvs, 1)
                     k = v.histogram[rvs]
-                    ec_choices = math.comb(n, k)
+                    ec_choices = Solution(
+                        math.comb(n, k),
+                        [],
+                        self.log,
+                        0,
+                        symbolic=f"\\binom{{{n}}} {{{k}}}",
+                    )
                     if rvs in choices:
                         choices[rvs] = n - k
-                    count = count.with_choices(ec_choices)
+                    count *= ec_choices
             c_log.detail(al2, f"Count = {count}")
         if self.type == "partition":
             part_histograms = [frozenset(v.histogram.items()) for v in vars]
             ex_hists = self.histogram(part_histograms)
             for hc in ex_hists:  # account for overcounting exchangeable choices (ugly)
-                count.count = count.count // math.factorial(
-                    ex_hists[hc]
-                )  # should be int anyways
+                n_exchangeable = Solution(
+                    math.factorial(ex_hists[hc]), [], 0, symbolic=f"{ex_hists[hc]}!"
+                )
+                count.count = count // n_exchangeable  # should be int anyways
             # self.debug(f"\tcount = {count}")
             c_log.detail(al, f"Count = {count}")
         c_log.solution = count
@@ -1611,9 +1676,10 @@ class SharpCSP(object):
                     "Exchangeable variables and no constraints: Stirling numbers 2nd kind"
                 )
                 sol = self.stirling(n_elems, len(vars))
+                count = Solution(sol, [], self.log, 0, f"{{{n_elems} {len(vars)}}}")
                 if self.type == "composition":
-                    sol *= math.factorial(len(vars))
-                count = Solution(sol, self.histogram())
+                    perm = math.factorial(len(vars))
+                    count *= Solution(perm, [], self.log, 0, f"{len(vars)}!")
             else:
                 count = self.count_constrained_partitions(vars)
         else:
@@ -1751,7 +1817,7 @@ class SharpCSP(object):
         self.log.detail(
             al, f"There are {len(fixed)} possible ways of fixing {relevant} domains"
         )
-        count = Solution(0, [], self.log, 0)
+        count = Solution(0, [], self.log, 0, "")
         for i, fix_vars in enumerate(fixed):
             e, prop_vars = fix_vars
             c_fix = self.count_fixed_partitions(

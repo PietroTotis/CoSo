@@ -190,7 +190,6 @@ class Problem(object):
             # cof.formula.universe = universe
         self.universe = universe
         self.universe.set_universe(universe)
-        print("dsdsmpc", self.universe, self.universe.universe)
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -234,7 +233,7 @@ class Problem(object):
             interval = Int.closedopen(0, n) | Int.open(n, Int.inf)
         return interval
 
-    def solve(self, log=True):
+    def solve(self, debug=True):
         """
         Do some sanity checks on the configuration and then call the solver
 
@@ -250,7 +249,7 @@ class Problem(object):
             if self.configuration.size is None:
                 vals = Int.closed(1, self.universe.size())
                 self.configuration.size = CSize("unconstrained", vals)
-            s = Solver(self)
+            s = Solver(self, debug=debug)
             return s.solve()
 
     def __str__(self):

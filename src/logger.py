@@ -1,3 +1,4 @@
+from VisCoSo import VisCoSo
 from util import *
 
 
@@ -23,22 +24,23 @@ class ProblemLog(object):
         debug=True,
         caption="Problem",
     ):
-        self.id = id
-        self.vars = [v.copy() for v in vars]
-        self.type = type
-        self.pos_constraints = pos_constraints
-        self.constraints = constraints
-        self.universe = universe
-        self.caption = caption
         self.actions = []
-        self.subproblems = []
-        self.solution = None
+        self.caption = caption
+        self.constraints = constraints
+        self.debug = debug
+        self.id = id
         self.level = level
+        self.pos_constraints = pos_constraints
         self.shatter_cases = {}
         self.shatter_subproblems = {}
+        self.solution = None
         self.space = "  "  # "\t"
+        self.subproblems = []
+        self.type = type
+        self.vars = [v.copy() for v in vars]
+        self.universe = universe
+        self.vis = VisCoSo()
         self.indent = f"{self.space}" * self.level
-        self.debug = debug
         if debug:
             print(self.configuration2text())
 
@@ -178,7 +180,7 @@ class ProblemLog(object):
     def shatter2text(self):
         text = ""
         if len(self.shatter_subproblems) > 0:
-            text = f"{self.indent}Summing\n"
+            text = f"{self.indent}Plus\n"
             for id in self.shatter_subproblems:
                 left, right = self.shatter_subproblems[id]
                 text += str(left)
@@ -187,3 +189,6 @@ class ProblemLog(object):
                     for rest_subproblem in right:
                         text += str(rest_subproblem)
         return text
+
+    def to_viscoso(self):
+        return self.vis.generate(self)

@@ -11,7 +11,8 @@ class Solver(object):
     Sets up the decision variables from the problem
     """
 
-    def __init__(self, problem, text=True, xml=False, outfile=None):
+    def __init__(self, problem, debug=False):
+        self.debug = debug
         self.problem = problem
         self.universe = problem.universe
         self.size = problem.configuration.size
@@ -19,7 +20,7 @@ class Solver(object):
             n = self.universe.size()
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.configuration.type
-        self.log = ProblemLog()
+        self.log = ProblemLog(debug=debug)
         self.log.description("Root problem")
 
     def solve(self):
@@ -40,6 +41,7 @@ class Solver(object):
                     self.universe,
                     caption=f"Configuration of size {n}",
                     lvl=1,
+                    debug=self.debug,
                 )
                 size_count = csp.solve()
                 self.log.add_subproblem("add", size_count.log)
@@ -47,7 +49,6 @@ class Solver(object):
             self.log.solution = count
         else:
             count = Solution(0, [], subproblems=1, log=self.log)
-        print(count.log)
         return count
 
     def trivial_unsat(self):
