@@ -12,6 +12,9 @@ ICON_PLUS = "fa-solid fa-plus"
 ICON_MINUS = "fa-solid fa-minus"
 ICON_EQUALS = "fa-solid fa-equals fa-sm"
 ICON_PEN = "icon fa-solid fa-pen-to-square fa-lg"
+ICON_SETS = "fa-solid fa-shapes"
+ICON_CONF = "fa-solid fa-cubes-stacked"
+ICON_CONSTR = "fa-solid fa-ban"
 
 
 class VisCoSo(object):
@@ -26,7 +29,7 @@ class VisCoSo(object):
             self.icon("fa-solid fa-circle-info")
             with self.tag("p", klass="caption-text"):
                 self.text(problem.caption)
-        self.line("pre", self.conf2cola(problem))
+        self.conf2cola(problem)
 
     def add_content(self, problem):
         self.add_configuration(problem)
@@ -36,7 +39,7 @@ class VisCoSo(object):
         if has_subproblems:
             self.add_subproblems(problem.subproblems)
         if is_shatter:
-            self.add_shatter(problem.shatter_subproblems, problem.solution.count)
+            self.add_shatter(problem.shatter_subproblems)
         if not (has_subproblems or is_shatter):
             self.add_count_description(problem)
 
@@ -59,32 +62,22 @@ class VisCoSo(object):
             with self.tag("div", klass="main-content", id="main-content"):
                 self.add_content(problem)
 
-    def add_shatter(self, shatter, solution):
-        handle = self.get_handle()
-        with self.tag("div", klass="accordion"):
-            self.doc.input(
-                klass="control",
-                type="checkbox",
-                id=handle,
-                name=f"sol_{self.sol_id}",
-            )
-            with self.tag("div", klass="handle"):
-                with self.tag("div", klass="inline-solution"):
-                    self.icon(self.get_icon("eq"))
-                    with self.tag("p", klass="inline-num"):
-                        self.text(str(solution))
-                self.label(handle)
-            with self.tag("div", klass="collapsable"):
-                with self.tag("div", klass="content-line"):
-                    pass
-                for pair in shatter:
-                    left, right = shatter[pair]
-                    op = "eq" if self.shatter == 0 else "add"
-                    for r in right:
-                        self.add_subproblem(op, left)
-                        self.add_subproblem("mul", r)
-                        self.shatter += 1
-            self.shatter = 0
+    def add_shatter(self, shatter):
+        with self.tag("div", klass="collapsable subproblems"):
+            with self.tag("div", klass="content-line"):
+                pass
+            with self.tag("div", klass="accordions"):
+                # with self.tag("div", klass="accordion"):
+                with self.tag("div", klass="shatter"):
+                    for pair in shatter:
+                        left, right = shatter[pair]
+                        op = "eq" if self.shatter == 0 else "add"
+                        for r in right:
+                            with self.tag("div", klass="row"):
+                                self.add_subproblem(op, left)
+                                self.add_subproblem("mul", r)
+                                self.shatter += 1
+        self.shatter = 0
 
     def add_subproblems(self, subproblems):
         with self.tag("div", klass="collapsable subproblems"):
@@ -127,14 +120,55 @@ class VisCoSo(object):
                 self.text(str(problem.solution.count))
 
     def conf2cola(self, problem):
-        cola = f"universe u = {problem.universe};\n"
-        for i, v in enumerate(problem.vars):
-            cola += f"Obj {i+1}:  {v};\n"
-        for c in problem.pos_constraints:
-            cola += f"{c};\n"
-        for c in problem.constraints:
-            cola += f"{c};\n"
-        return cola
+        cola_sets = ""
+        cola_constraints = ""
+        cola_conf = ""
+        if problem.problem is None:
+            cola_sets = f"universe {problem.universe.name} = {problem.universe.enumerate_elements()}; \n"
+            for r in problem.relevant_sets:
+                if r != problem.universe:
+                    cola_sets += f"property {r.name} = {r.enumerate_elements()}; \n"
+            for i, v in enumerate(problem.vars):
+                cola_conf += f"Obj {i+1}:  {v}; \n"
+            for c in problem.pos_constraints:
+                cola_constraints += f"{c}; \n"
+            for c in problem.constraints:
+                cola_constraints += f"{c}; \n"
+        else:
+            p = problem.problem
+            for d in p.domains:
+                label = "universe" if p.domains[d] == p.universe else "property"
+                cola_sets += f"{label} {d} = {p.domains[d].enumerate_elements()}; \n"
+            cola_conf = str(p.configuration) + "; \n"
+            for c in p.pos_constraints:
+                cola_constraints += f"{c}; \n"
+            for c in p.constraints:
+                cola_constraints += f"{c}; \n"
+
+        with self.tag("div", klass="configuration"):
+            self.conf_collapsable("Sets", cola_sets)
+            self.conf_collapsable("Configuration", cola_conf)
+            if len(cola_constraints) > 0:
+                self.conf_collapsable("Constraints", cola_constraints)
+
+    def conf_collapsable(self, name, text):
+        handle = self.get_handle()
+        with self.tag("div", klass="accordion"):
+            self.doc.input(
+                klass="control",
+                type="checkbox",
+                id=handle,
+                name=f"collapse{self.handle}",
+            )
+            with self.tag("div", klass="handle"):
+                with self.tag("div", klass="inline-solution"):
+                    self.icon(self.get_icon(name))
+                    with self.tag("p", klass="inline-num"):
+                        self.text(name)
+                self.label(handle)
+            with self.tag("div", klass="collapsable"):
+                with self.tag("pre"):
+                    self.text(text)
 
     def get_handle(self):
         self.handle += 1
@@ -151,6 +185,12 @@ class VisCoSo(object):
             return ICON_MINUS
         elif op == "eq":
             return ICON_EQUALS
+        elif op == "Sets":
+            return ICON_SETS
+        elif op == "Configuration":
+            return ICON_CONF
+        elif op == "Constraints":
+            return ICON_CONSTR
         else:
             return ICON_QUESTION
 

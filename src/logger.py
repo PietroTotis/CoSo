@@ -23,6 +23,7 @@ class ProblemLog(object):
         id="1",
         debug=True,
         caption="Problem",
+        problem=None,
     ):
         self.actions = []
         self.caption = caption
@@ -31,6 +32,8 @@ class ProblemLog(object):
         self.id = id
         self.level = level
         self.pos_constraints = pos_constraints
+        self.problem = problem
+        self.relevant_sets = set()
         self.shatter_cases = {}
         self.shatter_subproblems = {}
         self.solution = None
@@ -64,6 +67,7 @@ class ProblemLog(object):
             id=self.id,
             debug=self.debug,
             caption=self.caption,
+            problem=self.problem,
         )
         return copy
 
@@ -73,6 +77,9 @@ class ProblemLog(object):
         if self.debug:
             print(f"{self.indent}- {msg}")
         return al
+
+    def add_relevant_set(self, domain):
+        self.relevant_sets.add(domain)
 
     def add_subproblem(self, op, sub_log):
         self.subproblems.append((op, sub_log))

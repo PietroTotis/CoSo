@@ -20,7 +20,7 @@ class Solver(object):
             n = self.universe.size()
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.configuration.type
-        self.log = ProblemLog(debug=debug)
+        self.log = ProblemLog(universe=self.universe, debug=debug, problem=problem)
         self.log.description("Root problem")
 
     def solve(self):
@@ -36,8 +36,8 @@ class Solver(object):
                 csp = SharpCSP(
                     vars,
                     self.type,
-                    self.problem.pos_formulas,
-                    self.problem.count_formulas,
+                    self.problem.pos_constraints,
+                    self.problem.constraints,
                     self.universe,
                     caption=f"Configuration of size {n}",
                     lvl=1,
@@ -59,7 +59,7 @@ class Solver(object):
             log (bool, optional): Logging. Defaults to True.
         """
         if self.type in ["sequence", "subset", "permutation", "multisubset"]:
-            for count_constr in self.problem.count_formulas:
+            for count_constr in self.problem.constraints:
                 lower_b = count_constr.values.lower
                 atleast = (
                     lower_b if count_constr.values.left == P.CLOSED else lower_b + 1

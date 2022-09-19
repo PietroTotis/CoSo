@@ -233,11 +233,12 @@ class Parser(object):
             implicit_univ = enumerated and self.problem.universe is None
             univ = implicit_univ or explicit_univ
             elems = list2interval(self.problem, elems, univ)
-            d = SetFormula(label, elems, self.problem.universe)
-            self.problem.add_domain(d)
             if explicit_univ:
+                d = Universe(label, elems, name=label)
                 self.problem.universe = d
-                self.problem.universe.universe = d
+            else:
+                d = SetFormula(label, elems, self.problem.universe)
+            self.problem.add_domain(d)
             p[0] = d
 
     def p_arrangement(self, p):
@@ -352,7 +353,6 @@ class Parser(object):
             n = p[6]
             interval = self.problem.get_interval(comp, n)
             cf = CCounting(cf_par, interval)
-            cf.set_labels(self.problem.label_map)
             self.problem.add_counting_formula(cf)
             p[0] = cf
         else:  # level 1 counting constraint
@@ -368,7 +368,6 @@ class Parser(object):
                 else:
                     set.ccs[0].values = inter
                 pf = CPosition(self.problem.configuration, pos, set)
-                pf.set_labels(self.problem.label_map)
                 self.problem.add_pos_formula(pf)
             else:
                 conf = self.problem.configuration
@@ -382,7 +381,6 @@ class Parser(object):
                 else:
                     df = self.problem.compute_dom(set)
                     cf = CCounting(df, inter)
-                    cf.set_labels(self.problem.label_map)
                     self.problem.add_counting_formula(cf)
                     p[0] = cf
 

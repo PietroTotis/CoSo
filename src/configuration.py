@@ -46,9 +46,16 @@ class Variable:
     """
 
     def __init__(self, universe, name):
-        self.universe = universe
+        self._universe = universe
         self.name = name
-        self.labels = {}
+
+    @property
+    def universe(self):
+        return self._universe
+
+    @universe.setter
+    def universe(self, universe):
+        self._universe = universe
 
     def __and__(self, rhs):
         """
@@ -93,14 +100,6 @@ class Variable:
         """
         raise NotImplementedError()
 
-    def set_labels(self, labels):
-        """
-        Update the labels of the multisets involved
-        Args:
-            labels ({int:str}): map from entity id to label
-        """
-        self.labels = labels
-
 
 class Constraint:
     """
@@ -125,15 +124,6 @@ class Constraint:
         """
         raise NotImplementedError()
 
-    def set_labels(self, labels):
-        """
-        Set entity labels
-
-        Args:
-            labels ({int:str}): map entity id-label
-        """
-        raise NotImplementedError()
-
 
 class CCounting(Constraint):
     """
@@ -154,10 +144,10 @@ class CCounting(Constraint):
 
     def __str__(self):
         if self.values.lower == self.values.upper:
-            val = f"== {self.values.lower}"
+            val = f"= {self.values.lower}"
         else:
             val = f"in {self.values}"
-        return f"Nr. ({self.formula}) {val}"
+        return f"Nr. {self.formula} {val}"
 
     def neg(self):
         interval = Int.closedopen(0, Int.inf) - self.values
@@ -180,10 +170,7 @@ class CCounting(Constraint):
         return CCounting(self.formula, self.values)
 
     def set_universe(self, universe):
-        self.formula.set_universe(universe)
-
-    def set_labels(self, labels):
-        self.formula.set_labels(labels)
+        self.formula.universe = universe
 
 
 class CPosition(Constraint):
@@ -207,10 +194,7 @@ class CPosition(Constraint):
         return f"Position {self.pos}: {self.formula}"
 
     def set_universe(self, universe):
-        self.formula.set_universe(universe)
-
-    def set_labels(self, labels):
-        self.formula.set_labels(labels)
+        self.formula.universe = universe
 
 
 class CSize(Constraint):
@@ -264,9 +248,6 @@ class CSize(Constraint):
 
     def set_universe(self, universe):
         self.universe = universe
-
-    def set_labels(self, labels):
-        pass
 
 
 # class AggFormula(Constraint):

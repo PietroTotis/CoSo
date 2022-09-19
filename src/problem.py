@@ -1,8 +1,7 @@
 import portion as Int
 from solver import Solver
-from level_1 import SetFormula
+from level_1 import SetFormula, Universe
 from configuration import CSize
-from sharpCSP import Solution
 from util import *
 
 
@@ -26,8 +25,8 @@ class Problem(object):
     def __init__(self):
         self.universe = None
         # self.agg_formulas = []
-        self.pos_formulas = []
-        self.count_formulas = []
+        self.pos_constraints = []
+        self.constraints = []
         self.domains = {}
         self.entity_map = {}
         self.configuration = None
@@ -49,7 +48,7 @@ class Problem(object):
         self.domains[dom.name] = dom
 
     def add_pos_formula(self, chf):
-        self.pos_formulas.append(chf)
+        self.pos_constraints.append(chf)
 
     def add_agg_formula(self, chf):
         self.agg_formulas.append(chf)
@@ -60,7 +59,7 @@ class Problem(object):
         count_prop = isinstance(cof.formula, SetFormula)
         # ignore recursive parsing of counting formulas
         if not (subsets and count_prop):
-            self.count_formulas.append(cof)
+            self.constraints.append(cof)
 
     def add_entity(self, e):
         """
@@ -171,25 +170,20 @@ class Problem(object):
         with all info about the universe
         """
         dom_iter = iter(self.domains.values())
-        universe = next(dom_iter)
+        universe = Universe("", IntervalDict())
         for d in dom_iter:
             universe = universe | d
-        universe.name = "universe"
+        universe = Universe(universe.formula, universe.elements, name=universe.name)
         dom_iter = iter(self.domains.values())
-        self.label_map = {v: k for k, v in self.entity_map.items()}
-        universe.set_labels(self.label_map)
         for d in dom_iter:
-            d.set_universe(universe)
-            d.set_labels(self.label_map)
-        for pf in self.pos_formulas:
-            pf.set_universe(universe)
-            pf.set_labels(self.label_map)
-        for cof in self.count_formulas:
-            cof.set_universe(universe)
-            cof.set_labels(self.label_map)
+            d.universe = universe
+        for pf in self.pos_constraints:
+            pf.universe = universe
+        for cof in self.constraints:
+            cof.universe = universe
             # cof.formula.universe = universe
         self.universe = universe
-        self.universe.set_universe(universe)
+        self.set_labels()
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -233,6 +227,19 @@ class Problem(object):
             interval = Int.closedopen(0, n) | Int.open(n, Int.inf)
         return interval
 
+    def set_labels(self):
+        """
+        Adds to the universe the original labels of the elements
+        """
+        self.universe.labels_entity = {
+            v: self.trim(k) for k, v in self.entity_map.items()
+        }
+        for k, v in self.domains.items():
+            dom = P.empty()
+            for d in v.elements.keys():
+                dom = dom | d
+            self.universe.labels_set[dom] = k
+
     def solve(self, debug=True):
         """
         Do some sanity checks on the configuration and then call the solver
@@ -249,16 +256,30 @@ class Problem(object):
             if self.configuration.size is None:
                 vals = Int.closed(1, self.universe.size())
                 self.configuration.size = CSize("unconstrained", vals)
+            self.set_labels()
             s = Solver(self, debug=debug)
             return s.solve()
+
+    def trim(self, entity):
+        """
+        Removes the internal copy id from an indistinguishable entity's name
+
+        Args:
+            entity (str): label of the entity
+
+        Returns:
+            str: the label if entity is distinguishable, the base lable otherwise
+        """
+        e = entity.split("__")
+        return e[0]
 
     def __str__(self):
         s = ""
         for d in self.domains.values():
             s += f"{d.name}: {d}\n"
-        for cf in self.pos_formulas:
+        for cf in self.pos_constraints:
             s += f"{cf}\n"
-        for f in self.count_formulas:
+        for f in self.constraints:
             s += f"{f}\n"
         for f in self.agg_formulas:
             s += f"{f}\n"

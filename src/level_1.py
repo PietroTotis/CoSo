@@ -26,7 +26,7 @@ class Multiset(object):
         self.n_elements = None
 
     def __contains__(self, val):
-        return val.elements.domain() in self.elements.domain()
+        return val.elements.keys() <= self.elements.keys()
 
     def __eq__(self, rhs):
         return self.elements == rhs.elements
@@ -120,14 +120,13 @@ class SetFormula(Multiset, Variable):
         the universe of the problem: each complement is computed w.r.t. it
     """
 
-    def __init__(self, formula, elems, universe, name=None, labels={}):
+    def __init__(self, formula, elems, universe, name=None):
         Variable.__init__(self, universe, name)
         Multiset.__init__(self, formula, elems)
         if name is None:
             self.name = formula
         else:
             self.name = name
-        self.set_labels(labels)
 
     def __add__(self, rhs):
         return self.elements.combine(rhs.elements, how=is_distinguishable)
@@ -147,20 +146,13 @@ class SetFormula(Multiset, Variable):
         comb = combine(self, rhs)
         elems = comb[dom]
         if elems == self.elements:
-            f = self.formula
+            return self
         elif elems == rhs.elements:
-            f = rhs.formula
+            return rhs
         else:
             f = And(self, rhs)
-        if self.name == "universe":
-            name = rhs.name
-        elif rhs.name == "universe":
-            name = self.name
-        elif self.name == rhs.name:
-            name = self.name
-        else:
             name = self.simplify_name(elems, rhs, And)
-        return SetFormula(f, elems, self.universe, name, self.labels)
+            return SetFormula(f, elems, self.universe, name)
 
     def __or__(self, rhs):
         """
@@ -174,18 +166,13 @@ class SetFormula(Multiset, Variable):
         """
         comb = combine(self, rhs)
         if comb.domain() in self.elements.domain():
-            f = self.formula
+            return self
         elif comb.domain() in rhs.elements.domain():
-            f = rhs.formula
+            return rhs
         else:
             f = Or(self, rhs)
-        if self.name == "universe" or rhs.name == "universe":
-            name = "universe"
-        elif self.name == rhs.name:
-            name = self.name
-        else:
             name = Or(str(self), str(rhs))
-        return SetFormula(f, comb, self.universe, name, self.labels)
+            return SetFormula(f, comb, self.universe, name)
 
     def __sub__(self, rhs):
         """
@@ -203,12 +190,13 @@ class SetFormula(Multiset, Variable):
             f = And(self, Not(rhs))
         comb = self.elements.combine(rhs.elements, how=is_distinguishable)
         sub_dom = self.elements.domain() - rhs.elements.domain()
-        return SetFormula(f, comb[sub_dom], self.universe, self.name, self.labels)
+        return SetFormula(f, comb[sub_dom], self.universe, self.name)
 
     def copy(self):
-        return SetFormula(
-            self.formula, self.elements, self.universe, self.name, self.labels
-        )
+        return SetFormula(self.formula, self.elements, self.universe, self.name)
+
+    def get_label(self, key, default=None):
+        return self.universe.get_label(key, default)
 
     def neg(self):
         """
@@ -225,7 +213,7 @@ class SetFormula(Multiset, Variable):
             name = Not(str(self))
         els = self.universe.elements.domain() - self.elements.domain()
         dom = self.universe.elements[els]
-        return SetFormula(f, dom, self.universe, name, self.labels)
+        return SetFormula(f, dom, self.universe, name)
 
     def indistinguishable_subsets(self, set_formula=None):
         """
@@ -262,41 +250,23 @@ class SetFormula(Multiset, Variable):
                 indist = set()
         return indist
 
-    def set_universe(self, universe):
+    @Variable.universe.setter
+    def universe(self, universe):
         """
         Propagate universe info to subsets
 
         Args:
             universe (Domain): universe
         """
-        self.universe = universe
+        self._universe = universe
         if isinstance(self.formula, And) or isinstance(self.formula, Or):
             if isinstance(self.formula.left, SetFormula):
-                self.formula.left.set_universe(universe)
+                self.formula.left.universe = universe
             if isinstance(self.formula.right, SetFormula):
-                self.formula.right.set_universe(universe)
+                self.formula.right.universe = universe
         elif isinstance(self.formula, Not):
             if isinstance(self.formula.child, SetFormula):
-                self.formula.child.set_universe(universe)
-        else:
-            pass
-
-    def set_labels(self, labels):
-        """
-        Propagate label info to subsets
-
-        Args:
-            labels ({int:string}): maps objects ids to label
-        """
-        self.labels = labels
-        if isinstance(self.formula, And) or isinstance(self.formula, Or):
-            if isinstance(self.formula.left, SetFormula):
-                self.formula.left.set_labels(labels)
-            if isinstance(self.formula.right, SetFormula):
-                self.formula.right.set_labels(labels)
-        elif isinstance(self.formula, Not):
-            if isinstance(self.formula.child, SetFormula):
-                self.formula.child.set_labels(labels)
+                self.formula.child.universe = universe
         else:
             pass
 
@@ -313,19 +283,34 @@ class SetFormula(Multiset, Variable):
         Returns:
             str: simplified description
         """
-        if len(elems.domain()) == 1:
+        if elems.domain() == P.empty():
+            name = "empty"
+        elif len(elems.domain()) == 1:
             if not (True in elems.values()):
                 n_elems = sum([1 for _ in P.iterate(elems.domain(), step=1)])
                 i = elems.domain().lower
-                e_lab = self.labels.get(i, i)
+                e_lab = self.get_label(i, i)
                 name = f"{n_elems}x " + str(e_lab)
             else:
                 i = elems.domain().lower
-                e_lab = self.labels.get(i, i)
+                e_lab = self.get_label(i, i)
                 name = f"1x " + str(e_lab)
         else:
             name = op(str(self), str(rhs))
         return name
+
+    def enumerate_elements(self):
+        """
+        Enumerates the labels corresponding to the multiset
+
+        Returns:
+            str: string representation of the multiset
+        """
+        elems = [P.iterate(i, step=1) for i in self.elements.keys()]
+        labels = [f"{self.get_label(e)}" for i in elems for e in i]
+        lab_list = ", ".join(labels)
+        enum = f"{{{lab_list}}}"
+        return enum
 
     # def take(self, n):
     #     taken = Multiset.take(n)
@@ -336,3 +321,29 @@ class SetFormula(Multiset, Variable):
     #         name=taken.name,
     #         labels=self.labels,
     #     )
+
+
+class Universe(SetFormula):
+    """
+    A SetFormula aware of being the Universe. Keeps track of the user-defined labels associated to individual entities and sets
+    """
+
+    def __init__(self, formula, elems, name="universe"):
+        super().__init__(formula, elems, None, name)
+        self.labels_entity = {}
+        self.labels_set = {}
+
+    def get_label(self, key, default="???"):
+        if isinstance(key, int):
+            return self.labels_entity.get(key, default)
+        elif isinstance(key, P.Interval):
+            return self.labels_set.get(key, default)
+        else:
+            raise Exception(f"Unknown key type for label: {type(key)}")
+
+    def copy(self):
+        return Universe(self.formula, self.elements, name=self.name)
+
+    @property
+    def universe(self):
+        return self

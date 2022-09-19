@@ -34,276 +34,429 @@
           <i class="fa-solid fa-circle-info"></i>
           <p class="caption-text">Root problem</p>
         </div>
-        <pre>universe u = None;
+        <div class="configuration">
+          <div class="accordion">
+            <input type="checkbox" class="control" id="handle1" name="collapse1" />
+            <div class="handle">
+              <div class="inline-solution">
+                <i class="fa-solid fa-shapes"></i>
+                <p class="inline-num">Sets</p>
+              </div>
+              <label for="handle1"></label>
+            </div>
+            <div class="collapsable">
+              <pre>universe shapes = {sq_r, sq_b, tr_r, tr_b, tr_g, tr_g, tr_g}; 
+property red = {sq_r, tr_r}; 
+property blue = {sq_b, tr_b}; 
+property green = {tr_g, tr_g, tr_g}; 
+property triangle = {tr_r, tr_b, tr_g, tr_g, tr_g}; 
+property squares = {sq_r, sq_b}; 
 </pre>
+            </div>
+          </div>
+          <div class="accordion">
+            <input type="checkbox" class="control" id="handle2" name="collapse2" />
+            <div class="handle">
+              <div class="inline-solution">
+                <i class="fa-solid fa-cubes-stacked"></i>
+                <p class="inline-num">Configuration</p>
+              </div>
+              <label for="handle2"></label>
+            </div>
+            <div class="collapsable">
+              <pre>permutation (size == 4) of entity shapes (perm); 
+</pre>
+            </div>
+          </div>
+          <div class="accordion">
+            <input type="checkbox" class="control" id="handle3" name="collapse3" />
+            <div class="handle">
+              <div class="inline-solution">
+                <i class="fa-solid fa-ban"></i>
+                <p class="inline-num">Constraints</p>
+              </div>
+              <label for="handle3"></label>
+            </div>
+            <div class="collapsable">
+              <pre>Position 2: green; 
+Nr. squares = 2; 
+</pre>
+            </div>
+          </div>
+        </div>
         <input type="checkbox" class="control" id="sol_1" name="sol_1" />
         <label for="sol_1" class="solution">
           <i class="fa-solid fa-equals fa-sm"></i>
-          <p class="inline-num">288</p>
+          <p class="inline-num">18</p>
         </label>
         <div class="collapsable subproblems">
           <div class="content-line"></div>
           <div class="accordions">
             <div class="accordion">
-              <input type="checkbox" class="control" id="handle1" name="collapse1" />
+              <input type="checkbox" class="control" id="handle4" name="collapse4" />
               <div class="handle">
                 <div class="inline-solution">
                   <i class="fa-solid fa-equals fa-sm"></i>
-                  <p class="inline-num">288</p>
+                  <p class="inline-num">18</p>
                 </div>
-                <label for="handle1"></label>
+                <label for="handle4"></label>
               </div>
               <div class="collapsable">
                 <div class="content-line"></div>
                 <div class="container">
                   <div class="caption">
                     <i class="fa-solid fa-circle-info"></i>
-                    <p class="caption-text">Configuration of size 5</p>
+                    <p class="caption-text">Split nr. 1: Nr. squares = 0 // Nr. squares in [2,3]</p>
                   </div>
-                  <pre>universe u = None;
-Obj 1:  universe;
-Obj 2:  universe;
-Obj 3:  universe;
-Obj 4:  universe;
-Obj 5:  universe;
-Nr. (defective) in [2,+inf);
+                  <div class="configuration">
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle5" name="collapse5" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="fa-solid fa-shapes"></i>
+                          <p class="inline-num">Sets</p>
+                        </div>
+                        <label for="handle5"></label>
+                      </div>
+                      <div class="collapsable">
+                        <pre>universe shapes = {sq_r, sq_b, tr_r, tr_b, tr_g, tr_g, tr_g}; 
+property ¬green = {sq_r, sq_b, tr_r, tr_b}; 
+property green = {tr_g, tr_g, tr_g}; 
 </pre>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle6" name="collapse6" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="fa-solid fa-cubes-stacked"></i>
+                          <p class="inline-num">Configuration</p>
+                        </div>
+                        <label for="handle6"></label>
+                      </div>
+                      <div class="collapsable">
+                        <pre>Obj 1:  shapes; 
+Obj 2:  shapes; 
+Obj 3:  shapes; 
+Obj 4:  shapes; 
+</pre>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle7" name="collapse7" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="fa-solid fa-ban"></i>
+                          <p class="inline-num">Constraints</p>
+                        </div>
+                        <label for="handle7"></label>
+                      </div>
+                      <div class="collapsable">
+                        <pre>Position 2: green; 
+Nr. squares = 2; 
+</pre>
+                      </div>
+                    </div>
+                  </div>
                   <input type="checkbox" class="control" id="sol_2" name="sol_2" />
                   <label for="sol_2" class="solution">
                     <i class="fa-solid fa-equals fa-sm"></i>
-                    <p class="inline-num">288</p>
+                    <p class="inline-num">18</p>
                   </label>
                   <div class="collapsable subproblems">
                     <div class="content-line"></div>
                     <div class="accordions">
-                      <div class="accordion">
-                        <input type="checkbox" class="control" id="handle2" name="collapse2" />
-                        <div class="handle">
-                          <div class="inline-solution">
-                            <i class="fa-solid fa-equals fa-sm"></i>
-                            <p class="inline-num">252</p>
-                          </div>
-                          <label for="handle2"></label>
-                        </div>
-                        <div class="collapsable">
-                          <div class="content-line"></div>
-                          <div class="container">
-                            <div class="caption">
-                              <i class="fa-solid fa-circle-info"></i>
-                              <p class="caption-text">Case =2</p>
+                      <div class="shatter">
+                        <div class="row">
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle8" name="collapse8" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="fa-solid fa-equals fa-sm"></i>
+                                <p class="inline-num">1</p>
+                              </div>
+                              <label for="handle8"></label>
                             </div>
-                            <pre>universe u = None;
-Obj 1:  universe;
-Obj 2:  universe;
-Obj 3:  universe;
-Obj 4:  universe;
-Obj 5:  universe;
-Nr. (defective) == 2;
+                            <div class="collapsable">
+                              <div class="content-line"></div>
+                              <div class="container">
+                                <div class="caption">
+                                  <i class="fa-solid fa-circle-info"></i>
+                                  <p class="caption-text">Left split: case 1 green are s.t. [Nr. squares = 0, Nr. green = 1, Nr. ¬green = 0]</p>
+                                </div>
+                                <div class="configuration">
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle9" name="collapse9" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Sets</p>
+                                      </div>
+                                      <label for="handle9"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>universe green = {tr_g, tr_g, tr_g}; 
 </pre>
-                            <input type="checkbox" class="control" id="sol_3" name="sol_3" />
-                            <label for="sol_3" class="solution">
-                              <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">252</p>
-                            </label>
-                            <div class="accordion">
-                              <input type="checkbox" class="control" id="handle3" name="sol_3" />
-                              <div class="handle">
-                                <div class="inline-solution">
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle10" name="collapse10" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-cubes-stacked"></i>
+                                        <p class="inline-num">Configuration</p>
+                                      </div>
+                                      <label for="handle10"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Obj 1:  green; 
+</pre>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle11" name="collapse11" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle11"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Nr. squares = 0; 
+Nr. green = 1; 
+Nr. ¬green = 0; 
+</pre>
+                                    </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_3" name="sol_3" />
+                                <label for="sol_3" class="solution">
                                   <i class="fa-solid fa-equals fa-sm"></i>
-                                  <p class="inline-num">252</p>
-                                </div>
-                                <label for="handle3"></label>
-                              </div>
-                              <div class="collapsable">
-                                <div class="content-line"></div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle4" name="collapse4" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-equals fa-sm"></i>
-                                      <p class="inline-num">3</p>
-                                    </div>
-                                    <label for="handle4"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Left split: case 2 defective are s.t. [Nr. (defective) == 0, Nr. (¬defective) == 2]</p>
-                                      </div>
-                                      <pre>universe u = None;
-Obj 1:  defective;
-Obj 2:  defective;
-Nr. (¬defective) == 2;
-</pre>
-                                      <input type="checkbox" class="control" id="sol_4" name="sol_4" />
-                                      <label for="sol_4" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">3</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\binom{3} {2}$$</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle5" name="collapse5" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-xmark"></i>
-                                      <p class="inline-num">84</p>
-                                    </div>
-                                    <label for="handle5"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Right split removing {defective: 2}</p>
-                                      </div>
-                                      <pre>universe u = None;
-Obj 1:  ¬defective;
-Obj 2:  ¬defective;
-Obj 3:  ¬defective;
-</pre>
-                                      <input type="checkbox" class="control" id="sol_5" name="sol_5" />
-                                      <label for="sol_5" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">84</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\binom{9} {3}$$</p>
-                                        </div>
-                                      </div>
-                                    </div>
+                                  <p class="inline-num">1</p>
+                                </label>
+                                <div class="collapsable">
+                                  <div class="content-line"></div>
+                                  <div class="count-description">
+                                    <i class="fa-solid fa-calculator"></i>
+                                    <i class="fa-solid fa-equals fa-sm"></i>
+                                    <p class="inline-num">$$\frac{\binom{0} {0} \cdot 1!}{1 \cdot 1!}$$</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      <div class="accordion">
-                        <input type="checkbox" class="control" id="handle6" name="collapse6" />
-                        <div class="handle">
-                          <div class="inline-solution">
-                            <i class="fa-solid fa-plus"></i>
-                            <p class="inline-num">36</p>
-                          </div>
-                          <label for="handle6"></label>
-                        </div>
-                        <div class="collapsable">
-                          <div class="content-line"></div>
-                          <div class="container">
-                            <div class="caption">
-                              <i class="fa-solid fa-circle-info"></i>
-                              <p class="caption-text">Case =3</p>
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle12" name="collapse12" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="fa-solid fa-xmark"></i>
+                                <p class="inline-num">18</p>
+                              </div>
+                              <label for="handle12"></label>
                             </div>
-                            <pre>universe u = None;
-Obj 1:  universe;
-Obj 2:  universe;
-Obj 3:  universe;
-Obj 4:  universe;
-Obj 5:  universe;
-Nr. (defective) == 3;
+                            <div class="collapsable">
+                              <div class="content-line"></div>
+                              <div class="container">
+                                <div class="caption">
+                                  <i class="fa-solid fa-circle-info"></i>
+                                  <p class="caption-text">Right split removing 1 green</p>
+                                </div>
+                                <div class="configuration">
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle13" name="collapse13" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Sets</p>
+                                      </div>
+                                      <label for="handle13"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>universe shapes = {sq_r, sq_b, tr_r, tr_b, tr_g, tr_g}; 
+property squares = {sq_r, sq_b}; 
 </pre>
-                            <input type="checkbox" class="control" id="sol_6" name="sol_6" />
-                            <label for="sol_6" class="solution">
-                              <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">36</p>
-                            </label>
-                            <div class="accordion">
-                              <input type="checkbox" class="control" id="handle7" name="sol_6" />
-                              <div class="handle">
-                                <div class="inline-solution">
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle14" name="collapse14" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-cubes-stacked"></i>
+                                        <p class="inline-num">Configuration</p>
+                                      </div>
+                                      <label for="handle14"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Obj 1:  shapes; 
+Obj 2:  shapes; 
+Obj 3:  shapes; 
+</pre>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle15" name="collapse15" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle15"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Nr. squares in [2,3]; 
+</pre>
+                                    </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_4" name="sol_4" />
+                                <label for="sol_4" class="solution">
                                   <i class="fa-solid fa-equals fa-sm"></i>
-                                  <p class="inline-num">36</p>
-                                </div>
-                                <label for="handle7"></label>
-                              </div>
-                              <div class="collapsable">
-                                <div class="content-line"></div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle8" name="collapse8" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-equals fa-sm"></i>
-                                      <p class="inline-num">1</p>
-                                    </div>
-                                    <label for="handle8"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Left split: case 3 defective are s.t. [Nr. (defective) == 0, Nr. (¬defective) == 3]</p>
-                                      </div>
-                                      <pre>universe u = None;
-Obj 1:  defective;
-Obj 2:  defective;
-Obj 3:  defective;
-Nr. (¬defective) == 3;
+                                  <p class="inline-num">18</p>
+                                </label>
+                                <div class="collapsable subproblems">
+                                  <div class="content-line"></div>
+                                  <div class="accordions">
+                                    <div class="shatter">
+                                      <div class="row">
+                                        <div class="accordion">
+                                          <input type="checkbox" class="control" id="handle16" name="collapse16" />
+                                          <div class="handle">
+                                            <div class="inline-solution">
+                                              <i class="fa-solid fa-equals fa-sm"></i>
+                                              <p class="inline-num">2</p>
+                                            </div>
+                                            <label for="handle16"></label>
+                                          </div>
+                                          <div class="collapsable">
+                                            <div class="content-line"></div>
+                                            <div class="container">
+                                              <div class="caption">
+                                                <i class="fa-solid fa-circle-info"></i>
+                                                <p class="caption-text">Left split: case 2 squares are s.t. [Nr. squares = 2]</p>
+                                              </div>
+                                              <div class="configuration">
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle17" name="collapse17" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="fa-solid fa-shapes"></i>
+                                                      <p class="inline-num">Sets</p>
+                                                    </div>
+                                                    <label for="handle17"></label>
+                                                  </div>
+                                                  <div class="collapsable">
+                                                    <pre>universe squares = {sq_r, sq_b}; 
 </pre>
-                                      <input type="checkbox" class="control" id="sol_7" name="sol_7" />
-                                      <label for="sol_7" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">1</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\binom{3} {3}$$</p>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle18" name="collapse18" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="fa-solid fa-cubes-stacked"></i>
+                                                      <p class="inline-num">Configuration</p>
+                                                    </div>
+                                                    <label for="handle18"></label>
+                                                  </div>
+                                                  <div class="collapsable">
+                                                    <pre>Obj 1:  squares; 
+Obj 2:  squares; 
+</pre>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle19" name="collapse19" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="fa-solid fa-ban"></i>
+                                                      <p class="inline-num">Constraints</p>
+                                                    </div>
+                                                    <label for="handle19"></label>
+                                                  </div>
+                                                  <div class="collapsable">
+                                                    <pre>Nr. squares = 2; 
+</pre>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <input type="checkbox" class="control" id="sol_5" name="sol_5" />
+                                              <label for="sol_5" class="solution">
+                                                <i class="fa-solid fa-equals fa-sm"></i>
+                                                <p class="inline-num">2</p>
+                                              </label>
+                                              <div class="collapsable">
+                                                <div class="content-line"></div>
+                                                <div class="count-description">
+                                                  <i class="fa-solid fa-calculator"></i>
+                                                  <i class="fa-solid fa-equals fa-sm"></i>
+                                                  <p class="inline-num">$$\frac{2!}{0!}$$</p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
                                         </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle9" name="collapse9" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-xmark"></i>
-                                      <p class="inline-num">36</p>
-                                    </div>
-                                    <label for="handle9"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Right split removing {defective: 3}</p>
-                                      </div>
-                                      <pre>universe u = None;
-Obj 1:  ¬defective;
-Obj 2:  ¬defective;
+                                        <div class="accordion">
+                                          <input type="checkbox" class="control" id="handle20" name="collapse20" />
+                                          <div class="handle">
+                                            <div class="inline-solution">
+                                              <i class="fa-solid fa-xmark"></i>
+                                              <p class="inline-num">3</p>
+                                            </div>
+                                            <label for="handle20"></label>
+                                          </div>
+                                          <div class="collapsable">
+                                            <div class="content-line"></div>
+                                            <div class="container">
+                                              <div class="caption">
+                                                <i class="fa-solid fa-circle-info"></i>
+                                                <p class="caption-text">Right split removing 2 squares</p>
+                                              </div>
+                                              <div class="configuration">
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle21" name="collapse21" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="fa-solid fa-shapes"></i>
+                                                      <p class="inline-num">Sets</p>
+                                                    </div>
+                                                    <label for="handle21"></label>
+                                                  </div>
+                                                  <div class="collapsable">
+                                                    <pre>universe shapes = {tr_r, tr_b, tr_g, tr_g}; 
 </pre>
-                                      <input type="checkbox" class="control" id="sol_8" name="sol_8" />
-                                      <label for="sol_8" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">36</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\binom{9} {2}$$</p>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle22" name="collapse22" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="fa-solid fa-cubes-stacked"></i>
+                                                      <p class="inline-num">Configuration</p>
+                                                    </div>
+                                                    <label for="handle22"></label>
+                                                  </div>
+                                                  <div class="collapsable">
+                                                    <pre>Obj 1:  shapes; 
+</pre>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <input type="checkbox" class="control" id="sol_6" name="sol_6" />
+                                              <label for="sol_6" class="solution">
+                                                <i class="fa-solid fa-equals fa-sm"></i>
+                                                <p class="inline-num">3</p>
+                                              </label>
+                                              <div class="collapsable">
+                                                <div class="content-line"></div>
+                                                <div class="count-description">
+                                                  <i class="fa-solid fa-calculator"></i>
+                                                  <i class="fa-solid fa-equals fa-sm"></i>
+                                                  <p class="inline-num">$$\frac{\binom{2} {0} \cdot 1!}{1 \cdot 1!} + \frac{\binom{2} {1} \cdot 1!}{1 \cdot 0!}$$</p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>

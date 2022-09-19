@@ -1,11 +1,17 @@
-:root {
+/* :root {
   --dark: #445C4C;
   --mdark: #508068;
   --middle: #8AB6A9;
   --mlight: #BFC9CA;
   --light: #D6E2E0;
-}
+} */
 
+:root {
+  --dark: #576F72;
+  --middle:  #78909C;
+  --mlight:  #E0E0E0 ;
+  --light: #EEEEEE ;
+}
 
 input[type="checkbox"] {
   display: none;
@@ -59,13 +65,14 @@ input[type="checkbox"]:checked~.collapsable {
   Styling
   */
 body {
-  font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif;
+  /* font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif; */
+  font-family: 'Roboto', sans-serif;
   color: #333;
   font-weight: 300;
 }
 
 h2 {
-  font-family: "tahom";
+  font-family: 'Roboto', sans-serif;
 }
 
 .accordion {
@@ -79,6 +86,11 @@ h2 {
   display: flex;
   flex-direction: column;
   justify-content: baseline;
+}
+
+.configuration .accordion {
+  box-shadow: none;
+  margin: 0px;
 }
 
 .accordion>input[type="checkbox"]:checked~.accordion {
@@ -106,10 +118,6 @@ h2 {
   height: fit-content;
 }
 
-.accordion .solution label:before {
-  font-family: 'fontawesome';
-  /* content: "\f054"; */
-}
 
 .accordion>input[type="checkbox"]:checked~.solution label:before {
   /* content: "\f078"; */
@@ -181,7 +189,7 @@ h2 {
 }
 
 .inline-num {
-  font-family: "tahom";
+  font-family: 'Roboto';
   font-weight: 400;
   font-size: larger;
   margin: 5px 0px 5px 5px;
@@ -195,7 +203,8 @@ h2 {
 }
 
 .cola {
-  font-family: "Monaco", monospace;
+  /* font-family: "Monaco", monospace; */
+  font-family: 'Roboto Mono', monospace;
   padding: 2%;
   margin-top: 0%;
   max-width: 300px;
@@ -257,12 +266,28 @@ i {
   /* Flex Container */
   align-items: center;
   vertical-align: middle;
-  margin: 5px 10px 0px 5px;
+  /* margin: 5px 10px 0px 5px; */
 }
 
-.shatter {
-  display: grid;
-  grid-template-columns: 50%;
-  grid-auto-columns: 50%;
-  grid-auto-flow: column;
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.row .accordion {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+
+
+.configuration {
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
+  margin-bottom: 2%;
 }
