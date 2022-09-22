@@ -337,7 +337,13 @@ class Universe(SetFormula):
         if isinstance(key, int):
             return self.labels_entity.get(key, default)
         elif isinstance(key, P.Interval):
-            return self.labels_set.get(key, default)
+            lab = self.labels_set.get(key, None)
+            if lab is None:
+                enum = [self.get_label(k) for k in P.iterate(key, step=1)]
+                lab_list = ", ".join(enum)
+                return f"{{{lab_list}}}"
+            else:
+                return lab
         else:
             raise Exception(f"Unknown key type for label: {type(key)}")
 

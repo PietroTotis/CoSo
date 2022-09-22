@@ -147,7 +147,10 @@ class CCounting(Constraint):
             val = f"= {self.values.lower}"
         else:
             val = f"in {self.values}"
-        return f"Nr. {self.formula} {val}"
+        if isinstance(self.formula, CCounting):
+            return f"Nr. ({self.formula}) {val}"
+        else:
+            return f"Nr. {self.formula} {val}"
 
     def neg(self):
         interval = Int.closedopen(0, Int.inf) - self.values
@@ -221,6 +224,7 @@ class CSize(Constraint):
         return CSize(self.name, inter)
 
     def __eq__(self, rhs):
+        print(self.values, rhs)
         return self.values == rhs.values
 
     def __contains__(self, rhs):

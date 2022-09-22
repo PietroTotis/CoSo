@@ -51,7 +51,7 @@ class VisCoSo(object):
                 self.icon("fa-solid fa-calculator")
                 self.icon(ICON_EQUALS)
                 with self.tag("p", klass="inline-num"):
-                    self.text(f"$${problem.solution.symbolic}$$")
+                    self.text(f"$${problem.solution.latex()}$$")
 
     def add_problem(self, problem):
         with self.tag("div", klass="accordion"):

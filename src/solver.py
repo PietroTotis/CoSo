@@ -1,7 +1,8 @@
 import portion as P
 
 from configuration import *
-from sharpCSP import SharpCSP, Solution
+from count import Zero
+from sharpCSP import SharpCSP
 from level_2 import LiftedSet
 from logger import ProblemLog
 
@@ -25,7 +26,7 @@ class Solver(object):
 
     def solve(self):
         if not self.trivial_unsat():
-            count = Solution(0, [], subproblems=0, log=self.log)
+            count = Zero(self.log)
             for n in self.size:
                 if self.type in ["sequence", "subset", "permutation", "multisubset"]:
                     vars = [self.universe] * n

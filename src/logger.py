@@ -1,4 +1,5 @@
 from VisCoSo import VisCoSo
+from level_1 import Multiset
 from util import *
 
 
@@ -79,7 +80,11 @@ class ProblemLog(object):
         return al
 
     def add_relevant_set(self, domain):
-        self.relevant_sets.add(domain)
+        if isinstance(domain, Multiset):
+            self.relevant_sets.add(domain)
+        else:  # level 2
+            for constr in domain.ccs:
+                self.relevant_sets.add(constr.formula)
 
     def add_subproblem(self, op, sub_log):
         self.subproblems.append((op, sub_log))
