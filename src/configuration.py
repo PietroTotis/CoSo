@@ -224,7 +224,6 @@ class CSize(Constraint):
         return CSize(self.name, inter)
 
     def __eq__(self, rhs):
-        print(self.values, rhs)
         return self.values == rhs.values
 
     def __contains__(self, rhs):

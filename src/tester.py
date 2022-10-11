@@ -13,7 +13,7 @@ from multiprocessing import Process, Value
 from subprocess import Popen, PIPE, TimeoutExpired
 from statistics import mean
 from parser import EmptyException, Parser
-from sharpCSP import Solution
+from count import Count
 from configuration import CCounting, CSize
 
 from util import *
@@ -236,20 +236,26 @@ def dom2asp(label, domain):
     i = 0
     indist_intervals = domain.elements.find(False)
     for atomic_interval in indist_intervals:
-        e = domain.labels.get(atomic_interval.lower, atomic_interval.lower)
+        e = domain.get_label(atomic_interval.lower, atomic_interval.lower)
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
             n_copies = u - l + 1
             str += f'{label}_{i}("{e}",{n_copies}).\n'
             str += f"{label}(X) :- {label}_{i}(X, _).\n"
             i += 1
-    dist_intervals = domain.elements.find(True)
-    for atomic_interval in dist_intervals:
-        for n in portion.iterate(atomic_interval, step=1):
-            e = domain.labels.get(n, n)
-            str += f'{label}_{i}("{e}", 1).\n'
-            str += f"{label}(X) :- {label}_{i}(X, _).\n"
-            i += 1
+    if len(indist_intervals) == 0:
+        dist_intervals = domain.elements.find(True)
+        for atomic_interval in dist_intervals:
+            l, r = interval_closed(atomic_interval)
+            str += f"{label}({l}..{r}).\n"
+    else:
+        dist_intervals = domain.elements.find(True)
+        for atomic_interval in dist_intervals:
+            for n in portion.iterate(atomic_interval, step=1):
+                e = domain.get_label(n, n)
+                str += f'{label}_{i}("{e}", 1).\n'
+                str += f"{label}(X) :- {label}_{i}(X, _).\n"
+                i += 1
     str += f"universe(X) :- {label}(X).\n"
     return str, i
 
@@ -261,11 +267,10 @@ def problem2asp(problem):
         str, n_support = dom2asp(lab, dom)
         n_supports[lab] = n_support
         asp += str
-    sizes = problem.configuration.size.values
-
     if problem.configuration.size is None:
         vals = P.closed(1, problem.universe.size())
         problem.configuration.size = CSize("unconstrained", vals)
+    sizes = problem.configuration.size.values
     if problem.configuration.size.values.upper == P.inf:
         ub = problem.universe.size() + 1
         sizes = problem.configuration.size.values.replace(upper=ub)
@@ -276,6 +281,7 @@ def problem2asp(problem):
     multiset = problem.configuration.type == "multisubset"
     composition = problem.configuration.type == "composition"
     partition = problem.configuration.type == "partition"
+    universe_is_set = len(problem.universe.elements.find(False)) == 0
     asp_lengths = []
     for l in lenghts:
         asp_length = ""
@@ -290,7 +296,7 @@ def problem2asp(problem):
             new_props = []
             for i, v in enumerate(vars):
                 dom = ""
-                for pf in problem.pos_formulas:
+                for pf in problem.pos_constraints:
                     if pf.pos - 1 == i:
                         if dom != "":
                             raise Exception(
@@ -304,18 +310,26 @@ def problem2asp(problem):
                 domains.append(dom)
             asp_length += ") :- " + ", ".join(domains)
             if subset or multiset:
-                # ineq = "<" if subset else "<="
-                ineq = "<="
+                ineq = "<" if subset and universe_is_set else "<="
+                # ineq = "<="
                 inequalities = [
                     f"{v}{ineq}{vars[i+1]}"
                     for i, v in enumerate(vars)
                     if i < len(vars) - 1
                 ]
-                if len(inequalities) > 0:
-                    asp_length += ", "
-                    asp_length += ", ".join(inequalities) + ".\n"
+            else:
+                if permutation and universe_is_set:
+                    inequalities = [
+                        f"{v1}!={v2}"
+                        for i, v1 in enumerate(vars)
+                        for j, v2 in enumerate(vars)
+                        if i < j
+                    ]
                 else:
-                    asp_length += ".\n"
+                    inequalities = []
+            if len(inequalities) > 0:
+                asp_length += ", "
+                asp_length += ", ".join(inequalities) + ".\n"
             else:
                 asp_length += ".\n"
             asp_length += "\n".join(new_props)
@@ -323,12 +337,12 @@ def problem2asp(problem):
             for k in range(0, l):
                 pos_vars = ", ".join(["_" if i != k else "X" for i in range(0, l)])
                 asp_length += f"used_{l}(X,{k}) :- {type}_{l}({pos_vars}). \n"
-            if permutation or subset:
+            if not universe_is_set and (permutation or subset):
                 for lab in n_supports:
                     for i in range(0, n_supports[lab]):
                         asp_length += f":- {lab}_{i}(S,SN), C = #count{{N:used_{l}(S,N)}}, C>SN.\n"
 
-            for i, cf in enumerate(problem.count_formulas):
+            for i, cf in enumerate(problem.constraints):
                 dlab = f"df_{i}"
                 if dlab not in n_supports:
                     dom_str, n = dom2asp(dlab, cf.formula)
@@ -351,7 +365,7 @@ def problem2asp(problem):
                     )
             asp_length += ":- part(P), #count{E,N:put(E,N,P), N>0}==0.\n"
             for i in range(0, l):
-                for pf in problem.pos_formulas:
+                for pf in problem.pos_constraints:
                     if pf.pos - 1 == i:
                         for j, cof in enumerate(pf.formula.ccs):
                             dlab = f"df_{i}_{j}"
@@ -370,7 +384,7 @@ def problem2asp(problem):
                                     f":-  C=#sum{{N,E:put(E,N,{i})}}, C={n}.\n"
                                 )
 
-            for i, cf_2 in enumerate(problem.count_formulas):
+            for i, cf_2 in enumerate(problem.constraints):
                 cf_1 = cf_2.formula
                 if isinstance(cf_2.formula, CCounting):
                     dlab = f"df_{i}"
@@ -404,7 +418,7 @@ def problem2asp(problem):
                 for n in P.iterate(vals, step=1):
                     asp_length += f":- count_{i}({n}).\n"
         else:
-            pass
+            asp_length = "Partition!"
         asp_lengths.append(asp + asp_length)
     return asp_lengths
 
@@ -414,7 +428,7 @@ def dom2essence(lab, domain):
     indist_intervals = domain.elements.find(False)
     copies = {}
     for atomic_interval in indist_intervals:
-        e = domain.labels.get(atomic_interval.lower, "e_" + str(atomic_interval.lower))
+        e = domain.get_label(atomic_interval.lower, "e_" + str(atomic_interval.lower))
         e = essence_name(e)
         if atomic_interval != P.empty():
             l, u = interval_closed(atomic_interval)
@@ -423,7 +437,7 @@ def dom2essence(lab, domain):
     dist_intervals = domain.elements.find(True)
     for atomic_interval in dist_intervals:
         for n in portion.iterate(atomic_interval, step=1):
-            e = domain.labels.get(n, "e_" + str(n))
+            e = domain.get_label(n, "e_" + str(n))
             e = essence_name(e)
             copies[e] = 1
     entity_list = ", ".join(copies.keys())
@@ -506,7 +520,7 @@ def problem2essence(problem):
                 constraints.append(mset_constraint)
             for i in range(0, l):
                 dom = ""
-                for j, pf in enumerate(problem.pos_formulas):
+                for j, pf in enumerate(problem.pos_constraints):
                     if pf.pos - 1 == i:
                         dlab = f"pf_{i}_{j}"
                         if dlab not in added_doms:
@@ -514,7 +528,7 @@ def problem2essence(problem):
                             essence += dom_str
                             added_doms.append(dlab)
                         constraints.append(f"{name}({i+1}) in {dlab}")
-            for i, cf in enumerate(problem.count_formulas):
+            for i, cf in enumerate(problem.constraints):
                 dlab = f"df_{i}"
                 if dlab not in added_doms:
                     dom_str = dom2essence(dlab, cf.formula)
@@ -555,7 +569,7 @@ def problem2essence(problem):
             ub = problem.universe.size() - l + 1
             for i in range(1, l + 1):
                 dom = ""
-                for j, pf in enumerate(problem.pos_formulas):
+                for j, pf in enumerate(problem.pos_constraints):
                     if pf.pos == i:
                         if pf.formula.size.values != P.closed(
                             1, ub
@@ -578,7 +592,7 @@ def problem2essence(problem):
                                 constraints.append(
                                     f"sum([put[e,p{i}] | e<-{dlab}]) in {range_name}"
                                 )
-            for i, cf in enumerate(problem.count_formulas):
+            for i, cf in enumerate(problem.constraints):
                 outer_range = range2essence(cf.values, f"vals_{i}_out", l)
                 inner_range = range2essence(cf.formula.values, f"vals_{i}_in", ub)
                 essence_l += outer_range + inner_range
@@ -605,6 +619,52 @@ def problem2essence(problem):
         essence_l = essence + essence_l
         essence_lengths.append(essence_l)
     return essence_lengths
+
+
+def problem2cnf(problem):
+    programs = problem2asp(problem)
+    gringo = os.path.join(ASP_TOOLS, "gringo")
+    lp2normal = os.path.join(ASP_TOOLS, "lp2normal-2.18")
+    lp2sat = os.path.join(ASP_TOOLS, "lp2sat-1.24")
+    lp2atomic = os.path.join(ASP_TOOLS, "lp2atomic-1.17")
+    input = os.path.join(ASP_TOOLS, "tmp.lp")
+    out = os.path.join(ASP_TOOLS, "out.cnf")
+    gringo_out = os.path.join(ASP_TOOLS, "gringo_out.lp")
+    nor_out = os.path.join(ASP_TOOLS, "nor_out.lp")
+    at_out = os.path.join(ASP_TOOLS, "at_out.cnf")
+
+    cnf_lengths = []
+
+    for program in programs:
+        lp = open(input, "w+")
+        lp.write(program)
+        lp.close()
+        try:
+            p = Popen(
+                [f"{gringo} {input} > {gringo_out}"],
+                shell=True,
+            )
+            p.wait()
+            p = Popen([f"{lp2normal} {gringo_out} > {nor_out}"], shell=True)
+            p.wait()
+            p = Popen([f"{lp2atomic} {nor_out} > {at_out}"], shell=True)
+            p.wait()
+            p = Popen([f"{lp2sat} {at_out} > {out}"], shell=True)
+            p.wait()
+
+            translation = open(out, "r").read()
+            cnf_lengths.append(translation)
+
+        except Exception:
+            p.terminate()
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+        # print(n_program)
+    os.remove(input)
+    os.remove(out)
+    os.remove(gringo_out)
+    os.remove(nor_out)
+    os.remove(at_out)
+    return cnf_lengths
 
 
 def generate_constrained(folder, pconstr, cconstr):
@@ -660,7 +720,7 @@ def run_asp(programs, count):
         with ctl.solve(yield_=True, async_=True) as handle:
             n_length = sum(1 for _ in handle)  # +1
             n += n_length
-    count.value = n
+        count.value = n
 
 
 def run_sat(programs, count):
@@ -760,7 +820,7 @@ def run_essence(programs, count):
             else:
                 if os.path.exists(output):
                     with open(output, "r") as sol:
-                        n_prog = sol.read().count("Solution:")
+                        n_prog = sol.read().count("Count:")
                         n += n_prog
             count.value += n
         except Exception:
@@ -794,13 +854,13 @@ def run_coso(problem, log=False):
             killtree(p.pid)
             p.join()
             print("Killed")
-            res = Result("CoSo", Solution(-1, [], None, -1), TIMEOUT)
+            res = Result("CoSo", Count(-1, [], None, -1), TIMEOUT)
         else:
-            sol = Solution(count.value, [], None, n_subproblems.value)
+            sol = Count(count.value, [], None, n_subproblems.value)
             res = Result("CoSo", sol, finish - start)
             print(res)
     except:
-        res = Result("CoSo", Solution(-1, [], None, -1), TIMEOUT)
+        res = Result("CoSo", Count(-1, [], None, -1), TIMEOUT)
         print(f"CoSo timeout")
     return res
 
@@ -969,7 +1029,7 @@ def run_benchmarks(plot, start_from):
         clean_essence_garbage()
 
     examples = os.path.join(TESTS, "examples")
-    test_folder(examples, True, True, True, start_from)
+    test_folder(examples, True, False, False, start_from)
 
     # grow_doms = os.path.join(BENCHMARKS, "growing_domains")
     # results_asp = {}
@@ -1090,7 +1150,7 @@ if __name__ == "__main__":
     if args.asp:
         solvers.append(("Clingo", problem2asp, run_asp))
     if args.sat:
-        solvers.append(("SharpSAT", problem2asp, run_sat))
+        solvers.append(("SharpSAT", problem2cnf, run_sat))
     if args.essence:
         solvers.append(("Essence", problem2essence, run_essence))
     if args.f:

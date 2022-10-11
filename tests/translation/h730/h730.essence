@@ -1,0 +1,11 @@
+letting universe be new type enum { tvsanddefective_0, tvsanddefective_1, tvsanddefective_2, tvsandnotdefective_0, tvsandnotdefective_1, tvsandnotdefective_2, tvsandnotdefective_3, tvsandnotdefective_4, tvsandnotdefective_5, tvsandnotdefective_6, tvsandnotdefective_7, tvsandnotdefective_8 }
+letting f_universe be function(tvsanddefective_0 --> 1, tvsanddefective_1 --> 1, tvsanddefective_2 --> 1, tvsandnotdefective_0 --> 1, tvsandnotdefective_1 --> 1, tvsandnotdefective_2 --> 1, tvsandnotdefective_3 --> 1, tvsandnotdefective_4 --> 1, tvsandnotdefective_5 --> 1, tvsandnotdefective_6 --> 1, tvsandnotdefective_7 --> 1, tvsandnotdefective_8 --> 1)
+letting defective be { tvsanddefective_0, tvsanddefective_1, tvsanddefective_2 }
+letting df_0 be { tvsanddefective_0, tvsanddefective_1, tvsanddefective_2 }
+letting l_5 be 5
+letting vals_0 be { 2,3,4,5 }
+find conf_5 : mset (size l_5) of tvs
+such that 
+	forAll e: tvs.
+		forAll e: universe. freq(conf_5,e) <= f_tvs(e)
+	/\ sum([freq(conf_5, i) | i: tvs, i in df_0]) in vals_0

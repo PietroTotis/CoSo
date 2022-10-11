@@ -1,0 +1,11 @@
+letting universe be new type enum { a, n, b }
+letting f_universe be function(a --> 3, n --> 2, b --> 1)
+letting bs be { b }
+letting as be { a }
+letting ns be { n }
+letting l_6 be 6
+find conf_6 : sequence (size l_6) of bs ∨ as ∨ ns
+such that 
+	forAll e: bs ∨ as ∨ ns.
+		sum([1 | i: int(1..l_6), conf_6(i)=e]) <= f_bs ∨ as ∨ ns(e)
+ 

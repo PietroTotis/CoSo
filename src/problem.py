@@ -281,7 +281,7 @@ class Problem(object):
             s += f"{cf}\n"
         for f in self.constraints:
             s += f"{f}\n"
-        for f in self.agg_formulas:
-            s += f"{f}\n"
+        # for f in self.agg_formulas:
+        #     s += f"{f}\n"
         s += f"{self.configuration}\n"
         return s

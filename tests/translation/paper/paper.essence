@@ -1,0 +1,18 @@
+letting universe be new type enum { e_5, e_1, e_2, e_3, e_4 }
+letting f_universe be function(e_5 --> 3, e_1 --> 1, e_2 --> 1, e_3 --> 1, e_4 --> 1)
+letting red be { e_1, e_3 }
+letting blue be { e_2, e_4 }
+letting green be { e_5 }
+letting triangle be { e_5, e_3, e_4 }
+letting squares be { e_1, e_2 }
+letting pf_1_0 be { e_5 }
+letting df_0 be { e_1, e_2 }
+letting l_4 be 4
+letting vals_0 be { 2 }
+find conf_4 : sequence (size l_4) of shapes
+such that 
+	forAll e: shapes.
+		sum([1 | i: int(1..l_4), conf_4(i)=e]) <= f_shapes(e)
+ 
+	/\ conf_4(2) in pf_1_0
+	/\ sum([1 | i: int(1..l_4), conf_4(i) in df_0]) in vals_0
