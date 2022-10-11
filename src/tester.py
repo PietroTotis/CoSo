@@ -236,8 +236,8 @@ def dom2asp(label, domain):
     i = 0
     indist_intervals = domain.elements.find(False)
     for atomic_interval in indist_intervals:
-        e = domain.get_label(atomic_interval.lower, atomic_interval.lower)
         if atomic_interval != P.empty():
+            e = domain.get_label(atomic_interval.lower, atomic_interval.lower)
             l, u = interval_closed(atomic_interval)
             n_copies = u - l + 1
             str += f'{label}_{i}("{e}",{n_copies}).\n'
