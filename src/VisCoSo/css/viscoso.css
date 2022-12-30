@@ -7,10 +7,19 @@
 } */
 
 :root {
-  --dark: #576F72;
-  --middle:  #78909C;
-  --mlight:  #E0E0E0 ;
-  --light: #EEEEEE ;
+  --dark: #4c566a;
+  --middle: #d8dee9;
+  --mlight: #e5e9f0;
+  --light: #eceff4;
+  --red: #bf616a;
+  --orange: #d08770;
+  --yellow: #ebcb8b;
+  --green: #a3be8c;
+  --violet: #b48ead;
+  --blue: #5e81ac;
+  --lightblue: #81a1c1;
+  --cyan: #88c0d0;
+  --lightgreen: #8fbcbb;
 }
 
 input[type="checkbox"] {
@@ -199,7 +208,7 @@ h2 {
   /* height: 95%; */
   margin-bottom: 5%;
   margin-right: 10px;
-  border-left: 2px solid #ccc;
+  border-left: 2px solid var(--middle);
 }
 
 .cola {
@@ -222,7 +231,7 @@ h2 {
   height: fit-content;
   padding: 0% 2% 0% 3%;
   box-sizing: border-box;
-  border: 2px solid #ccc;
+  border: 2px solid var(--middle);
   border-radius: 4px;
   background-color: var(--light);
   resize: none;
@@ -290,4 +299,73 @@ i {
   height: fit-content;
   flex-direction: column;
   margin-bottom: 2%;
+}
+
+pre {
+  white-space: pre-wrap;
+}
+
+
+/* histograms */
+
+.histogram {
+  margin: 10px 10px 0px 10px;
+  width: fit-content;
+}
+
+.ylabel {
+  padding-right: 5px;
+  text-align: right;
+}
+
+.hcell {
+  font-size: 0;
+  text-align: center;
+  width: 15px;
+}
+
+.hcell:hover {
+  font-size: 1em;
+}
+
+.xlab {
+  height: 15px;
+  overflow: hidden;
+  border-top: solid 1px;
+}
+
+.hc1 {
+  background-color: var(--red);
+}
+
+.hc2 {
+  background-color: var(--blue);
+}
+
+.hc3 {
+  background-color: var(--green);
+}
+
+.hc4 {
+  background-color: var(--yellow);
+}
+
+.hc5 {
+  background-color: var(--lightgreen);
+}
+
+.hc6 {
+  background-color: var(--violet);
+}
+
+.hc7 {
+  background-color: var(--lightblue);
+}
+
+.hc8 {
+  background-color: var(--orange);
+}
+
+.hc9 {
+  background-color: var(--cyan);
 }

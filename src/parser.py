@@ -230,14 +230,14 @@ class Parser(object):
         else:
             k = 1 if implicit_labelled else 0
             elems = p[5 + k]
-            implicit_univ = enumerated and self.problem.universe is None
+            implicit_univ = enumerated and self.problem.universe.empty()
             univ = implicit_univ or explicit_univ
             elems = list2interval(self.problem, elems, univ)
             if explicit_univ:
                 d = Universe(label, elems, name=label)
                 self.problem.universe = d
             else:
-                d = SetFormula(label, elems, self.problem.universe)
+                d = SetFormula(label, elems, self.problem.universe, name=label)
             self.problem.add_domain(d)
             p[0] = d
 
@@ -269,7 +269,7 @@ class Parser(object):
         dom = self.problem.compute_dom(set)
         s = Configuration(name, type, dom)
         self.problem.configuration = s
-        if self.problem.universe is None:
+        if self.problem.universe.empty():
             self.problem.compute_universe()
         if len(self.problem.domains) > 0:
             names = list(self.problem.domains)

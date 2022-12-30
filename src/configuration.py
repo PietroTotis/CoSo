@@ -143,8 +143,22 @@ class CCounting(Constraint):
         return self.formula == rhs.formula and self.values == rhs.values
 
     def __str__(self):
-        if self.values.lower == self.values.upper:
-            val = f"= {self.values.lower}"
+        """
+        Pretty print admissible values in the interval
+
+        Returns:
+            str: a nice description with </>/= operators
+        """
+        if self.values.atomic:
+            lb, ub = interval_closed(self.values, 0, P.inf)
+            if lb == ub:
+                val = f"= {lb}"
+            elif lb == 0:
+                val = f"<= {ub}"
+            elif ub == P.inf:
+                val = f">= {lb}"
+            else:
+                val = f"in [{lb}, {ub}]"
         else:
             val = f"in {self.values}"
         if isinstance(self.formula, CCounting):

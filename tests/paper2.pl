@@ -1,10 +1,10 @@
-squares = {r2,b2};
-indist triangles = {r1,b1,g1,g2,g3};
-indist red = {r1,r2};
-indist blue = {b1,b2};
-indist green = {g1,g2,g3};
+property squares = {r2,b2};
+property triangles = {r1,b1,green,green,green};
+property red = {r1,r2};
+property blue = {b1,b2};
+property green = {green,green,green};
 
 perm in [|universe];
 #perm = 4;
 perm[2] = green;
-#squares&perm =2;
+#squares&perm = 2;

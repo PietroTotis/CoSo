@@ -919,9 +919,19 @@ class SharpCSP(object):
         vars = [v.copy() for v in vars]
         ex_classes = self.exchangeable_classes(var_list=vars)
         if universe is not None:
-            u = universe
+            u = Universe(
+                universe.formula,
+                universe.elements,
+                universe.name,
+                *self.universe.get_labels(),
+            )
         elif len(ex_classes) == 1:
-            u = vars[0]
+            u = Universe(
+                vars[0].formula,
+                vars[0].elements,
+                vars[0].name,
+                *self.universe.get_labels(),
+            )
         else:
             u = self.universe
         sub_id = f"{self.id}.{id}"
@@ -1240,6 +1250,7 @@ class SharpCSP(object):
                         prod_indist_choices,
                         histogram=self.histogram(),
                     )
+
         else:  # not enough elements in dom to make a n_vars long permutation
             count = Zero(self.log)
             self.log.detail(al, f"{len(vars)} different vars for {size} values!")

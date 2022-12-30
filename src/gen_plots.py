@@ -3,6 +3,9 @@ import os
 import pandas
 import matplotlib
 import matplotlib.pyplot as plt
+import scienceplots
+
+plt.style.use("science")
 
 from util import ROOT_DIR
 
@@ -13,7 +16,7 @@ COSO_STATS_EX = os.path.join(OUT_DIR, "subs_results_examples.csv")
 WIDTH = 430
 PGF = False
 
-pal = sns.color_palette("colorblind")
+# pal = sns.color_palette("colorblind")
 
 
 def autolabel(rects, fmt=".2f"):
@@ -76,19 +79,22 @@ def plot_benchmarks_sat(df, fig, axis, save):
         y="time",
         hue="solver",
         data=df,
-        palette=pal,
+        # palette=pal,
         log=True,
     )
+    axis.set_axisbelow(True)
+    axis.grid(b=True, which="major", axis="y", linestyle="-")
 
     axis.set_yscale("log", nonpositive="clip")
-    axis.set(ylabel="Seconds (log)")
-    axis.set(xlabel="\\# solutions")
+    axis.set_ylabel("Seconds (log)", fontsize=10)
+    axis.set_xlabel("\\# solutions", fontsize=10)
 
     axis.axhline(y=300, color="r", linestyle="--")
 
     ticks = [10**x for x in range(-2, 3)] + [300]
     axis.set_yticks(ticks)
     axis.set_yticklabels(ticks, va="center")
+    axis.yaxis.set_ticks([], minor=True)
     for tick in axis.xaxis.get_major_ticks():
         tick.tick1line.set_visible(False)
         tick.tick2line.set_visible(False)
@@ -103,22 +109,30 @@ def plot_benchmarks_sat(df, fig, axis, save):
             ticks.append(("{:.2e}".format(l)))
     axis.set_xticklabels(ticks)
     axis.tick_params(axis="x", labelrotation=90)
+    axis.tick_params(
+        axis="x",  # changes apply to the x-axis
+        which="both",  # both major and minor ticks are affected
+        bottom=False,  # ticks along the bottom edge are off
+        top=False,  # ticks along the top edge are off
+    )
     handles, labels = axis.get_legend_handles_labels()
-    ph = [plt.plot([], marker="", ls="")[0]]
-    handles = ph + handles
+    # ph = [plt.plot([], marker="", ls="")[0]]
+    # handles = ph + ph + handles
     axis.legend(
         handles,
-        ["Framework:", "CoSo", "ASP", "sharpSAT", "Essence"],
-        bbox_to_anchor=(0.5, -0.5),
-        loc="lower center",
-        ncol=5,
+        ["CoSo", "ASP", "sharpSAT", "Essence"],
+        bbox_to_anchor=(0.5, 1.2),
+        loc="upper center",
+        ncol=4,
         frameon=True,
-        fontsize="x-small",
-        title_fontsize="small",
+        title="Framework",
+        fontsize=8,
+        title_fontsize=10,
         borderaxespad=0,
     )
 
-    axis.set_title("Satisfiable problems")
+    axis.set_title("Satisfiable problems", fontsize="10", x=0.5, y=1.22)
+    axis.tick_params(axis="both", labelsize=8)
 
     # plt.subplots_adjust(bottom=0.35, left=0.1)
 
@@ -137,10 +151,20 @@ def plot_benchmarks_sat(df, fig, axis, save):
 
 def plot_benchmarks_unsat(df, fig, axis, save):
 
-    sns.barplot(ax=axis, x="benchmark", y="time", hue="solver", data=df, palette=pal)
+    sns.barplot(
+        ax=axis,
+        x="benchmark",
+        y="time",
+        hue="solver",
+        data=df,
+        # palette=pal
+    )
+    axis.set_axisbelow(True)
+    axis.grid(b=True, which="major", axis="y", linestyle="-")
 
     axis.set_yscale("log", nonpositive="clip")
-    axis.set(ylabel="Seconds (log)")
+    axis.set_ylabel("Seconds (log)", fontsize="10")
+    axis.set_xlabel("Benchmark", fontsize="10")
 
     axis.axhline(y=300, color="r", linestyle="--")
 
@@ -165,21 +189,29 @@ def plot_benchmarks_unsat(df, fig, axis, save):
     # xlabs = df["benchmark"].unique()
     axis.set_xticklabels(xlabs, va="top")
     axis.tick_params(axis="x", which="major", pad=5)
+    axis.tick_params(axis="both", labelsize=8)
     handles, labels = axis.get_legend_handles_labels()
     lgd = axis.legend(
         handles,
         ["CoSo", "ASP", "sharpSAT", "Essence"],
-        bbox_to_anchor=(1.22, 0.5),
-        loc="center right",
-        ncol=1,
+        bbox_to_anchor=(0.5, 1.2),
+        loc="upper center",
+        ncol=4,
         frameon=True,
         title="Framework",
-        fontsize="x-small",
-        title_fontsize="small",
+        fontsize=8,
+        title_fontsize=10,
         borderaxespad=0,
     )
     # axis.legend([],[], frameon=False)
-    axis.set_title("Unsatisfiable problems")
+    axis.set_title("Unsatisfiable problems", fontsize=10, x=0.5, y=1.22)
+    axis.yaxis.set_ticks([], minor=True)
+    axis.tick_params(
+        axis="x",  # changes apply to the x-axis
+        which="both",  # both major and minor ticks are affected
+        bottom=False,  # ticks along the bottom edge are off
+        top=False,  # ticks along the top edge are off
+    )
 
     plt.subplots_adjust(left=0.15)
 
@@ -201,13 +233,20 @@ def plot_coso_stats(df, fig, axis, save):
     count = df.groupby(["n_subproblems", "origin"])["count"].sum().unstack(fill_value=0)
     time = df.groupby(["n_subproblems"], as_index=False)["time"].mean()
 
+    color_cycle = axis._get_lines.prop_cycler
+    color_line = next(color_cycle)["color"]
+    color_real = next(color_cycle)["color"]
+    color_synth = next(color_cycle)["color"]
+
     count.plot(
         kind="bar",
         stacked=True,
-        color=sns.color_palette("colorblind"),
+        # palette=[color_real, color_synth],
+        color=sns.color_palette([color_real, color_synth]),
         width=0.9,
         ax=axis,
-    ).legend(loc="upper center")
+    ).legend(loc="upper center", bbox_to_anchor=(0.5, 1))
+    plt.xlim(-1, None)
 
     n = len(count)
     for i, patch in enumerate(axis.patches):
@@ -219,9 +258,22 @@ def plot_coso_stats(df, fig, axis, save):
         l = "" if count.iloc[r, c] == 0 else count.iloc[r, c]
         axis.annotate(l, (x, y), ha="center", va="center", c="black", fontsize=10)
 
+    axis.tick_params(
+        axis="x",  # changes apply to the x-axis
+        which="both",  # both major and minor ticks are affected
+        bottom=False,  # ticks along the bottom edge are off
+        top=False,  # ticks along the top edge are off
+    )
     ax6 = axis.twinx()
     ax7 = axis.twinx()
-    ax6.plot(axis.get_xticks(), time["time"], color=sns.color_palette("colorblind")[2])
+    axis.tick_params(axis="both", labelsize=8)
+    ax6.tick_params(axis="both", labelsize=8)
+    ax6.plot(
+        axis.get_xticks(),
+        time["time"],
+        color=color_line
+        # color=sns.color_palette("colorblind")[2]
+    )
     axis.set_yscale("symlog", linthresh=10)
     ax6.set_yscale("log", nonpositive="clip")
     ax7.set_yscale("log", nonpositive="clip")
@@ -245,10 +297,10 @@ def plot_coso_stats(df, fig, axis, save):
     for y in ax6.get_yticks():
         ax7.axhline(y=y, color=ax6.get_lines()[-1].get_c(), alpha=0.3, linestyle="-")
 
-    axis.set_xlabel("\\# subproblems")
-    axis.set_ylabel("\\# benchmarks (log)")
-    ax6.set_ylabel("Seconds (log)")
-    axis.set_title("CoSo avg. runtime vs. \\#subproblems")
+    axis.set_xlabel("\\# subproblems", fontsize=10)
+    axis.set_ylabel("\\# benchmarks (log)", fontsize=10)
+    ax6.set_ylabel("Seconds (log)", fontsize=10)
+    axis.set_title("CoSo avg. runtime vs. \\#subproblems", fontsize=10)
 
     axis.set_zorder(ax7.get_zorder() + 1)
     ax6.set_zorder(ax7.get_zorder() + 1)
@@ -260,6 +312,7 @@ def plot_coso_stats(df, fig, axis, save):
     ax7.spines["right"].set_color("0.5")
     ax7.spines["left"].set_color("0.5")
 
+    axis.legend(loc=9, prop={"size": 10})
     plt.subplots_adjust(bottom=0.15, left=0.1)
 
     if save:
@@ -290,19 +343,31 @@ def plot_growing_doms(df, fig, axis, name):
         y="time",
         hue="solver",
         data=df,
+        marker=".",
         # palette=pal,
     )
+
+    axis.set_axisbelow(True)
+    axis.grid(b=True, which="major", axis="y", linestyle="-")
+    axis.tick_params(
+        axis="x",  # changes apply to the x-axis
+        which="minor",  # both major and minor ticks are affected
+        bottom=False,  # ticks along the bottom edge are off
+        top=False,  # ticks along the top edge are off
+    )
+    axis.yaxis.set_ticks([], minor=True)
 
     # axis.set_yscale("symlog", linthresh=10)
 
     axis.axhline(y=300, color="r", linestyle="--")
-    axis.set_xlabel(name, fontsize="small")
+    axis.set_xlabel(name, fontsize=10)
 
     if name == "P3":
-        axis.set_ylabel("Seconds", fontsize="small")
+        axis.set_ylabel("Seconds", fontsize=10)
         ticks = [1, 10, 50, 100, 200, 300]
         axis.set_yticks(ticks)
-        axis.set_yticklabels(ticks, va="center", fontsize="small")
+        axis.set_yticklabels(ticks, va="center", fontsize=10)
+    axis.tick_params(axis="both", labelsize=8)
     # if name == "P5":
     #     handles, labels = axis.get_legend_handles_labels()
     #     fig.legend(
@@ -384,7 +449,7 @@ def load_data(bench_dir):
 
 
 def plot(bench_dir, pgf=False):
-    sns.set_theme(style="darkgrid", color_codes=True, palette=pal)
+    # sns.set_theme(style="whitegrid", color_codes=True, palette=pal)
     df_sat, df_unsat, df_coso, df_real, df_growing = load_data(bench_dir)
 
     if pgf:
@@ -414,21 +479,22 @@ def plot(bench_dir, pgf=False):
     plot_growing_doms(df_growing[2], fig_g, axes_g[1], "P4")
     plot_growing_doms(df_growing[3], fig_g, axes_g[2], "P5")
     handles, labels = axes_g[2].get_legend_handles_labels()
-    ph = [plt.plot([], marker="", ls="")[0]]
-    handles = ph + handles
-    labels = ["Framework:"] + labels
+    # ph = [plt.plot([], marker="", ls="")[0]]
+    # handles = ph + handles
+    # labels = ["Framework:"] + labels
     fig_g.legend(
         handles,
-        labels,
-        bbox_to_anchor=(0.5, 1),
-        loc="center",
-        ncol=5,
+        ["CoSo", "ASP", "sharpSAT", "Essence"],
+        bbox_to_anchor=(0.5, 1.0),
+        loc="upper center",
+        ncol=4,
         frameon=True,
-        fontsize="x-small",
-        title_fontsize="small",
+        title="Framework",
+        fontsize=8,
+        title_fontsize=10,
         borderaxespad=0,
     )
-    fig_g.tight_layout()
+    fig_g.tight_layout(pad=0.5)
     if pgf:
         w, h = set_size(WIDTH)
         fig_g.set_size_inches(w, h)

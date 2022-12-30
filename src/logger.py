@@ -1,3 +1,4 @@
+import itertools
 from VisCoSo import VisCoSo
 from level_1 import Multiset
 from util import *
@@ -24,17 +25,17 @@ class ProblemLog(object):
         id="1",
         debug=True,
         caption="Problem",
-        problem=None,
+        configuration=None,
     ):
         self.actions = []
         self.caption = caption
+        self.configuration = configuration
         self.constraints = constraints
         self.debug = debug
         self.id = id
         self.level = level
         self.pos_constraints = pos_constraints
-        self.problem = problem
-        self.relevant_sets = set()
+        self.relevant_sets = [universe]
         self.shatter_cases = {}
         self.shatter_subproblems = {}
         self.solution = None
@@ -45,6 +46,10 @@ class ProblemLog(object):
         self.universe = universe
         self.vis = VisCoSo()
         self.indent = f"{self.space}" * self.level
+        for c in self.pos_constraints:
+            self.add_relevant_set(c.formula)
+        for c in self.constraints:
+            self.add_relevant_set(c.formula)
         if debug:
             print(self.configuration2text())
 
@@ -68,7 +73,7 @@ class ProblemLog(object):
             id=self.id,
             debug=self.debug,
             caption=self.caption,
-            problem=self.problem,
+            configuration=self.configuration,
         )
         return copy
 
@@ -81,10 +86,10 @@ class ProblemLog(object):
 
     def add_relevant_set(self, domain):
         if isinstance(domain, Multiset):
-            self.relevant_sets.add(domain)
+            self.relevant_sets = self.relevant_cases(domain, self.relevant_sets)
         else:  # level 2
-            for constr in domain.ccs:
-                self.relevant_sets.add(constr.formula)
+            head, *tail = self.relevant_sets + domain.ccs
+            self.relevant_sets = self.relevant_cases(head, tail)
 
     def add_subproblem(self, op, sub_log):
         self.subproblems.append((op, sub_log))
@@ -174,6 +179,41 @@ class ProblemLog(object):
         if len(self.actions) > 0:
             text += self.indent + "~~~~~~~~\n"
         return text
+
+    def relevant_cases_intersection(self, mset, rest_classes):
+        """
+        Computes recursively the intersections of relevant cases/domains
+        """
+        base = [mset, mset.neg()]
+        if len(rest_classes) == 0:
+            return base
+        else:
+            combinations = [base]
+            first = rest_classes[0]
+            if first == self.universe:
+                return self.relevant_cases_intersection(mset, rest_classes[1:])
+            for dom in rest_classes[1:]:
+                if not dom == self.universe:
+                    comb = [dom, dom.neg()]
+                    combinations.append(comb)
+            combinations = list(itertools.product(*combinations))
+            cases = []
+            for c in combinations:
+                dom_base = c[0]
+                if len(c) > 1:
+                    for dom in c[1:]:
+                        dom_base = dom_base & dom
+                if dom_base.size() > 0:
+                    cases.append(dom_base)
+            return cases
+
+    def relevant_cases(self, mset, rest_classes):
+        if len(rest_classes) == 0:
+            res = [mset, mset.neg()]
+        else:
+            res = self.relevant_cases_intersection(mset, rest_classes)
+        # print(res)
+        return res
 
     def subproblems2text(self):
         text = ""

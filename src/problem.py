@@ -23,7 +23,7 @@ class Problem(object):
     """
 
     def __init__(self):
-        self.universe = None
+        self.universe = Universe("", IntervalDict())
         # self.agg_formulas = []
         self.pos_constraints = []
         self.constraints = []
@@ -31,7 +31,6 @@ class Problem(object):
         self.entity_map = {}
         self.configuration = None
         self.internal_copies = {}
-        self.label_map = {}
 
     # def add_choice_formula(self, head, body):
     #     struct_name = head.args[0]
@@ -158,7 +157,8 @@ class Problem(object):
                     single = Int.closed(0, P.inf)
                     # raise Exception(f"Unknown constant {sformula}")
                 else:
-                    single = Int.singleton(id)
+                    single = Int.closed(id[0], id[-1])
+                    # single = Int.singleton(id)
                 dist = Int.IntervalDict()
                 dist[single] = True
                 domain = SetFormula(id, dist, self.universe)
@@ -170,20 +170,21 @@ class Problem(object):
         with all info about the universe
         """
         dom_iter = iter(self.domains.values())
-        universe = Universe("", IntervalDict())
         for d in dom_iter:
-            universe = universe | d
-        universe = Universe(universe.formula, universe.elements, name=universe.name)
+            self.universe = self.universe | d
+        all_elem = self.universe.elements
+        self.universe = Universe(
+            self.universe.formula, all_elem, self.universe.get_label(support(all_elem))
+        )  # promote set formula
         dom_iter = iter(self.domains.values())
         for d in dom_iter:
-            d.universe = universe
+            d.universe = self.universe
         for pf in self.pos_constraints:
-            pf.universe = universe
+            pf.universe = self.universe
         for cof in self.constraints:
-            cof.universe = universe
-            # cof.formula.universe = universe
-        self.universe = universe
+            cof.universe = self.universe
         self.set_labels()
+        # cof.formula.universe = universe
 
     # def compute_formula(self, formula):
     #     if formula.functor == "size":
@@ -238,7 +239,7 @@ class Problem(object):
             dom = P.empty()
             for d in v.elements.keys():
                 dom = dom | d
-            self.universe.labels_set[dom] = k
+            self.universe.add_set_label(dom, k)
 
     def solve(self, debug=True):
         """

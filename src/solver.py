@@ -21,7 +21,14 @@ class Solver(object):
             n = self.universe.size()
             self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
         self.type = problem.configuration.type
-        self.log = ProblemLog(universe=self.universe, debug=debug, problem=problem)
+        self.log = ProblemLog(
+            universe=self.universe,
+            debug=debug,
+            type=self.type,
+            pos_constraints=self.problem.pos_constraints,
+            constraints=problem.constraints,
+            configuration=problem.configuration,
+        )
         self.log.description("Root problem")
 
     def solve(self):
@@ -49,7 +56,7 @@ class Solver(object):
                 count += size_count
             self.log.solution = count
         else:
-            count = Solution(0, [], subproblems=1, log=self.log)
+            count = Zero(self.log)
         return count
 
     def trivial_unsat(self):

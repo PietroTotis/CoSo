@@ -6,11 +6,27 @@ from typing import Counter
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 
+######################
+## Interval methods ##
+######################
+
 
 def is_distinguishable(d1, d2):
     # if e is distinguishable truth value in one domain is d1 and the other d2,
     # if any of the two elements is distinguishable then keep distinguishing
     return d1 or d2
+
+
+def support(idict):
+    """Returns the domain of an intervaldict
+
+    Args:
+        idict (IntervalDict): intervals
+    """
+    support = P.empty()
+    for interval in idict.keys():
+        support = support.union(interval)
+    return support
 
 
 def interval_closed(interval, lb_default=0, ub_default=sys.maxsize):
@@ -139,6 +155,11 @@ def combine(l, r):
                     l_n += 1
                     r_n += 1
         return comb
+
+
+###################
+## Logic methods ##
+###################
 
 
 class Not(object):
@@ -301,6 +322,11 @@ def nest(op, l):
         return op(l[0], nest(op, l[1:]))
 
 
+####################
+## Labels methods ##
+####################
+
+
 def list2interval(problem, elems, new):
     """
     Convert a list of labels into internal intervals mapped to distinguishable or not
@@ -385,3 +411,30 @@ def list2Int(entities):
             ivs.append(P.singleton(low))
         i += 1
     return ivs
+
+
+def simplify_name(elems, complex, universe):
+    """
+    If a SetFormula resulting from And/Or represents a single element
+    then simplify the description using the name of the element
+
+    Args:
+        elems (portion): either a single distinguishable element or n indistinguishable copies
+        complex (str): the description to use if not one of the simple cases
+
+    Returns:
+        str: simplified description
+    """
+    if is_singleton(elems.domain()):
+        if not (True in elems.values()):
+            n_elems = sum([1 for _ in P.iterate(elems.domain(), step=1)])
+            i = elems.domain().lower
+            e_lab = universe.get_label(i, i)
+            name = f"{n_elems}x " + str(e_lab)
+        else:
+            i = elems.domain().lower
+            e_lab = universe.get_label(i, i)
+            name = f"1x " + str(e_lab)
+    else:
+        name = complex
+    return name

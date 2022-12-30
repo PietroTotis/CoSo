@@ -126,6 +126,9 @@ class Zero(Count):
     def __init__(self, log, histogram={}):
         super().__init__(0, log, histogram=histogram, subproblems=0, symbolic="")
 
+    def __add__(self, rhs):
+        return rhs
+
 
 class One(Count):
     def __init__(self, log, histogram={}):

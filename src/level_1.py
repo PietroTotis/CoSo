@@ -45,8 +45,8 @@ class Multiset(object):
             if self.all_indistinguishable() and len(self.elements.domain()) == 1:
                 n_elems = sum([1 for _ in P.iterate(self.elements.domain(), step=1)])
                 i = self.elements.domain().lower
-                e_lab = self.labels.get(i, i)
-                s = f"{n_elems}x " + str(e_lab)
+                # e_lab = self.labels.get(i, i)
+                s = f"{n_elems}x " + self.name  # str(e_lab)
         # ok for debug, not for log
         # if self.size() > 0 :
         #     s += f"({list(self.elements.keys())})=|{self.n_elements}|"
@@ -67,6 +67,7 @@ class Multiset(object):
         inter = self & rhs
         return inter.elements.domain().empty
 
+    # TODO @property
     def size(self):
         if self.n_elements is None:
             s = 0
@@ -124,7 +125,7 @@ class SetFormula(Multiset, Variable):
         Variable.__init__(self, universe, name)
         Multiset.__init__(self, formula, elems)
         if name is None:
-            self.name = formula
+            self.name = self.universe.get_label(support(elems), str(formula))
         else:
             self.name = name
 
@@ -151,7 +152,8 @@ class SetFormula(Multiset, Variable):
             return rhs
         else:
             f = And(self, rhs)
-            name = self.simplify_name(elems, rhs, And)
+            default = simplify_name(elems, str(f), self.universe)
+            name = self.universe.get_label(dom, default)
             return SetFormula(f, elems, self.universe, name)
 
     def __or__(self, rhs):
@@ -171,7 +173,8 @@ class SetFormula(Multiset, Variable):
             return rhs
         else:
             f = Or(self, rhs)
-            name = Or(str(self), str(rhs))
+            default = simplify_name(comb, str(f), self.universe)
+            name = self.universe.get_label(support(comb), default)
             return SetFormula(f, comb, self.universe, name)
 
     def __sub__(self, rhs):
@@ -192,11 +195,18 @@ class SetFormula(Multiset, Variable):
         sub_dom = self.elements.domain() - rhs.elements.domain()
         return SetFormula(f, comb[sub_dom], self.universe, self.name)
 
+    def __iter__(self):
+        for e in P.iterate(support(self.elements), step=1):
+            yield e
+
     def copy(self):
         return SetFormula(self.formula, self.elements, self.universe, self.name)
 
     def get_label(self, key, default=None):
         return self.universe.get_label(key, default)
+
+    def empty(self):
+        return support(self.elements).empty
 
     def neg(self):
         """
@@ -205,14 +215,15 @@ class SetFormula(Multiset, Variable):
         Returns:
             SetFormulas: universe-self
         """
-        if isinstance(self.formula, Not):
-            f = self.formula.child
-            name = str(self)[1:]
-        else:
-            f = Not(self)
-            name = Not(str(self))
         els = self.universe.elements.domain() - self.elements.domain()
         dom = self.universe.elements[els]
+        if isinstance(self.formula, Not):
+            f = self.formula.child
+        else:
+            f = Not(self)
+        name = str(Not(str(self)))
+        if self.universe is not None:
+            name = self.universe.get_label(els, name)
         return SetFormula(f, dom, self.universe, name)
 
     def indistinguishable_subsets(self, set_formula=None):
@@ -270,35 +281,6 @@ class SetFormula(Multiset, Variable):
         else:
             pass
 
-    def simplify_name(self, elems, rhs, op):
-        """
-        If a SetFormula resulting from And/Or represents a single element
-        then simplify the description using the name of the element
-
-        Args:
-            elems (portion): either a single distinguishable element or n indistinguishable copies
-            rhs (SetFormula): the other operand
-            op (And/Or): the operator to combine the names if simplification is not possible
-
-        Returns:
-            str: simplified description
-        """
-        if elems.domain() == P.empty():
-            name = "empty"
-        elif len(elems.domain()) == 1:
-            if not (True in elems.values()):
-                n_elems = sum([1 for _ in P.iterate(elems.domain(), step=1)])
-                i = elems.domain().lower
-                e_lab = self.get_label(i, i)
-                name = f"{n_elems}x " + str(e_lab)
-            else:
-                i = elems.domain().lower
-                e_lab = self.get_label(i, i)
-                name = f"1x " + str(e_lab)
-        else:
-            name = op(str(self), str(rhs))
-        return name
-
     def enumerate_elements(self):
         """
         Enumerates the labels corresponding to the multiset
@@ -306,10 +288,14 @@ class SetFormula(Multiset, Variable):
         Returns:
             str: string representation of the multiset
         """
-        elems = [P.iterate(i, step=1) for i in self.elements.keys()]
-        labels = [f"{self.get_label(e)}" for i in elems for e in i]
-        lab_list = ", ".join(labels)
-        enum = f"{{{lab_list}}}"
+        labels = [f"{self.get_label(e)}" for e in self]
+        avg_length = sum([len(lab) for lab in labels]) / len(labels)
+        separator = ",\n\t" if avg_length > 7 else ", "
+        lab_list = separator.join(labels)
+        if avg_length > 7:
+            enum = f"{{\n\t{lab_list}\n}}"
+        else:
+            enum = f"{{{lab_list}}}"
         return enum
 
     # def take(self, n):
@@ -328,24 +314,70 @@ class Universe(SetFormula):
     A SetFormula aware of being the Universe. Keeps track of the user-defined labels associated to individual entities and sets
     """
 
-    def __init__(self, formula, elems, name="universe"):
+    def __init__(
+        self, formula, elems, name="universe", labels_entity={}, labels_set={}
+    ):
         super().__init__(formula, elems, None, name)
-        self.labels_entity = {}
-        self.labels_set = {}
+        self.labels_entity = labels_entity
+        self.labels_set = labels_set
+        if len(support(elems)) > 0:
+            self.labels_set[support(elems)] = self.name
+
+    def add_set_label(self, domain, label):
+        self.labels_set[domain] = label
+        complement = support(self.elements) - domain
+        if complement not in self.labels_set:
+            self.labels_set[complement] = str(Not(label))
 
     def get_label(self, key, default="???"):
         if isinstance(key, int):
             return self.labels_entity.get(key, default)
         elif isinstance(key, P.Interval):
-            lab = self.labels_set.get(key, None)
-            if lab is None:
-                enum = [self.get_label(k) for k in P.iterate(key, step=1)]
-                lab_list = ", ".join(enum)
-                return f"{{{lab_list}}}"
-            else:
-                return lab
+            if key.empty:
+                return "empty"
+            self.labels_set.setdefault(key, default)
+            return self.labels_set[key]
         else:
             raise Exception(f"Unknown key type for label: {type(key)}")
+
+    def get_labels(self):
+        return self.labels_entity, self.labels_set
+
+    # def find_label(self, key):
+    #     """Approximates a smart way to get short labels for parts of the universe combining known labels
+    #         But it is not guaranteed that the lable is the best possible
+
+    #     Args:
+    #         key (Interval): the interval(s) corresponding to the elements of the part
+
+    #     Returns:
+    #         str: a human-readable label for the given set
+    #     """
+    # parents = []
+    # for domain in self.labels_set.keys():
+    #     if domain.contains(key):
+    #         parents.append(domain)
+    # if len(parents) == 0:
+    #     children = []
+    #     for domain in self.labels_set.keys():
+    #         if key.contains(domain):
+    #             children.append(domain)
+    # min_parent = P.empty()
+    # for p in parents:
+    #     if len(p) < len(min_parent):
+    #         min_parent = p
+    # print(min_parent, key)
+    # for domain in self.labels_set.keys():
+    #     if min_parent - domain == key:
+    #         lab_mp = self.labels_set[min_parent]
+    #         lab_dom = self.labels_set[domain]
+    #         lab_dom = lab_dom[1:] if lab_dom.startswith("¬") else f"¬{lab_dom}"
+    #         lab_key = f"{lab_mp} ∧ {lab_dom}"
+    #         self.labels_entity
+    #         return lab_key
+    # enum = [self.get_label(k) for k in P.iterate(key, step=1)]
+    # lab_list = ", ".join(enum)
+    # return f"{{{lab_list}}}"
 
     def copy(self):
         return Universe(self.formula, self.elements, name=self.name)
