@@ -21,20 +21,21 @@ ICON_INFO = "fa-solid fa-circle-info"
 ICON_CALC = "fa-solid fa-calculator"
 
 # Class names
+ACCORDION = "accordion"
+ACCORDIONS = "accordions"
 CAPTION = "caption"
 CAPTION_TEXT = "caption-text"
 COLLAPSE = "collapsable"
+CONTAINER = "container"
 CONTENT_LINE = "content-line"
 COUNT_DESC = "count-description"
-INLINE_NUM = "inline-num"
-INLINE_SOL = "inline-solution"
 COL = "column"
 CONF = "configuration"
+HST = "histogram"
+INLINE_NUM = "inline-num"
+INLINE_SOL = "inline-solution"
 SUBS = "subproblems"
-ACCORDION = "accordion"
-ACCORDIONS = "accordions"
 SOL = "solution"
-CONTAINER = "container"
 
 
 class VisCoSo(object):
@@ -45,18 +46,18 @@ class VisCoSo(object):
         self.shatter = 0
         self.prop_colours = {}
 
-    def add_configuration(self, problem):
-        with self.tag("div", klass=CAPTION):
-            self.icon(ICON_INFO)
-            with self.tag("p", klass=CAPTION_TEXT):
-                self.text(problem.caption)
-        with self.tag("div", klass=CONF):
-            self.add_problem_primitive(problem, "Universe")
-            self.add_problem_primitive(problem, "Configuration")
-            self.add_problem_primitive(problem, "Constraints")
+    def add_configuration(self, type, size):
+        indist = type in ["Multiset", "Set", "Partition"]
+        with self.tag("table", klass=HST):
+            for s in size:
+                with self.tag("tr"):
+                    for i in range(1, s + 1):
+                        with self.tag("td", klass="slot"):
+                            if not indist:
+                                self.text(str(i))
 
     def add_content(self, problem):
-        self.add_configuration(problem)
+        self.add_problem_repr(problem)
         self.add_solution(problem)
         has_subproblems = len(problem.subproblems) > 0
         is_shatter = len(problem.shatter_subproblems) > 0
@@ -75,7 +76,7 @@ class VisCoSo(object):
                 self.icon(ICON_CALC)
                 self.icon(ICON_EQUALS)
                 with self.tag("p", klass=INLINE_NUM):
-                    self.text(f"$${problem.solution.latex()}$$")
+                    self.text(f"$${problem.count.latex()}$$")
 
     def add_problem(self, problem):
         with self.tag("div", klass=ACCORDION):
@@ -112,6 +113,16 @@ class VisCoSo(object):
                 self.visualize_primitive(name, problem)
                 self.cola_collapsable(cola)
 
+    def add_problem_repr(self, problem):
+        with self.tag("div", klass=CAPTION):
+            self.icon(ICON_INFO)
+            with self.tag("p", klass=CAPTION_TEXT):
+                self.text(problem.caption)
+        with self.tag("div", klass=CONF):
+            self.add_problem_primitive(problem, "Universe")
+            self.add_problem_primitive(problem, "Configuration")
+            self.add_problem_primitive(problem, "Constraints")
+
     def add_shatter(self, shatter):
         with self.tag("div", klass=COLLAPSE + " " + SUBS):
             with self.tag("div", klass=CONTENT_LINE):
@@ -130,7 +141,7 @@ class VisCoSo(object):
         self.shatter = 0
 
     def add_subproblems(self, subproblems):
-        with self.tag("div", klass=COLLAPSE + " " + SUBS):
+        with self.tag("div", klass=COLLAPSE + " Zero" + SUBS):
             with self.tag("div", klass=CONTENT_LINE):
                 pass
             with self.tag("div", klass=ACCORDIONS):
@@ -152,7 +163,7 @@ class VisCoSo(object):
                 with self.tag("div", klass=INLINE_SOL):
                     self.icon(self.get_icon(op))
                     with self.tag("p", klass=INLINE_NUM):
-                        self.text(str(subproblem.solution.count))
+                        self.text(str(subproblem.count.val))
                 self.label(handle)
             with self.tag("div", klass=COLLAPSE):
                 with self.tag("div", klass=CONTENT_LINE):
@@ -167,7 +178,8 @@ class VisCoSo(object):
         with self.tag("label", ("for", id), klass=SOL):
             self.icon(ICON_EQUALS)
             with self.tag("p", klass=INLINE_NUM):
-                self.text(str(problem.solution.count))
+                # print(problem.caption, problem.count)
+                self.text(str(problem.count.val))
 
     # def conf2cola(self, problem):
     #     cola_sets = ""
@@ -258,7 +270,7 @@ class VisCoSo(object):
 
     def histogram(self, sets):
         #  relevant sets
-        with self.tag("table", klass="histogram"):
+        with self.tag("table", klass=HST):
             max = 0
             for property in sets:
                 s = property.size()
@@ -298,6 +310,12 @@ class VisCoSo(object):
     def visualize_primitive(self, name, problem):
         if name == "Universe":
             return self.histogram(problem.relevant_sets)
+        if name == "Configuration":
+            if problem.configuration is not None:
+                sizes = problem.configuration.size.to_list()
+            else:
+                sizes = [len(problem.vars)]
+            return self.add_configuration(problem.type, sizes)
 
     def universe2cola(self, problem):
         cola_sets = ""

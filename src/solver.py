@@ -1,7 +1,7 @@
 import portion as P
 
 from configuration import *
-from count import Zero
+from count import Zero, Solution
 from sharpCSP import SharpCSP
 from level_2 import LiftedSet
 from logger import ProblemLog
@@ -32,8 +32,9 @@ class Solver(object):
         self.log.description("Root problem")
 
     def solve(self):
-        if not self.trivial_unsat():
-            count = Zero(self.log)
+        unsat, msg = self.trivial_unsat()
+        if not unsat:
+            count = Zero()
             for n in self.size:
                 if self.type in ["sequence", "subset", "permutation", "multisubset"]:
                     vars = [self.universe] * n
@@ -51,13 +52,14 @@ class Solver(object):
                     lvl=1,
                     debug=self.debug,
                 )
-                size_count = csp.solve()
-                self.log.add_subproblem("add", size_count.log)
-                count += size_count
-            self.log.solution = count
+                size_sol = csp.solve()
+
+                count += size_sol.count
+                self.log.add_subproblem("add", size_sol.log)
         else:
-            count = Zero(self.log)
-        return count
+            count = Zero(tip=msg)
+
+        return Solution(count, self.log)
 
     def trivial_unsat(self):
         """
@@ -74,8 +76,10 @@ class Solver(object):
                 )
                 available_elems = count_constr.formula.size()
                 if available_elems < atleast:
-                    self.log.description = f"Trivially unsat because we want at least {atleast} {count_constr.formula} but we have only {available_elems}"
-                    return True
+                    msg = f"Trivially unsat because we want at least {atleast} {count_constr.formula} but we have only {available_elems}"
+                    self.log.description = msg
+                    return (True, msg)
+            return (False, "")
         else:
             # TODO
-            return False
+            return (False, "")

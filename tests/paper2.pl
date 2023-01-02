@@ -5,6 +5,6 @@ property blue = {b1,b2};
 property green = {green,green,green};
 
 perm in [|universe];
-#perm = 4;
+#perm <= 4;
 perm[2] = green;
 #squares&perm = 2;

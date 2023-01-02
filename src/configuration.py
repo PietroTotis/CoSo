@@ -266,6 +266,9 @@ class CSize(Constraint):
     def set_universe(self, universe):
         self.universe = universe
 
+    def to_list(self):
+        return list([i for i in P.iterate(self.values, step=1)])
+
 
 # class AggFormula(Constraint):
 #     """

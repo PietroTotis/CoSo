@@ -14,11 +14,11 @@ if __name__ == "__main__":
         try:
             parser.parse()
             print("Running solver...")
-            count = parser.problem.solve(debug=args.debug)
-            print(f"Solution: {count}")
+            sol = parser.problem.solve(debug=args.debug)
+            print(f"Solution: {sol}")
             if args.visualize:
                 with open(args.visualize, "w") as out:
-                    out.write(count.log.to_viscoso())
+                    out.write(sol.log.to_viscoso())
         except EmptyException:
             print("Could not find a problem :(")
     else:

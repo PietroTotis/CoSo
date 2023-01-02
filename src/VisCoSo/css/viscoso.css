@@ -322,6 +322,7 @@ pre {
   font-size: 0;
   text-align: center;
   width: 15px;
+  transition: 0.5s;
 }
 
 .hcell:hover {
@@ -368,4 +369,15 @@ pre {
 
 .hc9 {
   background-color: var(--cyan);
+}
+
+/* Configuration */
+
+.slot {
+  border-left: solid var(--dark);
+  border-right: solid var(--dark);
+  border-bottom: solid var(--dark);
+  text-align: center;
+  width: 25px;
+  height: 20px;
 }

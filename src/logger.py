@@ -38,7 +38,7 @@ class ProblemLog(object):
         self.relevant_sets = [universe]
         self.shatter_cases = {}
         self.shatter_subproblems = {}
-        self.solution = None
+        self.count = None
         self.space = "  "  # "\t"
         self.subproblems = []
         self.type = type
@@ -59,7 +59,7 @@ class ProblemLog(object):
         msg += self.subproblems2text()
         msg += self.shatter2text()
         msg += self.indent + "========\n"
-        msg += f"{self.indent}({self.id}) Solution: {self.solution}\n"
+        msg += f"{self.indent}({self.id}) Solution: {self.count}\n"
         return msg
 
     def copy(self):
@@ -92,27 +92,29 @@ class ProblemLog(object):
             self.relevant_sets = self.relevant_cases(head, tail)
 
     def add_subproblem(self, op, sub_log):
+        """Append subproblem
+
+        Args:
+            op (str): descriptor for the operation aggregating the subproblems, i.e. add/mul/...
+            sub_log (ProblemLog): _description_
+        """
         self.subproblems.append((op, sub_log))
         if self.debug:
             print(f"{sub_log.indent}========")
-            print(f"{sub_log.indent}({sub_log.id}) Solution: {sub_log.solution}")
+            print(f"{sub_log.indent}({sub_log.id}) Solution: {sub_log.count}")
 
     def add_split_left(self, subproblem, shatter_id):
         self.shatter_subproblems[shatter_id] = (subproblem, [])
         if self.debug and subproblem.solution is not None:
             print(f"{subproblem.indent}========")
-            print(
-                f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.solution}"
-            )
+            print(f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.count}")
 
     def add_split_right(self, subproblem, shatter_id):
         _, right = self.shatter_subproblems[shatter_id]
         right.append(subproblem)
         if self.debug:
             print(f"{subproblem.indent}========")
-            print(
-                f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.solution}"
-            )
+            print(f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.count}")
 
     def detail(self, action, msg):
         if isinstance(msg, str):

@@ -1,6 +1,16 @@
 import math
 
 
+class Solution(object):
+    def __init__(self, count, log):
+        self.count = count
+        self.log = log
+        self.log.count = count.copy()
+
+    def __str__(self):
+        return str(self.count)
+
+
 class Count(object):
     """
     A solution is a set of pairs (count, histogram).
@@ -8,27 +18,25 @@ class Count(object):
     For each histogram keep track of the corresponding number of (partial) solutions.
     """
 
-    def __init__(self, count, log, histogram={}, subproblems=1, symbolic=None, tip=""):
+    def __init__(self, count, histogram={}, subproblems=1, symbolic=None, tip=""):
         """
         A number plus a bunch of extra info to figure out where it comes from
 
         Args:
             count (int): the number
-            log (ProblemLog): log associated to the count
             histogram (dict, optional): A count for each relevant set used to derive this count. Defaults to {}.
             subproblems (int, optional): Counts the number of subproblems used to derive this count. Defaults to 1.
             symbolic (_type_, optional): A latex representation to display nicely the formula behind this count. Defaults to None.
             tip (str, optional): A text description of the symbolic formula. Defaults to "".
         """
-        self.count = count
+        self.val = count
         self.histograms = [[count, histogram]]
         self.subproblems = subproblems
-        self.log = log
         self.symbolic = symbolic if symbolic is not None else str(count)
         self.tip = tip
 
     def __add__(self, rhs):
-        self.count += rhs.count
+        self.val += rhs.val
         self.histograms += rhs.histograms
         self.subproblems += rhs.subproblems
         self.symbolic = self.latex_op("+", rhs)
@@ -42,28 +50,28 @@ class Count(object):
                 count = c1 * c2
                 histogram = self.add_histograms(h1, h2)
                 histograms.append([count, histogram])
-        count = self.count * rhs.count
+        count = self.val * rhs.val
         subproblems = self.subproblems + rhs.subproblems
         symbolic = self.latex_op("\\cdot", rhs)
-        mul = Count(count, self.log, subproblems=subproblems, symbolic=symbolic)
+        mul = Count(count, subproblems=subproblems, symbolic=symbolic)
         mul.histograms = histograms
         return mul
 
     def __sub__(self, rhs):
-        if rhs.count == 0:
+        if rhs.val == 0:
             return self
         else:
-            self.count -= rhs.count
+            self.val -= rhs.val
             # self.histograms -= rhs.histograms
             self.subproblems += rhs.subproblems
             self.symbolic = self.latex_op("-", rhs)
             return self
 
     def __pow__(self, rhs):
-        if rhs.count == 1:
+        if rhs.val == 1:
             return self
         else:
-            self.count = self.count**rhs.count
+            self.val = self.val**rhs.val
             self.subproblems += rhs.subproblems
             self.symbolic = self.latex_op("^", rhs)
             return self
@@ -72,7 +80,7 @@ class Count(object):
         return str(self)
 
     def __str__(self):
-        return f"{self.count} ({self.subproblems} subproblems)"
+        return f"{self.val} ({self.subproblems} subproblems)"
 
     def add_histograms(self, h1, h2):
         sum = {}
@@ -87,14 +95,14 @@ class Count(object):
         return sum
 
     def set_histogram(self, hst):
-        self.histograms = [[self.count, hst]]
+        self.histograms = [[self.val, hst]]
 
     def with_choices(self, n_choices, tip="Exchangeable choices"):
         updated_hst = []
         for c, hst in self.histograms:
             c = c * n_choices
             updated_hst.append([c, hst])
-        self.count *= n_choices
+        self.val *= n_choices
         self.histograms = updated_hst
         self.symbolic = f"{self.add_tip(n_choices, tip)} \cdot {self.symbolic}"
         return self
@@ -121,32 +129,40 @@ class Count(object):
     def add_tip(self, n, tip):
         return f"\\texttip{{ {n} }}{{ {tip} }}"
 
+    def is_zero(self):
+        return self.val == 0
+
+    def copy(self):
+        return Count(
+            self.val, self.histograms, self.subproblems, self.symbolic, self.tip
+        )
+
 
 class Zero(Count):
-    def __init__(self, log, histogram={}):
-        super().__init__(0, log, histogram=histogram, subproblems=0, symbolic="")
+    def __init__(self, histogram={}, tip="No solution found"):
+        super().__init__(0, histogram=histogram, subproblems=0, symbolic="0", tip=tip)
 
     def __add__(self, rhs):
         return rhs
 
 
 class One(Count):
-    def __init__(self, log, histogram={}):
-        super().__init__(1, log, histogram=histogram, subproblems=0, symbolic="")
+    def __init__(self, histogram={}):
+        super().__init__(1, histogram=histogram, subproblems=0, symbolic="")
 
 
 class Binomial(Count):
-    def __init__(self, n, m, log, tip=""):
+    def __init__(self, n, m, tip=""):
         count = math.comb(n, m)
         symbolic = f"\\binom{{ {n} }}{{ {m} }}"
-        super().__init__(count, log, subproblems=1, symbolic=symbolic, tip=tip)
+        super().__init__(count, subproblems=1, symbolic=symbolic, tip=tip)
 
 
 class Stirling(Count):
-    def __init__(self, n, m, log, tip=""):
+    def __init__(self, n, m, tip=""):
         count = self.stirling(n, m)
         symbolic = f"\\genfrac{{\\{{}}{{\\}}}}{{0pt}}{{}}{{ {n} }}{{ {m} }}"
-        super().__init__(count, log, subproblems=1, symbolic=symbolic, tip=tip)
+        super().__init__(count, subproblems=1, symbolic=symbolic, tip=tip)
 
     def stirling(self, n, k):
         computed = {}
@@ -172,12 +188,11 @@ class Stirling(Count):
 
 class Divide(Count):
     def __init__(self, count_n, count_m, tip="", histogram={}):
-        count = count_n.count // count_m.count
+        count = count_n.val // count_m.val
         subproblems = count_n.subproblems + count_m.subproblems
         symbolic = f"\\frac{{{count_n.latex()}}}{{{count_m.latex()}}}"
         super().__init__(
             count,
-            count_n.log,
             histogram=histogram,
             subproblems=subproblems,
             symbolic=symbolic,
@@ -186,7 +201,7 @@ class Divide(Count):
 
 
 class Factorial(Count):
-    def __init__(self, n, log, tip=""):
+    def __init__(self, n, tip=""):
         count = math.factorial(n)
         symbolic = f"{n}!"
-        super().__init__(count, log, subproblems=1, symbolic=symbolic, tip=tip)
+        super().__init__(count, subproblems=1, symbolic=symbolic, tip=tip)
