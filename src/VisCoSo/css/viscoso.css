@@ -33,6 +33,7 @@ input[type="checkbox"] {
 .collapsable {
   /* overflow-y: hidden; */
   padding-left: 15px;
+  padding-right: 15px;
   padding-top: 0px;
   max-height: 0px;
   max-width: 0px;
@@ -335,40 +336,24 @@ pre {
   border-top: solid 1px;
 }
 
-.hc1 {
-  background-color: var(--red);
+.constr-cell {
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  font-size: 0.7em;
+  border: solid;
 }
 
-.hc2 {
-  background-color: var(--blue);
+.constr-cell-maybe {
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  font-size: 0.7em;
+  border: dashed;
 }
 
-.hc3 {
-  background-color: var(--green);
-}
-
-.hc4 {
-  background-color: var(--yellow);
-}
-
-.hc5 {
-  background-color: var(--lightgreen);
-}
-
-.hc6 {
-  background-color: var(--violet);
-}
-
-.hc7 {
-  background-color: var(--lightblue);
-}
-
-.hc8 {
-  background-color: var(--orange);
-}
-
-.hc9 {
-  background-color: var(--cyan);
+.constr-cell i {
+  margin: 0;
 }
 
 /* Configuration */
@@ -378,6 +363,28 @@ pre {
   border-right: solid var(--dark);
   border-bottom: solid var(--dark);
   text-align: center;
-  width: 25px;
+  width: fit-content;
+  min-width: 25px;
   height: 20px;
+}
+
+
+.slot-maybe {
+  border-left: dashed var(--dark);
+  border-right: dashed var(--dark);
+  border-bottom: dashed var(--dark);
+  text-align: center;
+  width: fit-content;
+  min-width: 25px;
+  height: 20px;
+}
+
+.ls-element {
+  width: 15px;
+  height: 15px;
+}
+
+
+.lifted-set {
+  width: fit-content;
 }

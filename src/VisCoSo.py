@@ -1,6 +1,10 @@
 import os
 import html
+import random
+import portion as P
 
+from level_1 import Multiset
+from level_2 import LiftedSet
 from yattag import Doc, indent
 from util import *
 
@@ -19,6 +23,10 @@ ICON_CONF = "fa-solid fa-cubes-stacked"
 ICON_CONSTR = "fa-solid fa-ban"
 ICON_INFO = "fa-solid fa-circle-info"
 ICON_CALC = "fa-solid fa-calculator"
+ICON_ARROWL = "fa-solid fa-arrow-left"
+ICON_ARROWR = "fa-solid fa-arrow-right"
+ICON_NOPE = "fa-solid fa-x"
+ICON_GROUP = "fa-solid fa-object-group"
 
 # Class names
 ACCORDION = "accordion"
@@ -34,8 +42,31 @@ CONF = "configuration"
 HST = "histogram"
 INLINE_NUM = "inline-num"
 INLINE_SOL = "inline-solution"
+LSET = "lifted-set"
 SUBS = "subproblems"
 SOL = "solution"
+
+# CSS styles
+COLOURS = {
+    "red": "#bf616a",
+    "orange": "#d08770",
+    "yellow": "#ebcb8b",
+    "green": "#a3be8c",
+    "violet": "#b48ead",
+    "blue": "#5e81ac",
+    "lightblue": "#81a1c1",
+    "cyan": "#88c0d0",
+    "lightgreen": "#8fbcbb",
+    "none": "#4c566a",
+}
+
+
+def fill(colour):
+    return f"background-color: {colour}"
+
+
+def border_col(colour):
+    return f"border-color: {colour}"
 
 
 class VisCoSo(object):
@@ -46,15 +77,55 @@ class VisCoSo(object):
         self.shatter = 0
         self.prop_colours = {}
 
-    def add_configuration(self, type, size):
-        indist = type in ["Multiset", "Set", "Partition"]
+    def add_configuration(self, config, size, vars):
+        if config.lvl1():
+            self.add_lvl1_configuration(config, size, vars)
+        if config.lvl2():
+            self.add_lvl2_configuration(config, size, vars)
+
+    def add_lvl1_configuration(self, config, size, vars):
         with self.tag("table", klass=HST):
             for s in size:
                 with self.tag("tr"):
-                    for i in range(1, s + 1):
+                    for i in range(0, s):
+                        # if len(vars) > 0:
+                        #     colour_id = self.prop_colours.get(vars[i], "")
+                        #     klass += f"hc{colour_id}"
                         with self.tag("td", klass="slot"):
-                            if not indist:
-                                self.text(str(i))
+                            if config.labelled():
+                                self.text(str(i + 1))
+
+    def add_lvl2_configuration(self, config, size, vars):
+        with self.tag("table", klass=HST):
+            for s in size:
+                with self.tag("tr slot"):
+                    for i in range(0, s):
+                        if len(vars) > 0:
+                            self.add_lifted_set(vars[i])
+                        else:
+                            ub = config.domain.size() - s + 1
+                            self.add_lifted_set(max=ub, id=i + 1)
+            if config.labelled():
+                with self.tag("tr slot"):
+                    for i in range(0, size[-1]):
+                        with self.tag("td"):
+                            self.text(str(i + 1))
+
+    def add_constraints(self, constraints):
+        with self.tag("table", klass=HST):
+            for c in constraints:
+                with self.tag("tr"):
+                    with self.tag("td"):
+                        self.icon(ICON_CONF)
+                    with self.tag("td"):
+                        self.icon(ICON_ARROWR)
+                    self.add_constraint(c)
+
+    def add_constraint(self, c):
+        if isinstance(c.formula, Multiset):
+            self.add_lvl1_constraint(c)
+        else:
+            self.add_lvl2_constraint(c)
 
     def add_content(self, problem):
         self.add_problem_repr(problem)
@@ -77,6 +148,85 @@ class VisCoSo(object):
                 self.icon(ICON_EQUALS)
                 with self.tag("p", klass=INLINE_NUM):
                     self.text(f"$${problem.count.latex()}$$")
+
+    def add_interval(self, inter, colour, box_type="constr-cell"):
+        vals = list([i for i in P.iterate(inter, step=1)])
+        # print(inter, vals, vals[-1])
+        filler = fill(colour) if box_type == "constr-cell" else ""
+        if vals == [0]:
+            with self.tag("td", klass=f"{box_type}", style=f"{border_col(colour)}"):
+                self.icon(ICON_NOPE)
+        for s in range(0, vals[0]):
+            with self.tag(
+                "td", klass=f"{box_type}", style=f"{filler}; {border_col(colour)}"
+            ):
+                pass
+        for s in range(vals[0], vals[-1]):
+            if s in vals:
+                if s != 0:
+                    with self.tag(
+                        "td", klass=f"{box_type}-maybe", style=f"{border_col(colour)}"
+                    ):
+                        pass
+            else:
+                with self.tag("td", klass=f"{box_type}", style=f"{border_col(colour)}"):
+                    self.icon(ICON_NOPE)
+
+    def add_lifted_set(self, lset=None, max=None, id=0):
+        name = f"Part {id}" if lset is None else lset.name
+        sizes = P.closed(1, max) if lset is None else lset.size.values
+        ccs = [] if lset is None else lset.ccs
+        histogram = {} if lset is None else lset.histogram
+        max = max if lset is None else lset.size.values.upper
+
+        with self.tag("table", klass=LSET):
+            with self.tag("tr"):
+                with self.tag("td", colspan=f"{max+1}", style="text-align: center"):
+                    self.icon(ICON_GROUP)
+                    self.text(name)
+            with self.tag("tr"):
+                with self.tag("td"):
+                    self.text("Size:")
+                self.add_interval(sizes, COLOURS["none"])
+            for cc in ccs:
+                if cc.formula not in histogram:
+                    with self.tag("tr"):
+                        with self.tag("td"):
+                            self.text(str(cc.formula))
+                            self.add_constraint(cc)
+            for prop in histogram.keys():
+                val = histogram[prop]
+                if val > -1:
+                    with self.tag("tr"):
+                        with self.tag("td"):
+                            self.text(str(prop))
+                            self.add_interval(P.singleton(val), self.get_colour(prop))
+
+    def add_lvl1_constraint(self, c):
+        prop = c.formula
+        colour = self.get_colour(prop)
+        self.add_interval(c.values, colour)
+
+    def add_lvl2_constraint(self, c):
+        self.add_interval(c.values, COLOURS["none"], box_type="slot")
+        with self.tag("td"):
+            self.icon(ICON_ARROWL)
+        self.add_lvl1_constraint(c.formula)
+
+    def add_pos_constraints(self, pcs):
+        with self.tag("table", klass=HST):
+            for pc in pcs:
+                prop = pc.formula
+                colour = self.get_colour(prop)
+                with self.tag("tr"):
+                    with self.tag("td", klass="slot"):
+                        self.text(str(pc.pos))
+                    with self.tag("td"):
+                        self.icon(ICON_ARROWL)
+                    with self.tag("td", klass=f"hcell", style=f"{fill(colour)}"):
+                        pass
+                    with self.tag("td", klass="ylabel"):
+                        self.text(str(prop))
 
     def add_problem(self, problem):
         with self.tag("div", klass=ACCORDION):
@@ -121,7 +271,8 @@ class VisCoSo(object):
         with self.tag("div", klass=CONF):
             self.add_problem_primitive(problem, "Universe")
             self.add_problem_primitive(problem, "Configuration")
-            self.add_problem_primitive(problem, "Constraints")
+            if len(problem.pos_constraints) > 0 or len(problem.constraints) > 0:
+                self.add_problem_primitive(problem, "Constraints")
 
     def add_shatter(self, shatter):
         with self.tag("div", klass=COLLAPSE + " " + SUBS):
@@ -244,6 +395,21 @@ class VisCoSo(object):
             cola_constraints += f"{c}; \n"
         return cola_constraints
 
+    def get_colour(self, property):
+        if property.name in COLOURS:
+            return COLOURS[property.name]
+        else:
+            if property in self.prop_colours:
+                return self.prop_colours[property]
+            else:
+                available = set(COLOURS.keys()) - set(self.prop_colours.values())
+                if available:
+                    colour = COLOURS[available.pop()]
+                else:
+                    colour = hex(random.randrange(0, 2**24))
+                self.prop_colours[property] = colour
+        return colour
+
     def get_handle(self):
         self.handle += 1
         return f"handle{self.handle}"
@@ -275,18 +441,12 @@ class VisCoSo(object):
             for property in sets:
                 s = property.size()
                 max = s if s > max else max
-                if property in self.prop_colours:
-                    colour_id = self.prop_colours[property]
-                else:
-                    colour_id = len(self.prop_colours) + 1
-                    self.prop_colours[property] = colour_id
-                colour = f"hc{colour_id+1}"
+                colour = self.get_colour(property)
                 with self.tag("tr"):
                     with self.tag("td", klass="ylabel"):
                         self.text(property.name)
                     for elem in property:
-                        classes = f"hcell {colour}"
-                        with self.tag("td", klass=classes):
+                        with self.tag("td", klass="hcell", style=f"{fill(colour)}"):
                             self.text(property.universe.get_label(elem))
             if max > 4:
                 with self.tag("tr"):
@@ -307,15 +467,23 @@ class VisCoSo(object):
         with self.tag("label", ("for", handle)):
             pass
 
+    def reserve_colours(self, log):
+        for rvset in log.relevant_sets:
+            if rvset.name in COLOURS:
+                self.prop_colours[rvset] = rvset.name
+
     def visualize_primitive(self, name, problem):
         if name == "Universe":
             return self.histogram(problem.relevant_sets)
-        if name == "Configuration":
+        elif name == "Configuration":
             if problem.configuration is not None:
                 sizes = problem.configuration.size.to_list()
             else:
                 sizes = [len(problem.vars)]
-            return self.add_configuration(problem.type, sizes)
+            return self.add_configuration(problem.config, sizes, problem.vars)
+        else:  # Constraint
+            self.add_pos_constraints(problem.pos_constraints)
+            self.add_constraints(problem.constraints)
 
     def universe2cola(self, problem):
         cola_sets = ""
@@ -329,6 +497,8 @@ class VisCoSo(object):
         h = open(HEADER, "r")
         h_content = h.read()
         h_content = html.unescape(h_content)
+
+        self.reserve_colours(log)
 
         self.doc.asis("<!DOCTYPE html>")
         with self.tag("html"):

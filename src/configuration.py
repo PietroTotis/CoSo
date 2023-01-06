@@ -26,7 +26,7 @@ class Configuration(object):
 
     def __init__(self, name, type, domain, size=None):
         self.name = name
-        self.df = domain
+        self.domain = domain
         self.type = str(type)
         self.size = size
 
@@ -35,8 +35,20 @@ class Configuration(object):
 
     def __str__(self):
         str = f"{self.type}"
-        str += f" ({self.size}) of entity {self.df} ({self.name})"
+        str += f" ({self.size}) of entity {self.domain} ({self.name})"
         return str
+
+    def labelled(self):
+        return self.type in ["sequence", "permutation", "composition"]
+
+    def lvl1(self):
+        return self.type in ["sequence", "permutation", "multisubset", "subset"]
+
+    def lvl2(self):
+        return not self.lvl1()
+
+    def with_repetition(self):
+        return self.type in ["sequence", "multisubset"]
 
 
 class Variable:
@@ -189,6 +201,10 @@ class CCounting(Constraint):
     def set_universe(self, universe):
         self.formula.universe = universe
 
+    def update_upper_bound(self, ub):
+        if self.values.upper == P.inf:
+            self.values = self.values.replace(upper=ub, right=P.CLOSED)
+
 
 class CPosition(Constraint):
     """
@@ -268,6 +284,10 @@ class CSize(Constraint):
 
     def to_list(self):
         return list([i for i in P.iterate(self.values, step=1)])
+
+    def update_upper_bound(self, ub):
+        if self.values.upper == P.inf:
+            self.values = self.values.replace(upper=ub, right=P.CLOSED)
 
 
 # class AggFormula(Constraint):

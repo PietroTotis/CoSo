@@ -115,7 +115,7 @@ class LiftedSet(Variable):
         s = self.size.values.upper
         s = s - 1 if self.size.values.right == P.OPEN else s
         if cc.values.upper == P.inf:
-            safe_vals = cc.values.replace(upper=s)
+            safe_vals = cc.values.replace(upper=s + 1)
         else:
             safe_vals = cc.values
         if cc.values.lower == P.inf:

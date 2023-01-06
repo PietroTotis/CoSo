@@ -16,15 +16,16 @@ class Solver(object):
         self.debug = debug
         self.problem = problem
         self.universe = problem.universe
+        n = self.universe.size()
+        problem.configuration.size.update_upper_bound(n)
+        for c in self.problem.constraints:
+            c.update_upper_bound(n)
         self.size = problem.configuration.size
-        if self.size.values.upper == P.inf:
-            n = self.universe.size()
-            self.size.values = self.size.values.replace(upper=n, right=P.CLOSED)
-        self.type = problem.configuration.type
+        self.config = problem.configuration
         self.log = ProblemLog(
             universe=self.universe,
             debug=debug,
-            type=self.type,
+            config=self.config,
             pos_constraints=self.problem.pos_constraints,
             constraints=problem.constraints,
             configuration=problem.configuration,
@@ -36,7 +37,7 @@ class Solver(object):
         if not unsat:
             count = Zero()
             for n in self.size:
-                if self.type in ["sequence", "subset", "permutation", "multisubset"]:
+                if self.config.lvl1():
                     vars = [self.universe] * n
                 else:
                     ub_size = self.universe.size() - n + 1
@@ -44,7 +45,7 @@ class Solver(object):
                     vars = [LiftedSet(self.universe, size)] * n
                 csp = SharpCSP(
                     vars,
-                    self.type,
+                    self.config,
                     self.problem.pos_constraints,
                     self.problem.constraints,
                     self.universe,
@@ -68,7 +69,7 @@ class Solver(object):
         Args:
             log (bool, optional): Logging. Defaults to True.
         """
-        if self.type in ["sequence", "subset", "permutation", "multisubset"]:
+        if self.config.lvl1():
             for count_constr in self.problem.constraints:
                 lower_b = count_constr.values.lower
                 atleast = (

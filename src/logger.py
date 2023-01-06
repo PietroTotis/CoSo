@@ -17,7 +17,7 @@ class ProblemLog(object):
     def __init__(
         self,
         vars=[],
-        type=None,
+        config=None,
         pos_constraints=[],
         constraints=[],
         universe=None,
@@ -41,7 +41,7 @@ class ProblemLog(object):
         self.count = None
         self.space = "  "  # "\t"
         self.subproblems = []
-        self.type = type
+        self.config = config
         self.vars = [v.copy() for v in vars]
         self.universe = universe
         self.vis = VisCoSo()
@@ -65,7 +65,7 @@ class ProblemLog(object):
     def copy(self):
         copy = ProblemLog(
             vars=self.vars,
-            type=self.type,
+            config=self.config,
             pos_constraints=self.pos_constraints,
             constraints=self.constraints,
             universe=self.universe,
@@ -87,9 +87,8 @@ class ProblemLog(object):
     def add_relevant_set(self, domain):
         if isinstance(domain, Multiset):
             self.relevant_sets = self.relevant_cases(domain, self.relevant_sets)
-        else:  # level 2
-            head, *tail = self.relevant_sets + domain.ccs
-            self.relevant_sets = self.relevant_cases(head, tail)
+        else:  # level 2 constraint
+            self.relevant_sets = self.relevant_cases(domain.formula, self.relevant_sets)
 
     def add_subproblem(self, op, sub_log):
         """Append subproblem
@@ -151,7 +150,9 @@ class ProblemLog(object):
     #######################
 
     def configuration2text(self):
-        text = self.indent + f"### ({self.id}) {self.caption} ({self.type}) ###\n"
+        text = (
+            self.indent + f"### ({self.id}) {self.caption} ({self.config.type}) ###\n"
+        )
         if len(self.vars) > 0:
             for i, v in enumerate(self.vars):
                 text += self.indent + f"Obj {i+1}:  {v}\n"
