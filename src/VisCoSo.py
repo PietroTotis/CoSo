@@ -88,10 +88,10 @@ class VisCoSo(object):
             for s in size:
                 with self.tag("tr"):
                     for i in range(0, s):
-                        # if len(vars) > 0:
-                        #     colour_id = self.prop_colours.get(vars[i], "")
-                        #     klass += f"hc{colour_id}"
-                        with self.tag("td", klass="slot"):
+                        colour = "transparent"
+                        if len(vars) > 0 and vars[i] in self.prop_colours:
+                            colour = self.get_colour(vars[i], "transparent")
+                        with self.tag("td", klass="slot", style=f"{fill(colour)}"):
                             if config.labelled():
                                 self.text(str(i + 1))
 
@@ -395,20 +395,22 @@ class VisCoSo(object):
             cola_constraints += f"{c}; \n"
         return cola_constraints
 
-    def get_colour(self, property):
+    def get_colour(self, property, default=None):
         if property.name in COLOURS:
             return COLOURS[property.name]
         else:
             if property in self.prop_colours:
                 return self.prop_colours[property]
+            elif default is not None:
+                return default
             else:
-                available = set(COLOURS.keys()) - set(self.prop_colours.values())
+                available = set(COLOURS.values()) - set(self.prop_colours.values())
                 if available:
-                    colour = COLOURS[available.pop()]
+                    colour = available.pop()
                 else:
                     colour = hex(random.randrange(0, 2**24))
                 self.prop_colours[property] = colour
-        return colour
+                return colour
 
     def get_handle(self):
         self.handle += 1
@@ -470,7 +472,7 @@ class VisCoSo(object):
     def reserve_colours(self, log):
         for rvset in log.relevant_sets:
             if rvset.name in COLOURS:
-                self.prop_colours[rvset] = rvset.name
+                self.prop_colours[rvset] = COLOURS[rvset.name]
 
     def visualize_primitive(self, name, problem):
         if name == "Universe":
