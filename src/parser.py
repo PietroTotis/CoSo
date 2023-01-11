@@ -18,8 +18,6 @@ class Lexer(object):
         "property": "PROP",
         "in": "IN",
         "universe": "UNIVERSE",
-        "partitions": "PARTITIONS",
-        "compositions": "COMPOSITIONS",
         "sum": "SUM",
         "min": "MIN",
         "max": "MAX",
@@ -49,10 +47,10 @@ class Lexer(object):
     t_ignore_COMMENT = r"%.*"
     t_ignore_WHITES = r"\ +|\t|\n"
 
-    def t_SLASH(self, t):
-        r"\|"
-        t.value = "|"
-        return t
+    # def t_SLASH(self, t):
+    #     r"\|"
+    #     t.value = "|"
+    #     return t
 
     def t_LABEL(self, t):
         r"[a-z][a-zA-Z\-\_0-9]*|[0-9]+\-[0-9\-]+"
@@ -96,7 +94,7 @@ class Lexer(object):
         "NOT",
         "DIFF",
         "LABEL",
-        "SLASH",
+        "REPEAT",
     ] + list(reserved.values())
 
 
@@ -138,11 +136,11 @@ class Parser(object):
         """
         p[0] = p[1]
 
-    def p_replace(self, p):
-        """replace : SLASH
-        | SLASH SLASH
-        """
-        p[0] = len(p) - 1
+    # def p_replace(self, p):
+    #     """replace : SLASH
+    #     | SLASH SLASH
+    #     """
+    #     p[0] = len(p) - 1
 
     def p_entity_list(self, p):
         """entity_list : entity
@@ -242,17 +240,19 @@ class Parser(object):
             p[0] = d
 
     def p_arrangement(self, p):
-        """arrangement : LABEL IN LPAR replace set RPAR
-        | LABEL IN LSPAR replace set RSPAR
-        | LABEL IN PARTITIONS LRPAR set RRPAR
-        | LABEL IN COMPOSITIONS LRPAR set RRPAR
+        """arrangement : LABEL IN LPAR REPEAT set RPAR
+        | LABEL IN LPAR set RPAR
+        | LABEL IN LSPAR REPEAT set RSPAR
+        | LABEL IN LSPAR set RSPAR
+        | LABEL IN LPAR LPAR set RPAR RPAR
+        | LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR
         """
         # not checking var consistency and set existence
         name = p[1]
         set = p[5]
-        if p[3] == "partitions":
+        if p[3] == "{" and p[4] == "{":
             type = "partition"
-        elif p[3] == "compositions":
+        elif p[3] == "[" and p[4] == "{":
             type = "composition"
         elif p[3] == "{":
             type = "subset"
@@ -342,9 +342,9 @@ class Parser(object):
 
     def p_count_constraint(self, p):
         """count_constraint : COUNT set comp NUMBER
-        | COUNT LPAR count_constraint RPAR comp NUMBER
+        | COUNT LRPAR count_constraint RRPAR comp NUMBER
         """
-        if isinstance(p[2], str) and p[2] == "{":
+        if isinstance(p[2], str) and p[2] == "(":
             # level 2 counting constraint
             cf_par = p[3]
             if cf_par.formula.name == self.problem.universe.name:

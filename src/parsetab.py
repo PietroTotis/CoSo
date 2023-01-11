@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'COMMA COMPOSITIONS COUNT DIFF EQUALS GT IN INTER LAB LABEL LPAR LRPAR LSPAR LT MAX MIN NOT NUMBER PART PARTITIONS PROP RPAR RRPAR RSPAR SEMI SLASH SUM UNION UNIVERSEprogram : statement\n        | statement program\n        statement : declare_set SEMI\n        | arrangement SEMI\n        | aggcmp SEMI\n        | pos_constraint SEMI\n        | count_constraint SEMI\n        entity : NUMBER\n        | LABEL\n        replace : SLASH\n        | SLASH SLASH\n        entity_list : entity\n        | entity COMMA entity_list\n        comp : EQUALS\n        | LT\n        | GT\n        | GT EQUALS\n        | LT EQUALS\n        | DIFF EQUALS\n        base_set : LABEL\n        | LABEL LSPAR NUMBER RSPAR\n        | UNIVERSE\n        set : base_set\n        | PART\n        | LRPAR set RRPAR\n        | NOT set\n        | set INTER set\n        | set UNION set\n        declare_set : PROP LABEL EQUALS LPAR entity_list RPAR\n        | UNIVERSE LABEL EQUALS LPAR entity_list RPAR\n        | PROP UNIVERSE EQUALS LPAR entity_list RPAR\n        | LAB PROP LABEL EQUALS LPAR entity_list RPAR\n        | PROP LABEL\n        | LAB PROP LABEL\n        arrangement : LABEL IN LPAR replace set RPAR\n        | LABEL IN LSPAR replace set RSPAR\n        | LABEL IN PARTITIONS LRPAR set RRPAR\n        | LABEL IN COMPOSITIONS LRPAR set RRPAR\n        math_op : SUM\n        | MIN\n        | MAX\n        aggcmp  : math_op LRPAR set RRPAR comp NUMBERpos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity\n        | LABEL LSPAR NUMBER RSPAR IN set\n        | LABEL LSPAR NUMBER RSPAR EQUALS set\n        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR\n        count_constraint : COUNT set comp NUMBER\n        | COUNT LPAR count_constraint RPAR comp NUMBER\n        '
+_lr_signature = 'COMMA COUNT DIFF EQUALS GT IN INTER LAB LABEL LPAR LRPAR LSPAR LT MAX MIN NOT NUMBER PART PROP REPEAT RPAR RRPAR RSPAR SEMI SUM UNION UNIVERSEprogram : statement\n        | statement program\n        statement : declare_set SEMI\n        | arrangement SEMI\n        | aggcmp SEMI\n        | pos_constraint SEMI\n        | count_constraint SEMI\n        entity : NUMBER\n        | LABEL\n        entity_list : entity\n        | entity COMMA entity_list\n        comp : EQUALS\n        | LT\n        | GT\n        | GT EQUALS\n        | LT EQUALS\n        | DIFF EQUALS\n        base_set : LABEL\n        | LABEL LSPAR NUMBER RSPAR\n        | UNIVERSE\n        set : base_set\n        | PART\n        | LRPAR set RRPAR\n        | NOT set\n        | set INTER set\n        | set UNION set\n        declare_set : PROP LABEL EQUALS LPAR entity_list RPAR\n        | UNIVERSE LABEL EQUALS LPAR entity_list RPAR\n        | PROP UNIVERSE EQUALS LPAR entity_list RPAR\n        | LAB PROP LABEL EQUALS LPAR entity_list RPAR\n        | PROP LABEL\n        | LAB PROP LABEL\n        arrangement : LABEL IN LPAR REPEAT set RPAR\n        | LABEL IN LPAR set RPAR\n        | LABEL IN LSPAR REPEAT set RSPAR\n        | LABEL IN LSPAR set RSPAR\n        | LABEL IN LPAR LPAR set RPAR RPAR\n        | LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR\n        math_op : SUM\n        | MIN\n        | MAX\n        aggcmp  : math_op LRPAR set RRPAR comp NUMBERpos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity\n        | LABEL LSPAR NUMBER RSPAR IN set\n        | LABEL LSPAR NUMBER RSPAR EQUALS set\n        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR\n        count_constraint : COUNT set comp NUMBER\n        | COUNT LRPAR count_constraint RRPAR comp NUMBER\n        '
     
-_lr_action_items = {'PROP':([0,2,11,18,19,20,21,22,],[8,8,28,-3,-4,-5,-6,-7,]),'UNIVERSE':([0,2,8,13,18,19,20,21,22,29,34,35,49,50,61,62,63,64,65,85,89,90,],[10,10,24,37,-3,-4,-5,-6,-7,37,37,37,37,37,37,-10,37,37,37,-11,37,37,]),'LAB':([0,2,18,19,20,21,22,],[11,11,-3,-4,-5,-6,-7,]),'LABEL':([0,2,8,10,13,18,19,20,21,22,28,29,34,35,49,50,59,60,61,62,63,64,65,67,85,89,90,92,97,106,],[9,9,23,27,36,-3,-4,-5,-6,-7,46,36,36,36,36,36,79,79,36,-10,36,36,36,79,-11,103,36,79,79,79,]),'COUNT':([0,2,18,19,20,21,22,31,],[13,13,-3,-4,-5,-6,-7,13,]),'SUM':([0,2,18,19,20,21,22,],[14,14,-3,-4,-5,-6,-7,]),'MIN':([0,2,18,19,20,21,22,],[15,15,-3,-4,-5,-6,-7,]),'MAX':([0,2,18,19,20,21,22,],[16,16,-3,-4,-5,-6,-7,]),'$end':([1,2,17,18,19,20,21,22,],[0,-1,-2,-3,-4,-5,-6,-7,]),'SEMI':([3,4,5,6,7,23,32,33,36,37,46,57,70,71,72,77,82,95,96,98,99,100,101,102,103,104,105,107,108,110,111,114,115,],[18,19,20,21,22,-33,-23,-24,-20,-22,-34,-26,-47,-27,-28,-25,-8,-21,-29,-31,-35,-36,-37,-38,-9,-43,-45,-44,-30,-42,-48,-32,-46,]),'IN':([9,66,],[25,90,]),'LSPAR':([9,25,36,103,],[26,41,58,58,]),'LRPAR':([12,13,14,15,16,29,34,35,42,43,49,50,61,62,63,64,65,85,89,90,],[29,34,-39,-40,-41,34,34,34,64,65,34,34,34,-10,34,34,34,-11,34,34,]),'LPAR':([13,25,38,39,45,68,89,],[31,40,59,60,67,92,106,]),'PART':([13,29,34,35,49,50,61,62,63,64,65,85,89,90,],[33,33,33,33,33,33,33,-10,33,33,33,-11,33,33,]),'NOT':([13,29,34,35,49,50,61,62,63,64,65,85,89,90,],[35,35,35,35,35,35,35,-10,35,35,35,-11,35,35,]),'EQUALS':([23,24,27,30,32,33,36,37,46,52,53,54,57,66,69,71,72,76,77,95,],[38,39,45,51,-23,-24,-20,-22,68,73,74,75,-26,89,51,-27,-28,51,-25,-21,]),'PARTITIONS':([25,],[42,]),'COMPOSITIONS':([25,],[43,]),'NUMBER':([26,48,51,52,53,58,59,60,67,73,74,75,89,92,93,94,97,106,],[44,70,-14,-15,-16,78,82,82,82,-18,-17,-19,82,82,110,111,82,82,]),'INTER':([30,32,33,36,37,47,56,57,71,72,77,84,86,87,88,95,103,105,107,],[49,-23,-24,-20,-22,49,49,49,49,49,-25,49,49,49,49,-21,-20,49,49,]),'UNION':([30,32,33,36,37,47,56,57,71,72,77,84,86,87,88,95,103,105,107,],[50,-23,-24,-20,-22,50,50,50,50,50,-25,50,50,50,50,-21,-20,50,50,]),'LT':([30,32,33,36,37,57,69,71,72,76,77,95,],[52,-23,-24,-20,-22,-26,52,-27,-28,52,-25,-21,]),'GT':([30,32,33,36,37,57,69,71,72,76,77,95,],[53,-23,-24,-20,-22,-26,53,-27,-28,53,-25,-21,]),'DIFF':([30,32,33,36,37,57,69,71,72,76,77,95,],[54,-23,-24,-20,-22,-26,54,-27,-28,54,-25,-21,]),'RRPAR':([32,33,36,37,47,56,57,71,72,77,87,88,95,],[-23,-24,-20,-22,69,77,-26,-27,-28,-25,101,102,-21,]),'RPAR':([32,33,36,37,55,57,70,71,72,77,79,80,81,82,83,84,91,95,109,111,112,113,],[-23,-24,-20,-22,76,-26,-47,-27,-28,-25,-9,96,-12,-8,98,99,108,-21,114,-48,-13,115,]),'RSPAR':([32,33,36,37,44,57,71,72,77,78,86,95,],[-23,-24,-20,-22,66,-26,-27,-28,-25,95,100,-21,]),'SLASH':([40,41,62,],[62,62,85,]),'COMMA':([79,81,82,],[-9,97,-8,]),}
+_lr_action_items = {'PROP':([0,2,11,18,19,20,21,22,],[8,8,28,-3,-4,-5,-6,-7,]),'UNIVERSE':([0,2,8,13,18,19,20,21,22,29,31,34,39,40,44,47,48,59,60,62,88,89,90,],[10,10,24,36,-3,-4,-5,-6,-7,36,36,36,36,36,36,36,36,36,36,36,36,36,36,]),'LAB':([0,2,18,19,20,21,22,],[11,11,-3,-4,-5,-6,-7,]),'LABEL':([0,2,8,10,13,18,19,20,21,22,28,29,31,34,39,40,44,47,48,57,58,59,60,62,66,88,89,90,92,97,106,],[9,9,23,27,35,-3,-4,-5,-6,-7,43,35,35,35,35,35,35,35,35,78,78,35,35,35,78,35,103,35,78,78,78,]),'COUNT':([0,2,18,19,20,21,22,31,],[13,13,-3,-4,-5,-6,-7,13,]),'SUM':([0,2,18,19,20,21,22,],[14,14,-3,-4,-5,-6,-7,]),'MIN':([0,2,18,19,20,21,22,],[15,15,-3,-4,-5,-6,-7,]),'MAX':([0,2,18,19,20,21,22,],[16,16,-3,-4,-5,-6,-7,]),'$end':([1,2,17,18,19,20,21,22,],[0,-1,-2,-3,-4,-5,-6,-7,]),'SEMI':([3,4,5,6,7,23,32,33,35,36,43,55,69,70,71,76,81,85,87,95,96,98,100,101,103,104,105,107,108,110,111,113,116,117,118,],[18,19,20,21,22,-31,-21,-22,-18,-20,-32,-24,-47,-25,-26,-23,-8,-34,-36,-19,-27,-29,-33,-35,-9,-43,-45,-44,-28,-42,-48,-37,-30,-38,-46,]),'IN':([9,65,],[25,90,]),'LSPAR':([9,25,35,103,],[26,40,56,56,]),'LRPAR':([12,13,14,15,16,29,31,34,39,40,44,47,48,59,60,62,64,88,89,90,],[29,31,-39,-40,-41,44,44,44,44,44,44,44,44,44,44,44,88,44,44,44,]),'PART':([13,29,31,34,39,40,44,47,48,59,60,62,88,89,90,],[33,33,33,33,33,33,33,33,33,33,33,33,33,33,33,]),'NOT':([13,29,31,34,39,40,44,47,48,59,60,62,88,89,90,],[34,34,34,34,34,34,34,34,34,34,34,34,34,34,34,]),'EQUALS':([23,24,27,30,32,33,35,36,43,50,51,52,55,65,68,70,71,75,76,95,],[37,38,42,49,-21,-22,-18,-20,67,72,73,74,-24,89,49,-25,-26,49,-23,-19,]),'LPAR':([25,37,38,39,40,42,67,89,],[39,57,58,59,64,66,92,106,]),'NUMBER':([26,46,49,50,51,56,57,58,66,72,73,74,89,92,93,94,97,106,],[41,69,-12,-13,-14,77,81,81,81,-16,-15,-17,81,81,110,111,81,81,]),'INTER':([30,32,33,35,36,45,54,55,61,63,70,71,76,83,84,86,95,102,103,105,107,],[47,-21,-22,-18,-20,47,47,47,47,47,47,47,-23,47,47,47,-19,47,-18,47,47,]),'UNION':([30,32,33,35,36,45,54,55,61,63,70,71,76,83,84,86,95,102,103,105,107,],[48,-21,-22,-18,-20,48,48,48,48,48,48,48,-23,48,48,48,-19,48,-18,48,48,]),'LT':([30,32,33,35,36,55,68,70,71,75,76,95,],[50,-21,-22,-18,-20,-24,50,-25,-26,50,-23,-19,]),'GT':([30,32,33,35,36,55,68,70,71,75,76,95,],[51,-21,-22,-18,-20,-24,51,-25,-26,51,-23,-19,]),'DIFF':([30,32,33,35,36,55,68,70,71,75,76,95,],[52,-21,-22,-18,-20,-24,52,-25,-26,52,-23,-19,]),'RRPAR':([32,33,35,36,45,53,54,55,69,70,71,76,95,111,],[-21,-22,-18,-20,68,75,76,-24,-47,-25,-26,-23,-19,-48,]),'RPAR':([32,33,35,36,55,61,70,71,76,78,79,80,81,82,83,84,91,95,99,109,112,114,115,],[-21,-22,-18,-20,-24,85,-25,-26,-23,-9,96,-10,-8,98,99,100,108,-19,113,116,-11,117,118,]),'RSPAR':([32,33,35,36,41,55,63,70,71,76,77,86,95,102,],[-21,-22,-18,-20,65,-24,87,-25,-26,-23,95,101,-19,114,]),'REPEAT':([39,40,],[60,62,]),'COMMA':([78,80,81,],[-9,97,-8,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'program':([0,2,],[1,17,]),'statement':([0,2,],[2,2,]),'declare_set':([0,2,],[3,3,]),'arrangement':([0,2,],[4,4,]),'aggcmp':([0,2,],[5,5,]),'pos_constraint':([0,2,],[6,6,]),'count_constraint':([0,2,31,],[7,7,55,]),'math_op':([0,2,],[12,12,]),'set':([13,29,34,35,49,50,61,63,64,65,89,90,],[30,47,56,57,71,72,84,86,87,88,105,107,]),'base_set':([13,29,34,35,49,50,61,63,64,65,89,90,],[32,32,32,32,32,32,32,32,32,32,32,32,]),'comp':([30,69,76,],[48,93,94,]),'replace':([40,41,],[61,63,]),'entity_list':([59,60,67,92,97,106,],[80,83,91,109,112,113,]),'entity':([59,60,67,89,92,97,106,],[81,81,81,104,81,81,81,]),}
+_lr_goto_items = {'program':([0,2,],[1,17,]),'statement':([0,2,],[2,2,]),'declare_set':([0,2,],[3,3,]),'arrangement':([0,2,],[4,4,]),'aggcmp':([0,2,],[5,5,]),'pos_constraint':([0,2,],[6,6,]),'count_constraint':([0,2,31,],[7,7,53,]),'math_op':([0,2,],[12,12,]),'set':([13,29,31,34,39,40,44,47,48,59,60,62,88,89,90,],[30,45,54,55,61,63,54,70,71,83,84,86,102,105,107,]),'base_set':([13,29,31,34,39,40,44,47,48,59,60,62,88,89,90,],[32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,]),'comp':([30,68,75,],[46,93,94,]),'entity_list':([57,58,66,92,97,106,],[79,82,91,109,112,115,]),'entity':([57,58,66,89,92,97,106,],[80,80,80,104,80,80,80,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,52 +27,52 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> program","S'",1,None,None,None),
-  ('program -> statement','program',1,'p_program','parser.py',123),
-  ('program -> statement program','program',2,'p_program','parser.py',124),
-  ('statement -> declare_set SEMI','statement',2,'p_statement','parser.py',128),
-  ('statement -> arrangement SEMI','statement',2,'p_statement','parser.py',129),
-  ('statement -> aggcmp SEMI','statement',2,'p_statement','parser.py',130),
-  ('statement -> pos_constraint SEMI','statement',2,'p_statement','parser.py',131),
-  ('statement -> count_constraint SEMI','statement',2,'p_statement','parser.py',132),
-  ('entity -> NUMBER','entity',1,'p_entity','parser.py',136),
-  ('entity -> LABEL','entity',1,'p_entity','parser.py',137),
-  ('replace -> SLASH','replace',1,'p_replace','parser.py',142),
-  ('replace -> SLASH SLASH','replace',2,'p_replace','parser.py',143),
-  ('entity_list -> entity','entity_list',1,'p_entity_list','parser.py',148),
-  ('entity_list -> entity COMMA entity_list','entity_list',3,'p_entity_list','parser.py',149),
-  ('comp -> EQUALS','comp',1,'p_comp','parser.py',157),
-  ('comp -> LT','comp',1,'p_comp','parser.py',158),
-  ('comp -> GT','comp',1,'p_comp','parser.py',159),
-  ('comp -> GT EQUALS','comp',2,'p_comp','parser.py',160),
-  ('comp -> LT EQUALS','comp',2,'p_comp','parser.py',161),
-  ('comp -> DIFF EQUALS','comp',2,'p_comp','parser.py',162),
-  ('base_set -> LABEL','base_set',1,'p_base_set','parser.py',170),
-  ('base_set -> LABEL LSPAR NUMBER RSPAR','base_set',4,'p_base_set','parser.py',171),
-  ('base_set -> UNIVERSE','base_set',1,'p_base_set','parser.py',172),
-  ('set -> base_set','set',1,'p_set','parser.py',181),
-  ('set -> PART','set',1,'p_set','parser.py',182),
-  ('set -> LRPAR set RRPAR','set',3,'p_set','parser.py',183),
-  ('set -> NOT set','set',2,'p_set','parser.py',184),
-  ('set -> set INTER set','set',3,'p_set','parser.py',185),
-  ('set -> set UNION set','set',3,'p_set','parser.py',186),
-  ('declare_set -> PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',216),
-  ('declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',217),
-  ('declare_set -> PROP UNIVERSE EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',218),
-  ('declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',7,'p_declare_set','parser.py',219),
-  ('declare_set -> PROP LABEL','declare_set',2,'p_declare_set','parser.py',220),
-  ('declare_set -> LAB PROP LABEL','declare_set',3,'p_declare_set','parser.py',221),
-  ('arrangement -> LABEL IN LPAR replace set RPAR','arrangement',6,'p_arrangement','parser.py',243),
-  ('arrangement -> LABEL IN LSPAR replace set RSPAR','arrangement',6,'p_arrangement','parser.py',244),
-  ('arrangement -> LABEL IN PARTITIONS LRPAR set RRPAR','arrangement',6,'p_arrangement','parser.py',245),
-  ('arrangement -> LABEL IN COMPOSITIONS LRPAR set RRPAR','arrangement',6,'p_arrangement','parser.py',246),
-  ('math_op -> SUM','math_op',1,'p_math_op','parser.py',289),
-  ('math_op -> MIN','math_op',1,'p_math_op','parser.py',290),
-  ('math_op -> MAX','math_op',1,'p_math_op','parser.py',291),
-  ('aggcmp -> math_op LRPAR set RRPAR comp NUMBER','aggcmp',6,'p_aggcmp','parser.py',296),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS entity','pos_constraint',6,'p_pos_constraint','parser.py',310),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set','pos_constraint',6,'p_pos_constraint','parser.py',311),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set','pos_constraint',6,'p_pos_constraint','parser.py',312),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR','pos_constraint',8,'p_pos_constraint','parser.py',313),
-  ('count_constraint -> COUNT set comp NUMBER','count_constraint',4,'p_count_constraint','parser.py',342),
-  ('count_constraint -> COUNT LPAR count_constraint RPAR comp NUMBER','count_constraint',6,'p_count_constraint','parser.py',343),
+  ('program -> statement','program',1,'p_program','parser.py',121),
+  ('program -> statement program','program',2,'p_program','parser.py',122),
+  ('statement -> declare_set SEMI','statement',2,'p_statement','parser.py',126),
+  ('statement -> arrangement SEMI','statement',2,'p_statement','parser.py',127),
+  ('statement -> aggcmp SEMI','statement',2,'p_statement','parser.py',128),
+  ('statement -> pos_constraint SEMI','statement',2,'p_statement','parser.py',129),
+  ('statement -> count_constraint SEMI','statement',2,'p_statement','parser.py',130),
+  ('entity -> NUMBER','entity',1,'p_entity','parser.py',134),
+  ('entity -> LABEL','entity',1,'p_entity','parser.py',135),
+  ('entity_list -> entity','entity_list',1,'p_entity_list','parser.py',146),
+  ('entity_list -> entity COMMA entity_list','entity_list',3,'p_entity_list','parser.py',147),
+  ('comp -> EQUALS','comp',1,'p_comp','parser.py',155),
+  ('comp -> LT','comp',1,'p_comp','parser.py',156),
+  ('comp -> GT','comp',1,'p_comp','parser.py',157),
+  ('comp -> GT EQUALS','comp',2,'p_comp','parser.py',158),
+  ('comp -> LT EQUALS','comp',2,'p_comp','parser.py',159),
+  ('comp -> DIFF EQUALS','comp',2,'p_comp','parser.py',160),
+  ('base_set -> LABEL','base_set',1,'p_base_set','parser.py',168),
+  ('base_set -> LABEL LSPAR NUMBER RSPAR','base_set',4,'p_base_set','parser.py',169),
+  ('base_set -> UNIVERSE','base_set',1,'p_base_set','parser.py',170),
+  ('set -> base_set','set',1,'p_set','parser.py',179),
+  ('set -> PART','set',1,'p_set','parser.py',180),
+  ('set -> LRPAR set RRPAR','set',3,'p_set','parser.py',181),
+  ('set -> NOT set','set',2,'p_set','parser.py',182),
+  ('set -> set INTER set','set',3,'p_set','parser.py',183),
+  ('set -> set UNION set','set',3,'p_set','parser.py',184),
+  ('declare_set -> PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',214),
+  ('declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',215),
+  ('declare_set -> PROP UNIVERSE EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','parser.py',216),
+  ('declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',7,'p_declare_set','parser.py',217),
+  ('declare_set -> PROP LABEL','declare_set',2,'p_declare_set','parser.py',218),
+  ('declare_set -> LAB PROP LABEL','declare_set',3,'p_declare_set','parser.py',219),
+  ('arrangement -> LABEL IN LPAR REPEAT set RPAR','arrangement',6,'p_arrangement','parser.py',243),
+  ('arrangement -> LABEL IN LPAR set RPAR','arrangement',5,'p_arrangement','parser.py',244),
+  ('arrangement -> LABEL IN LSPAR REPEAT set RSPAR','arrangement',6,'p_arrangement','parser.py',245),
+  ('arrangement -> LABEL IN LSPAR set RSPAR','arrangement',5,'p_arrangement','parser.py',246),
+  ('arrangement -> LABEL IN LPAR LPAR set RPAR RPAR','arrangement',7,'p_arrangement','parser.py',247),
+  ('arrangement -> LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR','arrangement',8,'p_arrangement','parser.py',248),
+  ('math_op -> SUM','math_op',1,'p_math_op','parser.py',291),
+  ('math_op -> MIN','math_op',1,'p_math_op','parser.py',292),
+  ('math_op -> MAX','math_op',1,'p_math_op','parser.py',293),
+  ('aggcmp -> math_op LRPAR set RRPAR comp NUMBER','aggcmp',6,'p_aggcmp','parser.py',298),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS entity','pos_constraint',6,'p_pos_constraint','parser.py',312),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set','pos_constraint',6,'p_pos_constraint','parser.py',313),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set','pos_constraint',6,'p_pos_constraint','parser.py',314),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR','pos_constraint',8,'p_pos_constraint','parser.py',315),
+  ('count_constraint -> COUNT set comp NUMBER','count_constraint',4,'p_count_constraint','parser.py',344),
+  ('count_constraint -> COUNT LRPAR count_constraint RRPAR comp NUMBER','count_constraint',6,'p_count_constraint','parser.py',345),
 ]

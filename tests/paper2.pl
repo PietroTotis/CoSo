@@ -7,4 +7,4 @@ property green = {green,green,green};
 perm in [|universe];
 #perm <= 4;
 perm[2] = green;
-#squares&perm = 2;
+#squares&perm >= 2;
