@@ -233,7 +233,12 @@ class Or(object):
         self.right = r
 
     def __hash__(self):
-        return hash(str(self))
+        l = str(self.left)
+        r = str(self.right)
+        if l[0] < r[0]:
+            return hash(l + r)
+        else:
+            return hash(r + l)
 
     def __eq__(self, rhs):
         if isinstance(rhs, Or):
