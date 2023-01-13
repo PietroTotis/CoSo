@@ -1,0 +1,10 @@
+labelled property stuff;
+#stuff = 10;
+property f;
+#f&stuff = 4;
+#f&¬stuff = 0;
+seq in [{stuff}];
+#seq = 3;
+#seq[1] = 3 ;
+#(#part=3)  = 2;
+#(#part&f=2) = 1;

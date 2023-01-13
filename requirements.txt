@@ -2,3 +2,4 @@ portion==2.1.1
 pyinotify
 clingo==5.5.1
 psutil
+yattag

@@ -50,17 +50,29 @@
             <div class="collapsable configuration">
               <table class="histogram">
                 <tr>
-                  <td class="ylabel">green</td>
-                  <td class="hcell" style="background-color: #a3be8c">g1</td>
-                  <td class="hcell" style="background-color: #a3be8c">g2</td>
-                  <td class="hcell" style="background-color: #a3be8c">g3</td>
+                  <td class="ylabel">f</td>
+                  <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
+                  <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
+                  <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
+                  <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
                 </tr>
                 <tr>
-                  <td class="ylabel">¬green</td>
-                  <td class="hcell" style="background-color: #4c566a">r2</td>
-                  <td class="hcell" style="background-color: #4c566a">b2</td>
-                  <td class="hcell" style="background-color: #4c566a">r1</td>
-                  <td class="hcell" style="background-color: #4c566a">b1</td>
+                  <td class="ylabel">¬f</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_0</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_1</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_2</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_3</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_4</td>
+                  <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_5</td>
+                </tr>
+                <tr>
+                  <td class="ylab"></td>
+                  <td class="xlab"></td>
+                  <td class="xlab"></td>
+                  <td class="xlab"></td>
+                  <td class="xlab"></td>
+                  <td class="xlab">5</td>
+                  <td class="xlab"></td>
                 </tr>
               </table>
               <div class="accordion">
@@ -72,9 +84,32 @@
                   <label for="handle2"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property green = {g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
+                  <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property f = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3
+}; 
+property ¬f = {
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
 </pre>
                 </div>
               </div>
@@ -94,11 +129,14 @@ property ¬green = {r2, b2, r1, b1};
                 <tr slot>
                   <table class="lifted-set">
                     <tr>
-                      <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 1</td>
+                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 1</td>
                     </tr>
                     <tr>
                       <td>Size:</td>
                       <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -107,11 +145,14 @@ property ¬green = {r2, b2, r1, b1};
                   </table>
                   <table class="lifted-set">
                     <tr>
-                      <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 2</td>
+                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 2</td>
                     </tr>
                     <tr>
                       <td>Size:</td>
                       <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -120,11 +161,14 @@ property ¬green = {r2, b2, r1, b1};
                   </table>
                   <table class="lifted-set">
                     <tr>
-                      <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 3</td>
+                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 3</td>
                     </tr>
                     <tr>
                       <td>Size:</td>
                       <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                       <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -142,7 +186,7 @@ property ¬green = {r2, b2, r1, b1};
                   <label for="handle4"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>partition (size == 3) of entity (red) ∨ ((green) ∨ (blue)) (parts)</pre>
+                  <pre>composition (size == 3) of entity stuff (seq)</pre>
                 </div>
               </div>
             </div>
@@ -157,8 +201,33 @@ property ¬green = {r2, b2, r1, b1};
               <label for="handle5"></label>
             </div>
             <div class="collapsable configuration">
-              <table class="histogram"></table>
               <table class="histogram">
+                <tr>
+                  <td class="slot">1</td>
+                  <td>
+                    <i class="fa-solid fa-arrow-left"></i>
+                  </td>
+                  <td class="hcell" style="background-color: #b48ead"></td>
+                  <td class="ylabel">part. of stuff: size == 3</td>
+                </tr>
+              </table>
+              <table class="histogram">
+                <tr>
+                  <td>
+                    <i class="fa-solid fa-cubes-stacked"></i>
+                  </td>
+                  <td>
+                    <i class="fa-solid fa-arrow-right"></i>
+                  </td>
+                  <td class="slot" style="; border-color: #4c566a"></td>
+                  <td class="slot" style="; border-color: #4c566a"></td>
+                  <td>
+                    <i class="fa-solid fa-arrow-left"></i>
+                  </td>
+                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                </tr>
                 <tr>
                   <td>
                     <i class="fa-solid fa-cubes-stacked"></i>
@@ -172,7 +241,6 @@ property ¬green = {r2, b2, r1, b1};
                   </td>
                   <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
                   <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
-                  <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
                 </tr>
               </table>
               <div class="accordion">
@@ -184,7 +252,9 @@ property ¬green = {r2, b2, r1, b1};
                   <label for="handle6"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>Nr. (Nr. green = 3) = 1; 
+                  <pre>Position 1: part. of stuff: size == 3; 
+Nr. size == 3 = 2; 
+Nr. (Nr. f = 2) = 1; 
 </pre>
                 </div>
               </div>
@@ -194,7 +264,7 @@ property ¬green = {r2, b2, r1, b1};
         <input type="checkbox" class="control" id="sol_1" name="sol_1" />
         <label for="sol_1" class="solution">
           <i class="fa-solid fa-equals fa-sm"></i>
-          <p class="inline-num">25</p>
+          <p class="inline-num">2880</p>
         </label>
         <div class="collapsable Zerosubproblems">
           <div class="content-line"></div>
@@ -204,7 +274,7 @@ property ¬green = {r2, b2, r1, b1};
               <div class="handle">
                 <div class="inline-solution">
                   <i class="fa-solid fa-equals fa-sm"></i>
-                  <p class="inline-num">25</p>
+                  <p class="inline-num">2880</p>
                 </div>
                 <label for="handle7"></label>
               </div>
@@ -228,17 +298,29 @@ property ¬green = {r2, b2, r1, b1};
                       <div class="collapsable configuration">
                         <table class="histogram">
                           <tr>
-                            <td class="ylabel">green</td>
-                            <td class="hcell" style="background-color: #a3be8c">g1</td>
-                            <td class="hcell" style="background-color: #a3be8c">g2</td>
-                            <td class="hcell" style="background-color: #a3be8c">g3</td>
+                            <td class="ylabel">f</td>
+                            <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
+                            <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
+                            <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
+                            <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
                           </tr>
                           <tr>
-                            <td class="ylabel">¬green</td>
-                            <td class="hcell" style="background-color: #4c566a">r2</td>
-                            <td class="hcell" style="background-color: #4c566a">b2</td>
-                            <td class="hcell" style="background-color: #4c566a">r1</td>
-                            <td class="hcell" style="background-color: #4c566a">b1</td>
+                            <td class="ylabel">¬f</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_0</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_1</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_2</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_3</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_4</td>
+                            <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_5</td>
+                          </tr>
+                          <tr>
+                            <td class="ylab"></td>
+                            <td class="xlab"></td>
+                            <td class="xlab"></td>
+                            <td class="xlab"></td>
+                            <td class="xlab"></td>
+                            <td class="xlab">5</td>
+                            <td class="xlab"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -250,9 +332,32 @@ property ¬green = {r2, b2, r1, b1};
                             <label for="handle9"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property green = {g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
+                            <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property f = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3
+}; 
+property ¬f = {
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
 </pre>
                           </div>
                         </div>
@@ -272,11 +377,14 @@ property ¬green = {r2, b2, r1, b1};
                           <tr slot>
                             <table class="lifted-set">
                               <tr>
-                                <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                               </tr>
                               <tr>
                                 <td>Size:</td>
                                 <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -285,11 +393,14 @@ property ¬green = {r2, b2, r1, b1};
                             </table>
                             <table class="lifted-set">
                               <tr>
-                                <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                               </tr>
                               <tr>
                                 <td>Size:</td>
                                 <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -298,11 +409,14 @@ property ¬green = {r2, b2, r1, b1};
                             </table>
                             <table class="lifted-set">
                               <tr>
-                                <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                               </tr>
                               <tr>
                                 <td>Size:</td>
                                 <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                 <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
@@ -320,9 +434,9 @@ property ¬green = {r2, b2, r1, b1};
                             <label for="handle11"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]; 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]; 
+                            <pre>Obj 1:  part. of stuff: size in [1,8]; 
+Obj 2:  part. of stuff: size in [1,8]; 
+Obj 3:  part. of stuff: size in [1,8]; 
 </pre>
                           </div>
                         </div>
@@ -338,8 +452,33 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                         <label for="handle12"></label>
                       </div>
                       <div class="collapsable configuration">
-                        <table class="histogram"></table>
                         <table class="histogram">
+                          <tr>
+                            <td class="slot">1</td>
+                            <td>
+                              <i class="fa-solid fa-arrow-left"></i>
+                            </td>
+                            <td class="hcell" style="background-color: #b48ead"></td>
+                            <td class="ylabel">part. of stuff: size == 3</td>
+                          </tr>
+                        </table>
+                        <table class="histogram">
+                          <tr>
+                            <td>
+                              <i class="fa-solid fa-cubes-stacked"></i>
+                            </td>
+                            <td>
+                              <i class="fa-solid fa-arrow-right"></i>
+                            </td>
+                            <td class="slot" style="; border-color: #4c566a"></td>
+                            <td class="slot" style="; border-color: #4c566a"></td>
+                            <td>
+                              <i class="fa-solid fa-arrow-left"></i>
+                            </td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                          </tr>
                           <tr>
                             <td>
                               <i class="fa-solid fa-cubes-stacked"></i>
@@ -353,7 +492,6 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                             </td>
                             <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
                             <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
-                            <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -365,7 +503,9 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                             <label for="handle13"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>Nr. (Nr. green = 3) = 1; 
+                            <pre>Position 1: part. of stuff: size == 3; 
+Nr. size == 3 = 2; 
+Nr. (Nr. f = 2) = 1; 
 </pre>
                           </div>
                         </div>
@@ -375,7 +515,7 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                   <input type="checkbox" class="control" id="sol_2" name="sol_2" />
                   <label for="sol_2" class="solution">
                     <i class="fa-solid fa-equals fa-sm"></i>
-                    <p class="inline-num">25</p>
+                    <p class="inline-num">2880</p>
                   </label>
                   <div class="collapsable Zerosubproblems">
                     <div class="content-line"></div>
@@ -385,7 +525,7 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                         <div class="handle">
                           <div class="inline-solution">
                             <i class="fa-solid fa-equals fa-sm"></i>
-                            <p class="inline-num">25</p>
+                            <p class="inline-num">720</p>
                           </div>
                           <label for="handle14"></label>
                         </div>
@@ -409,14 +549,17 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                                 <div class="collapsable configuration">
                                   <table class="histogram">
                                     <tr>
-                                      <td class="ylabel">(squares) ∨ (triangles)</td>
-                                      <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                      <td class="hcell" style="background-color: #88c0d0">b2</td>
-                                      <td class="hcell" style="background-color: #88c0d0">r1</td>
-                                      <td class="hcell" style="background-color: #88c0d0">b1</td>
-                                      <td class="hcell" style="background-color: #88c0d0">g1</td>
-                                      <td class="hcell" style="background-color: #88c0d0">g2</td>
-                                      <td class="hcell" style="background-color: #88c0d0">g3</td>
+                                      <td class="ylabel">stuff</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_4</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_5</td>
                                     </tr>
                                     <tr>
                                       <td class="ylab"></td>
@@ -427,6 +570,9 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                                       <td class="xlab">5</td>
                                       <td class="xlab"></td>
                                       <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab">10</td>
                                     </tr>
                                   </table>
                                   <div class="accordion">
@@ -438,7 +584,18 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                                       <label for="handle16"></label>
                                     </div>
                                     <div class="collapsable">
-                                      <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
+                                      <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
 </pre>
                                     </div>
                                   </div>
@@ -458,50 +615,51 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                                     <tr slot>
                                       <table class="lifted-set">
                                         <tr>
-                                          <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                         </tr>
                                         <tr>
                                           <td>Size:</td>
                                           <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                         </tr>
                                         <tr>
-                                          <td>green<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
+                                          <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                         </tr>
                                       </table>
                                       <table class="lifted-set">
                                         <tr>
-                                          <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                         </tr>
                                         <tr>
                                           <td>Size:</td>
                                           <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                         </tr>
                                         <tr>
-                                          <td>green<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td></td>
+                                          <td>f<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
                                         </tr>
                                       </table>
                                       <table class="lifted-set">
                                         <tr>
-                                          <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                         </tr>
                                         <tr>
                                           <td>Size:</td>
                                           <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                           <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                           <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="border-color: #4c566a">
+                                            <i class="fa-solid fa-x"></i>
+                                          </td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                           <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                           <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                         </tr>
                                         <tr>
-                                          <td>green<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td></td>
+                                          <td>f<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td></td>
                                         </tr>
                                       </table>
                                     </tr slot>
@@ -515,12 +673,12 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5];
                                       <label for="handle18"></label>
                                     </div>
                                     <div class="collapsable">
-                                      <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green = 3; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6); 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6); 
+                                      <pre>Obj 1:  part. of stuff: size == 3
+	 counting: Nr. f = 2; 
+Obj 2:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4); 
+Obj 3:  part. of stuff: size in [1,3) | (3,8]
+	 counting: Nr. f in [0,2) | (2,9); 
 </pre>
                                     </div>
                                   </div>
@@ -530,7 +688,7 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                             <input type="checkbox" class="control" id="sol_3" name="sol_3" />
                             <label for="sol_3" class="solution">
                               <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">25</p>
+                              <p class="inline-num">720</p>
                             </label>
                             <div class="collapsable Zerosubproblems">
                               <div class="content-line"></div>
@@ -540,7 +698,7 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                   <div class="handle">
                                     <div class="inline-solution">
                                       <i class="fa-solid fa-equals fa-sm"></i>
-                                      <p class="inline-num">12</p>
+                                      <p class="inline-num">720</p>
                                     </div>
                                     <label for="handle19"></label>
                                   </div>
@@ -564,17 +722,29 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                           <div class="collapsable configuration">
                                             <table class="histogram">
                                               <tr>
-                                                <td class="ylabel">¬green</td>
-                                                <td class="hcell" style="background-color: #4c566a">r2</td>
-                                                <td class="hcell" style="background-color: #4c566a">b2</td>
-                                                <td class="hcell" style="background-color: #4c566a">r1</td>
-                                                <td class="hcell" style="background-color: #4c566a">b1</td>
+                                                <td class="ylabel">¬f</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_0</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_1</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_2</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_3</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_4</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_5</td>
                                               </tr>
                                               <tr>
-                                                <td class="ylabel">green</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g1</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g2</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g3</td>
+                                                <td class="ylabel">f</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
+                                              </tr>
+                                              <tr>
+                                                <td class="ylab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab">5</td>
+                                                <td class="xlab"></td>
                                               </tr>
                                             </table>
                                             <div class="accordion">
@@ -586,9 +756,32 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                                 <label for="handle21"></label>
                                               </div>
                                               <div class="collapsable">
-                                                <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
-property green = {g1, g2, g3}; 
+                                                <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property ¬f = {
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property f = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3
+}; 
 </pre>
                                               </div>
                                             </div>
@@ -608,59 +801,60 @@ property green = {g1, g2, g3};
                                               <tr slot>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="border-color: #4c566a">
+                                                      <i class="fa-solid fa-x"></i>
+                                                    </td>
+                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                               </tr slot>
@@ -674,15 +868,15 @@ property green = {g1, g2, g3};
                                                 <label for="handle23"></label>
                                               </div>
                                               <div class="collapsable">
-                                                <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green = 3
-	 histogram:{green: 3, ¬green: 1}; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 1}; 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 2}; 
+                                                <pre>Obj 1:  part. of stuff: size == 3
+	 counting: Nr. f = 2
+	 histogram:{f: 2, ¬f: 1}; 
+Obj 2:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4)
+	 histogram:{f: 1, ¬f: 2}; 
+Obj 3:  part. of stuff: size in [1,3) | (3,8]
+	 counting: Nr. f in [0,2) | (2,9)
+	 histogram:{f: 1, ¬f: 3}; 
 </pre>
                                               </div>
                                             </div>
@@ -692,195 +886,203 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                       <input type="checkbox" class="control" id="sol_4" name="sol_4" />
                                       <label for="sol_4" class="solution">
                                         <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">12</p>
+                                        <p class="inline-num">720</p>
                                       </label>
                                       <div class="collapsable">
                                         <div class="content-line"></div>
                                         <div class="count-description">
                                           <i class="fa-solid fa-calculator"></i>
                                           <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\frac{\frac{\frac{\texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 green } \cdot \texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 3 }{ 1 } }{ Choose 1 out of 3 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 2 }{ 2 } }{ Choose 2 out of 2 ¬green }}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 1! }{ Nr. exchangeable parts }}$$</p>
+                                          <p class="inline-num">$$\texttip{ \binom{ 4 }{ 2 } }{ Choose 2 out of 4 f } \cdot \texttip{ \binom{ 6 }{ 1 } }{ Choose 1 out of 6 ¬f } \cdot \texttip{ \binom{ 2 }{ 1 } }{ Choose 1 out of 2 f } \cdot \texttip{ \binom{ 5 }{ 2 } }{ Choose 2 out of 5 ¬f } \cdot \texttip{ \binom{ 1 }{ 1 } }{ Choose 1 out of 1 f } \cdot \texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 ¬f }$$</p>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle24" name="collapse24" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-plus"></i>
-                                      <p class="inline-num">6</p>
-                                    </div>
-                                    <label for="handle24"></label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="accordion">
+                        <input type="checkbox" class="control" id="handle24" name="collapse24" />
+                        <div class="handle">
+                          <div class="inline-solution">
+                            <i class="fa-solid fa-plus"></i>
+                            <p class="inline-num">720</p>
+                          </div>
+                          <label for="handle24"></label>
+                        </div>
+                        <div class="collapsable">
+                          <div class="content-line"></div>
+                          <div class="container">
+                            <div class="caption">
+                              <i class="fa-solid fa-circle-info"></i>
+                              <p class="caption-text">Constraint combination nr. 3</p>
+                            </div>
+                            <div class="configuration">
+                              <div class="accordion">
+                                <input type="checkbox" class="control" id="handle25" name="collapse25" />
+                                <div class="handle">
+                                  <div class="inline-solution">
+                                    <i class="fa-solid fa-shapes"></i>
+                                    <p class="inline-num">Universe</p>
                                   </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Fixing histograms, combination nr. 2</p>
+                                  <label for="handle25"></label>
+                                </div>
+                                <div class="collapsable configuration">
+                                  <table class="histogram">
+                                    <tr>
+                                      <td class="ylabel">stuff</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_4</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_5</td>
+                                    </tr>
+                                    <tr>
+                                      <td class="ylab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab">5</td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab">10</td>
+                                    </tr>
+                                  </table>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle26" name="collapse26" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <p class="inline-num">CoLa</p>
                                       </div>
-                                      <div class="configuration">
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle25" name="collapse25" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-shapes"></i>
-                                              <p class="inline-num">Universe</p>
-                                            </div>
-                                            <label for="handle25"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr>
-                                                <td class="ylabel">¬green</td>
-                                                <td class="hcell" style="background-color: #4c566a">r2</td>
-                                                <td class="hcell" style="background-color: #4c566a">b2</td>
-                                                <td class="hcell" style="background-color: #4c566a">r1</td>
-                                                <td class="hcell" style="background-color: #4c566a">b1</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylabel">green</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g1</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g2</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g3</td>
-                                              </tr>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle26" name="collapse26" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle26"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
-property green = {g1, g2, g3}; 
+                                      <label for="handle26"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
 </pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle27" name="collapse27" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-cubes-stacked"></i>
-                                              <p class="inline-num">Configuration</p>
-                                            </div>
-                                            <label for="handle27"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr slot>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
-                                                  </tr>
-                                                </table>
-                                              </tr slot>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle28" name="collapse28" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle28"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green = 3
-	 histogram:{green: 3, ¬green: 2}; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 1}; 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 1}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <input type="checkbox" class="control" id="sol_5" name="sol_5" />
-                                      <label for="sol_5" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">6</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\frac{\frac{\texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 green } \cdot \texttip{ \binom{ 4 }{ 2 } }{ Choose 2 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 2 }{ 1 } }{ Choose 1 out of 2 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 1 }{ 1 } }{ Choose 1 out of 1 ¬green }}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 2! }{ Nr. exchangeable parts }}$$</p>
-                                        </div>
-                                      </div>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+                              <div class="accordion">
+                                <input type="checkbox" class="control" id="handle27" name="collapse27" />
+                                <div class="handle">
+                                  <div class="inline-solution">
+                                    <i class="fa-solid fa-cubes-stacked"></i>
+                                    <p class="inline-num">Configuration</p>
+                                  </div>
+                                  <label for="handle27"></label>
+                                </div>
+                                <div class="collapsable configuration">
+                                  <table class="histogram">
+                                    <tr slot>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>f<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                        </tr>
+                                      </table>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
+                                        </tr>
+                                      </table>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="border-color: #4c566a">
+                                            <i class="fa-solid fa-x"></i>
+                                          </td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>f<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell-maybe" style="border-color: #a3be8c"></td></td>
+                                        </tr>
+                                      </table>
+                                    </tr slot>
+                                  </table>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle28" name="collapse28" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <p class="inline-num">CoLa</p>
+                                      </div>
+                                      <label for="handle28"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Obj 1:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4); 
+Obj 2:  part. of stuff: size == 3
+	 counting: Nr. f = 2; 
+Obj 3:  part. of stuff: size in [1,3) | (3,8]
+	 counting: Nr. f in [0,2) | (2,9); 
+</pre>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <input type="checkbox" class="control" id="sol_5" name="sol_5" />
+                            <label for="sol_5" class="solution">
+                              <i class="fa-solid fa-equals fa-sm"></i>
+                              <p class="inline-num">720</p>
+                            </label>
+                            <div class="collapsable Zerosubproblems">
+                              <div class="content-line"></div>
+                              <div class="accordions">
                                 <div class="accordion">
                                   <input type="checkbox" class="control" id="handle29" name="collapse29" />
                                   <div class="handle">
                                     <div class="inline-solution">
-                                      <i class="fa-solid fa-plus"></i>
-                                      <p class="inline-num">4</p>
+                                      <i class="fa-solid fa-equals fa-sm"></i>
+                                      <p class="inline-num">720</p>
                                     </div>
                                     <label for="handle29"></label>
                                   </div>
@@ -889,7 +1091,7 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                     <div class="container">
                                       <div class="caption">
                                         <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Fixing histograms, combination nr. 3</p>
+                                        <p class="caption-text">Fixing histograms, combination nr. 1</p>
                                       </div>
                                       <div class="configuration">
                                         <div class="accordion">
@@ -904,17 +1106,29 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                           <div class="collapsable configuration">
                                             <table class="histogram">
                                               <tr>
-                                                <td class="ylabel">¬green</td>
-                                                <td class="hcell" style="background-color: #4c566a">r2</td>
-                                                <td class="hcell" style="background-color: #4c566a">b2</td>
-                                                <td class="hcell" style="background-color: #4c566a">r1</td>
-                                                <td class="hcell" style="background-color: #4c566a">b1</td>
+                                                <td class="ylabel">¬f</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_0</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_1</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_2</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_3</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_4</td>
+                                                <td class="hcell" style="background-color: #88c0d0">stuff∧¬f_5</td>
                                               </tr>
                                               <tr>
-                                                <td class="ylabel">green</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g1</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g2</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g3</td>
+                                                <td class="ylabel">f</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
+                                                <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
+                                              </tr>
+                                              <tr>
+                                                <td class="ylab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab"></td>
+                                                <td class="xlab">5</td>
+                                                <td class="xlab"></td>
                                               </tr>
                                             </table>
                                             <div class="accordion">
@@ -926,9 +1140,32 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                                 <label for="handle31"></label>
                                               </div>
                                               <div class="collapsable">
-                                                <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
-property green = {g1, g2, g3}; 
+                                                <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property ¬f = {
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
+property f = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3
+}; 
 </pre>
                                               </div>
                                             </div>
@@ -948,59 +1185,60 @@ property green = {g1, g2, g3};
                                               <tr slot>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="border-color: #4c566a"><i class="fa-solid fa-x"></i></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                                 <table class="lifted-set">
                                                   <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
+                                                    <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Size:</td>
                                                     <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell" style="border-color: #4c566a">
+                                                      <i class="fa-solid fa-x"></i>
+                                                    </td>
+                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                     <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                                    <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
                                                   </tr>
                                                   <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
+                                                    <td>¬f<td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td><td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td></td>
                                                   </tr>
                                                 </table>
                                               </tr slot>
@@ -1014,15 +1252,15 @@ property green = {g1, g2, g3};
                                                 <label for="handle33"></label>
                                               </div>
                                               <div class="collapsable">
-                                                <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green = 3
-	 histogram:{green: 3, ¬green: 0}; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 1}; 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 3}; 
+                                                <pre>Obj 1:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4)
+	 histogram:{f: 1, ¬f: 2}; 
+Obj 2:  part. of stuff: size == 3
+	 counting: Nr. f = 2
+	 histogram:{f: 2, ¬f: 1}; 
+Obj 3:  part. of stuff: size in [1,3) | (3,8]
+	 counting: Nr. f in [0,2) | (2,9)
+	 histogram:{f: 1, ¬f: 3}; 
 </pre>
                                               </div>
                                             </div>
@@ -1032,189 +1270,198 @@ Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
                                       <input type="checkbox" class="control" id="sol_6" name="sol_6" />
                                       <label for="sol_6" class="solution">
                                         <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">4</p>
+                                        <p class="inline-num">720</p>
                                       </label>
                                       <div class="collapsable">
                                         <div class="content-line"></div>
                                         <div class="count-description">
                                           <i class="fa-solid fa-calculator"></i>
                                           <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\frac{\frac{\frac{\texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 green } \cdot \texttip{ \binom{ 4 }{ 0 } }{ Choose 0 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 ¬green }}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 1! }{ Nr. exchangeable parts }}$$</p>
+                                          <p class="inline-num">$$\texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 f } \cdot \texttip{ \binom{ 6 }{ 2 } }{ Choose 2 out of 6 ¬f } \cdot \texttip{ \binom{ 3 }{ 2 } }{ Choose 2 out of 3 f } \cdot \texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 ¬f } \cdot \texttip{ \binom{ 1 }{ 1 } }{ Choose 1 out of 1 f } \cdot \texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 ¬f }$$</p>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle34" name="collapse34" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-plus"></i>
-                                      <p class="inline-num">3</p>
-                                    </div>
-                                    <label for="handle34"></label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="accordion">
+                        <input type="checkbox" class="control" id="handle34" name="collapse34" />
+                        <div class="handle">
+                          <div class="inline-solution">
+                            <i class="fa-solid fa-plus"></i>
+                            <p class="inline-num">0</p>
+                          </div>
+                          <label for="handle34"></label>
+                        </div>
+                        <div class="collapsable">
+                          <div class="content-line"></div>
+                          <div class="container">
+                            <div class="caption">
+                              <i class="fa-solid fa-circle-info"></i>
+                              <p class="caption-text">Constraint combination nr. 4</p>
+                            </div>
+                            <div class="configuration">
+                              <div class="accordion">
+                                <input type="checkbox" class="control" id="handle35" name="collapse35" />
+                                <div class="handle">
+                                  <div class="inline-solution">
+                                    <i class="fa-solid fa-shapes"></i>
+                                    <p class="inline-num">Universe</p>
                                   </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Fixing histograms, combination nr. 4</p>
+                                  <label for="handle35"></label>
+                                </div>
+                                <div class="collapsable configuration">
+                                  <table class="histogram">
+                                    <tr>
+                                      <td class="ylabel">stuff</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_0</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_1</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_2</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_3</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_4</td>
+                                      <td class="hcell" style="background-color: #4c566a">stuff∧¬f_5</td>
+                                    </tr>
+                                    <tr>
+                                      <td class="ylab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab">5</td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab"></td>
+                                      <td class="xlab">10</td>
+                                    </tr>
+                                  </table>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle36" name="collapse36" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <p class="inline-num">CoLa</p>
                                       </div>
-                                      <div class="configuration">
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle35" name="collapse35" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-shapes"></i>
-                                              <p class="inline-num">Universe</p>
-                                            </div>
-                                            <label for="handle35"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr>
-                                                <td class="ylabel">¬green</td>
-                                                <td class="hcell" style="background-color: #4c566a">r2</td>
-                                                <td class="hcell" style="background-color: #4c566a">b2</td>
-                                                <td class="hcell" style="background-color: #4c566a">r1</td>
-                                                <td class="hcell" style="background-color: #4c566a">b1</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylabel">green</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g1</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g2</td>
-                                                <td class="hcell" style="background-color: #a3be8c">g3</td>
-                                              </tr>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle36" name="collapse36" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle36"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, g1, g2, g3}; 
-property ¬green = {r2, b2, r1, b1}; 
-property green = {g1, g2, g3}; 
+                                      <label for="handle36"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>universe stuff = {
+	stuff∧f_0,
+	stuff∧f_1,
+	stuff∧f_2,
+	stuff∧f_3,
+	stuff∧¬f_0,
+	stuff∧¬f_1,
+	stuff∧¬f_2,
+	stuff∧¬f_3,
+	stuff∧¬f_4,
+	stuff∧¬f_5
+}; 
 </pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle37" name="collapse37" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-cubes-stacked"></i>
-                                              <p class="inline-num">Configuration</p>
-                                            </div>
-                                            <label for="handle37"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr slot>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="border-color: #4c566a"><i class="fa-solid fa-x"></i></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="6" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of (squares) ∨ (triangles)</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>green<td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬green<td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td><td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td></td>
-                                                  </tr>
-                                                </table>
-                                              </tr slot>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle38" name="collapse38" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle38"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>Obj 1:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green = 3
-	 histogram:{green: 3, ¬green: 0}; 
-Obj 2:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 2}; 
-Obj 3:  part. of (squares) ∨ (triangles): size in [1,5]
-	 counting: Nr. green in [0,3) | (3,6)
-	 histogram:{green: 0, ¬green: 2}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <input type="checkbox" class="control" id="sol_7" name="sol_7" />
-                                      <label for="sol_7" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">3</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\frac{\frac{\texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 green } \cdot \texttip{ \binom{ 4 }{ 0 } }{ Choose 0 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 4 }{ 2 } }{ Choose 2 out of 4 ¬green } \cdot \texttip{ \binom{ 0 }{ 0 } }{ Choose 0 out of 0 green } \cdot \texttip{ \binom{ 2 }{ 2 } }{ Choose 2 out of 2 ¬green }}{\texttip{ 1! }{ Nr. exchangeable parts }}}{\texttip{ 2! }{ Nr. exchangeable parts }}$$</p>
-                                        </div>
-                                      </div>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+                              <div class="accordion">
+                                <input type="checkbox" class="control" id="handle37" name="collapse37" />
+                                <div class="handle">
+                                  <div class="inline-solution">
+                                    <i class="fa-solid fa-cubes-stacked"></i>
+                                    <p class="inline-num">Configuration</p>
+                                  </div>
+                                  <label for="handle37"></label>
+                                </div>
+                                <div class="collapsable configuration">
+                                  <table class="histogram">
+                                    <tr slot>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                        </tr>
+                                      </table>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>f<td class="constr-cell-maybe" style="border-color: #a3be8c"></td><td class="constr-cell" style="border-color: #a3be8c"><i class="fa-solid fa-x"></i></td></td>
+                                        </tr>
+                                      </table>
+                                      <table class="lifted-set">
+                                        <tr>
+                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
+                                        </tr>
+                                        <tr>
+                                          <td>Size:</td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="border-color: #4c566a">
+                                            <i class="fa-solid fa-x"></i>
+                                          </td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>f<td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td><td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td></td>
+                                        </tr>
+                                      </table>
+                                    </tr slot>
+                                  </table>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle38" name="collapse38" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <p class="inline-num">CoLa</p>
+                                      </div>
+                                      <label for="handle38"></label>
+                                    </div>
+                                    <div class="collapsable">
+                                      <pre>Obj 1:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4)
+	 histogram:{f: -1, ¬f: -1}; 
+Obj 2:  part. of stuff: size == 3
+	 counting: Nr. f in [0,2) | (2,4); 
+Obj 3:  part. of stuff: size in [1,3) | (3,8]
+	 counting: Nr. f = 2; 
+</pre>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <input type="checkbox" class="control" id="sol_7" name="sol_7" />
+                            <label for="sol_7" class="solution">
+                              <i class="fa-solid fa-equals fa-sm"></i>
+                              <p class="inline-num">0</p>
+                            </label>
+                            <div class="collapsable">
+                              <div class="content-line"></div>
+                              <div class="count-description">
+                                <i class="fa-solid fa-calculator"></i>
+                                <i class="fa-solid fa-equals fa-sm"></i>
+                                <p class="inline-num">$$\texttip{ 0 }{ No solution found }$$</p>
                               </div>
                             </div>
                           </div>

@@ -205,7 +205,12 @@ class And(object):
             return False
 
     def __hash__(self):
-        return hash(str(self))
+        l = str(self.left)
+        r = str(self.right)
+        if l[0] < r[0]:
+            return hash(l + r)
+        else:
+            return hash(r + l)
 
     def __repr__(self):
         # if self.left.name == "":

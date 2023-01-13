@@ -9,6 +9,7 @@ src/.vscode/
 *.MINIONSOLS*
 *.MINIONSTATS*
 tests/examples
+tests/results
 src/data.out
 
 # Byte-compiled / optimized / DLL files

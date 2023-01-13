@@ -5,9 +5,12 @@ from parser import EmptyException, Parser
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", help="Run solver on file")
-    parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--visualize", help="Generate VisCoSo log to given file")
+    parser.add_argument("-f", help="Run solver on file F")
+    parser.add_argument(
+        "-v",
+        help="Generate a visual representation of CoSo reasoning to an html file V",
+    )
+    parser.add_argument("--debug", action="store_true", help="Print log")
     args = parser.parse_args()
     if args.f:
         parser = Parser(args.f)
@@ -16,8 +19,8 @@ if __name__ == "__main__":
             print("Running solver...")
             sol = parser.problem.solve(debug=args.debug)
             print(f"Solution: {sol}")
-            if args.visualize:
-                with open(args.visualize, "w") as out:
+            if args.v:
+                with open(args.v, "w") as out:
                     out.write(sol.log.to_viscoso())
         except EmptyException:
             print("Could not find a problem :(")

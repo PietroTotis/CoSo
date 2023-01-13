@@ -1,4 +1,3 @@
-from ctypes import sizeof
 from util import *
 from portion.dict import IntervalDict
 from level_1 import SetFormula
@@ -154,7 +153,6 @@ class Venn(object):
                 self.parts[unknown[0]] = 0
             else:
                 self.parts[unknown[0]] = u.size - ksize
-
         else:
             if u.size is None:
                 if len(known) == 0:

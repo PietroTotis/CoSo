@@ -5,6 +5,7 @@ import portion as P
 
 from level_1 import Multiset
 from level_2 import LiftedSet
+from configuration import CSize
 from yattag import Doc, indent
 from util import *
 
@@ -101,15 +102,17 @@ class VisCoSo(object):
                 with self.tag("tr slot"):
                     for i in range(0, s):
                         if len(vars) > 0:
-                            self.add_lifted_set(vars[i])
+                            self.add_lifted_set(vars[i], labelled=config.labelled)
                         else:
                             ub = config.domain.size() - s + 1
-                            self.add_lifted_set(max=ub, id=i + 1)
-            if config.labelled():
-                with self.tag("tr slot"):
-                    for i in range(0, size[-1]):
-                        with self.tag("td"):
-                            self.text(str(i + 1))
+                            self.add_lifted_set(
+                                max=ub, labelled=config.labelled, id=i + 1
+                            )
+            # if config.labelled():
+            #     with self.tag("tr slot"):
+            #         for i in range(0, size[-1]):
+            #             with self.tag("td"):
+            #                 self.text(str(i + 1))
 
     def add_constraints(self, constraints):
         with self.tag("table", klass=HST):
@@ -172,8 +175,11 @@ class VisCoSo(object):
                 with self.tag("td", klass=f"{box_type}", style=f"{border_col(colour)}"):
                     self.icon(ICON_NOPE)
 
-    def add_lifted_set(self, lset=None, max=None, id=0):
-        name = f"Part {id}" if lset is None else lset.name
+    def add_lifted_set(self, lset=None, labelled=False, max=None, id=0):
+        if labelled:
+            name = f"Part {id}" if lset is None else lset.name
+        else:
+            name = f"Part" if lset is None else lset.name
         sizes = P.closed(1, max) if lset is None else lset.size.values
         ccs = [] if lset is None else lset.ccs
         histogram = {} if lset is None else lset.histogram
@@ -203,8 +209,10 @@ class VisCoSo(object):
                             self.add_interval(P.singleton(val), self.get_colour(prop))
 
     def add_lvl1_constraint(self, c):
-        prop = c.formula
-        colour = self.get_colour(prop)
+        if isinstance(c, CSize):
+            colour = COLOURS["none"]
+        else:
+            colour = self.get_colour(c.formula)
         self.add_interval(c.values, colour)
 
     def add_lvl2_constraint(self, c):

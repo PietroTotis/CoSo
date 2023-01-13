@@ -22,6 +22,7 @@ class Lexer(object):
         "min": "MIN",
         "max": "MAX",
         "part": "PART",
+        "repeated": "REPEAT",
     }
 
     # Tokens
@@ -94,7 +95,6 @@ class Lexer(object):
         "NOT",
         "DIFF",
         "LABEL",
-        "REPEAT",
     ] + list(reserved.values())
 
 
@@ -245,23 +245,25 @@ class Parser(object):
         | LABEL IN LSPAR REPEAT set RSPAR
         | LABEL IN LSPAR set RSPAR
         | LABEL IN LPAR LPAR set RPAR RPAR
-        | LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR
+        | LABEL IN LSPAR LPAR set RPAR RSPAR
         """
         # not checking var consistency and set existence
         name = p[1]
-        set = p[5]
-        if p[3] == "{" and p[4] == "{":
-            type = "partition"
-        elif p[3] == "[" and p[4] == "{":
-            type = "composition"
-        elif p[3] == "{":
-            type = "subset"
-        else:
-            type = "sequence"
-        if type == "sequence" and p[4] == 1:
-            type = "permutation"
-        if type == "subset" and p[4] == 2:
-            type = "multisubset"
+        if p[3] == "[":
+            if p[4] == "repeated":
+                type = "sequence"
+            elif p[4] == "{":
+                type = "composition"
+            else:
+                type = "permutation"
+        else:  # p[3] == "{"
+            if p[4] == "repeated":
+                type = "multisubset"
+            elif p[4] == "{":
+                type = "partition"
+            else:
+                type = "subset"
+        set = p[4] if type in ["subset", "permutation"] else p[5]
         if len(self.venn.base_sets) > 0:
             for set in self.sizes:
                 self.venn.add_set(set, self.sizes[set])

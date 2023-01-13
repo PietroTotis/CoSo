@@ -1,0 +1,8 @@
+universe u = {e1,e2,e3};
+property d1 = {e1,e2};
+mset in {repeated u};
+#mset = 2;
+#(mset & d1) = 1;
+
+% sol = 2 
+% {e3,e1/e2} + {e1/e2,e1/e2}

@@ -1,6 +1,8 @@
 import itertools
 from VisCoSo import VisCoSo
 from level_1 import Multiset
+from level_2 import LiftedSet
+from configuration import CCounting
 from util import *
 
 
@@ -87,8 +89,13 @@ class ProblemLog(object):
     def add_relevant_set(self, domain):
         if isinstance(domain, Multiset):
             self.relevant_sets = self.relevant_cases(domain, self.relevant_sets)
-        else:  # level 2 constraint
+        elif isinstance(domain, CCounting):  # level 2 constraint
             self.relevant_sets = self.relevant_cases(domain.formula, self.relevant_sets)
+        elif isinstance(domain, LiftedSet):  # level 2 pos constraint
+            for c in domain.ccs:
+                self.add_relevant_set(c.formula)
+        else:  # ignore CSize
+            pass
 
     def add_subproblem(self, op, sub_log):
         """Append subproblem

@@ -3,7 +3,6 @@ import signal
 import psutil
 import argparse
 import time
-import portion
 import random
 import signal
 import clingo
@@ -1116,7 +1115,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", help="Run solver on file")
     parser.add_argument("-d", help="Run solver on directory")
     parser.add_argument("-b", action="store_true", help="Run benchmarks")
-    parser.add_argument("-l", action="store_true", help="Logging")
+    parser.add_argument("-l", action="store_true", help="Activate logging")
     parser.add_argument("-g", help="Geneate random tests in given folder")
     parser.add_argument(
         "-t", "--timeout", type=int, default=TIMEOUT, help="Set timeout in seconds"
@@ -1176,4 +1175,4 @@ if __name__ == "__main__":
     elif args.plot:
         plot(args.e)
     else:
-        pass
+        parser.print_help()

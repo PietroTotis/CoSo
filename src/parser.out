@@ -40,7 +40,7 @@ Rule 34    arrangement -> LABEL IN LPAR set RPAR
 Rule 35    arrangement -> LABEL IN LSPAR REPEAT set RSPAR
 Rule 36    arrangement -> LABEL IN LSPAR set RSPAR
 Rule 37    arrangement -> LABEL IN LPAR LPAR set RPAR RPAR
-Rule 38    arrangement -> LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR
+Rule 38    arrangement -> LABEL IN LSPAR LPAR set RPAR RSPAR
 Rule 39    math_op -> SUM
 Rule 40    math_op -> MIN
 Rule 41    math_op -> MAX
@@ -64,7 +64,7 @@ INTER                : 25
 LAB                  : 30 32
 LABEL                : 9 18 19 27 28 30 31 32 33 34 35 36 37 38 43 44 45 46
 LPAR                 : 27 28 29 30 33 34 37 37 38 46
-LRPAR                : 23 38 42 48
+LRPAR                : 23 42 48
 LSPAR                : 19 35 36 38 43 44 45 46
 LT                   : 13 16
 MAX                  : 41
@@ -122,7 +122,7 @@ state 0
     (35) arrangement -> . LABEL IN LSPAR REPEAT set RSPAR
     (36) arrangement -> . LABEL IN LSPAR set RSPAR
     (37) arrangement -> . LABEL IN LPAR LPAR set RPAR RPAR
-    (38) arrangement -> . LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR
+    (38) arrangement -> . LABEL IN LSPAR LPAR set RPAR RSPAR
     (42) aggcmp -> . math_op LRPAR set RRPAR comp NUMBER
     (43) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> . LABEL LSPAR NUMBER RSPAR IN set
@@ -180,7 +180,7 @@ state 2
     (35) arrangement -> . LABEL IN LSPAR REPEAT set RSPAR
     (36) arrangement -> . LABEL IN LSPAR set RSPAR
     (37) arrangement -> . LABEL IN LPAR LPAR set RPAR RPAR
-    (38) arrangement -> . LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR
+    (38) arrangement -> . LABEL IN LSPAR LPAR set RPAR RSPAR
     (42) aggcmp -> . math_op LRPAR set RRPAR comp NUMBER
     (43) pos_constraint -> . LABEL LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> . LABEL LSPAR NUMBER RSPAR IN set
@@ -263,7 +263,7 @@ state 9
     (35) arrangement -> LABEL . IN LSPAR REPEAT set RSPAR
     (36) arrangement -> LABEL . IN LSPAR set RSPAR
     (37) arrangement -> LABEL . IN LPAR LPAR set RPAR RPAR
-    (38) arrangement -> LABEL . IN LSPAR LPAR LRPAR set RSPAR RPAR
+    (38) arrangement -> LABEL . IN LSPAR LPAR set RPAR RSPAR
     (43) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS entity
     (44) pos_constraint -> LABEL . LSPAR NUMBER RSPAR IN set
     (45) pos_constraint -> LABEL . LSPAR NUMBER RSPAR EQUALS set
@@ -444,7 +444,7 @@ state 25
     (35) arrangement -> LABEL IN . LSPAR REPEAT set RSPAR
     (36) arrangement -> LABEL IN . LSPAR set RSPAR
     (37) arrangement -> LABEL IN . LPAR LPAR set RPAR RPAR
-    (38) arrangement -> LABEL IN . LSPAR LPAR LRPAR set RSPAR RPAR
+    (38) arrangement -> LABEL IN . LSPAR LPAR set RPAR RSPAR
 
     LPAR            shift and go to state 39
     LSPAR           shift and go to state 40
@@ -677,7 +677,7 @@ state 40
 
     (35) arrangement -> LABEL IN LSPAR . REPEAT set RSPAR
     (36) arrangement -> LABEL IN LSPAR . set RSPAR
-    (38) arrangement -> LABEL IN LSPAR . LPAR LRPAR set RSPAR RPAR
+    (38) arrangement -> LABEL IN LSPAR . LPAR set RPAR RSPAR
     (21) set -> . base_set
     (22) set -> . PART
     (23) set -> . LRPAR set RRPAR
@@ -1007,10 +1007,25 @@ state 63
 
 state 64
 
-    (38) arrangement -> LABEL IN LSPAR LPAR . LRPAR set RSPAR RPAR
+    (38) arrangement -> LABEL IN LSPAR LPAR . set RPAR RSPAR
+    (21) set -> . base_set
+    (22) set -> . PART
+    (23) set -> . LRPAR set RRPAR
+    (24) set -> . NOT set
+    (25) set -> . set INTER set
+    (26) set -> . set UNION set
+    (18) base_set -> . LABEL
+    (19) base_set -> . LABEL LSPAR NUMBER RSPAR
+    (20) base_set -> . UNIVERSE
 
-    LRPAR           shift and go to state 88
+    PART            shift and go to state 33
+    LRPAR           shift and go to state 44
+    NOT             shift and go to state 34
+    LABEL           shift and go to state 35
+    UNIVERSE        shift and go to state 36
 
+    set                            shift and go to state 88
+    base_set                       shift and go to state 32
 
 state 65
 
@@ -1265,25 +1280,14 @@ state 87
 
 state 88
 
-    (38) arrangement -> LABEL IN LSPAR LPAR LRPAR . set RSPAR RPAR
-    (21) set -> . base_set
-    (22) set -> . PART
-    (23) set -> . LRPAR set RRPAR
-    (24) set -> . NOT set
-    (25) set -> . set INTER set
-    (26) set -> . set UNION set
-    (18) base_set -> . LABEL
-    (19) base_set -> . LABEL LSPAR NUMBER RSPAR
-    (20) base_set -> . UNIVERSE
+    (38) arrangement -> LABEL IN LSPAR LPAR set . RPAR RSPAR
+    (25) set -> set . INTER set
+    (26) set -> set . UNION set
 
-    PART            shift and go to state 33
-    LRPAR           shift and go to state 44
-    NOT             shift and go to state 34
-    LABEL           shift and go to state 35
-    UNIVERSE        shift and go to state 36
+    RPAR            shift and go to state 102
+    INTER           shift and go to state 47
+    UNION           shift and go to state 48
 
-    set                            shift and go to state 102
-    base_set                       shift and go to state 32
 
 state 89
 
@@ -1438,13 +1442,9 @@ state 101
 
 state 102
 
-    (38) arrangement -> LABEL IN LSPAR LPAR LRPAR set . RSPAR RPAR
-    (25) set -> set . INTER set
-    (26) set -> set . UNION set
+    (38) arrangement -> LABEL IN LSPAR LPAR set RPAR . RSPAR
 
     RSPAR           shift and go to state 114
-    INTER           shift and go to state 47
-    UNION           shift and go to state 48
 
 
 state 103
@@ -1550,16 +1550,16 @@ state 113
 
 state 114
 
-    (38) arrangement -> LABEL IN LSPAR LPAR LRPAR set RSPAR . RPAR
+    (38) arrangement -> LABEL IN LSPAR LPAR set RPAR RSPAR .
 
-    RPAR            shift and go to state 117
+    SEMI            reduce using rule 38 (arrangement -> LABEL IN LSPAR LPAR set RPAR RSPAR .)
 
 
 state 115
 
     (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list . RPAR
 
-    RPAR            shift and go to state 118
+    RPAR            shift and go to state 117
 
 
 state 116
@@ -1570,13 +1570,6 @@ state 116
 
 
 state 117
-
-    (38) arrangement -> LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR .
-
-    SEMI            reduce using rule 38 (arrangement -> LABEL IN LSPAR LPAR LRPAR set RSPAR RPAR .)
-
-
-state 118
 
     (46) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR .
 
