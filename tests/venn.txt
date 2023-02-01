@@ -12,7 +12,7 @@ property blue;
 property green;
 #green&triangles = 3;
 
-perm in [|universe];
+perm in [universe];
 #perm = 4;
 perm[2] = green;
 #squares&perm =2;

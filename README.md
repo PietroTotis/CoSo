@@ -3,7 +3,7 @@ This repository contains the code associated to the paper [Lifted Reasoning for 
 
 > A kit of toy shapes contains five triangles and two squares. One triangle and one square are red.Another triangle and the other square are blue and the remaining triangles are green. In how manydifferent rows of four objects can the shapes be arranged if the two squares are included and thesecond object is green?
 
-> Given the same set of shapes, in how many ways can the objects be divided into three(non-empty) groups such that the green objects all belong to the same group
+> Given the same set of shapes, in how many ways can the objects be divided into three(non-empty) groups such that the green objects all belong to the same group?
 
 # CoLa
 The input language for the solver is CoLa: a CoLa program is defined by a multiset of objects, a configuration, and optional constraints. 

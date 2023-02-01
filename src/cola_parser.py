@@ -102,8 +102,9 @@ class Parser(object):
 
     tokens = Lexer.tokens
 
-    def __init__(self, file):
+    def __init__(self, file=None, cola=None):
         self.file = file
+        self.cola = cola
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self)
         self.sizes = {}
@@ -111,11 +112,14 @@ class Parser(object):
         self.venn = Venn()
 
     def parse(self):
-        with open(self.file, "r") as f:
-            data = f.read()
-            self.parser.parse(data)
-            if self.problem.configuration is None:
-                raise EmptyException("No configuration specified")
+        if self.file is not None:
+            with open(self.file, "r") as f:
+                cola = f.read()
+        else:
+            cola = self.cola
+        self.parser.parse(cola)
+        if self.problem.configuration is None:
+            raise EmptyException("No configuration specified")
 
     def p_program(self, p):
         """program : statement

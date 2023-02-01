@@ -11,6 +11,7 @@ src/.vscode/
 tests/examples
 tests/results
 src/data.out
+.ipynb_checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

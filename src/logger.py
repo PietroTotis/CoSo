@@ -254,3 +254,6 @@ class ProblemLog(object):
 
     def to_viscoso(self):
         return self.vis.generate(self)
+
+    def to_viscoso_widget(self):
+        return self.vis.generate_widget(self)

@@ -14,15 +14,15 @@ HEADER = os.path.join(ROOT_DIR, "src", "VisCoSo", "header.html")
 # Icons CSS
 
 ICON_QUESTION = "fa-solid fa-question"
-ICON_TIMES = "fa-solid fa-xmark"
+ICON_TIMES = "fa-solid fa-times"
 ICON_PLUS = "fa-solid fa-plus"
 ICON_MINUS = "fa-solid fa-minus"
 ICON_EQUALS = "fa-solid fa-equals fa-sm"
-ICON_PROBLEM = "icon fa-solid fa-pen-to-square fa-lg"
+ICON_PROBLEM = "fa-solid fa-file-alt"
 ICON_SETS = "fa-solid fa-shapes"
-ICON_CONF = "fa-solid fa-cubes-stacked"
+ICON_CONF = "fa-solid fa-sitemap"
 ICON_CONSTR = "fa-solid fa-ban"
-ICON_INFO = "fa-solid fa-circle-info"
+ICON_INFO = "fa-solid fa-info-circle"
 ICON_CALC = "fa-solid fa-calculator"
 ICON_ARROWL = "fa-solid fa-arrow-left"
 ICON_ARROWR = "fa-solid fa-arrow-right"
@@ -35,7 +35,7 @@ ACCORDIONS = "accordions"
 CAPTION = "caption"
 CAPTION_TEXT = "caption-text"
 COLLAPSE = "collapsable"
-CONTAINER = "container"
+CONTAINER = "vs-container"
 CONTENT_LINE = "content-line"
 COUNT_DESC = "count-description"
 COL = "column"
@@ -470,11 +470,11 @@ class VisCoSo(object):
                                 self.text("")
 
     def icon(self, icon):
-        with self.tag("i", klass=icon):
+        with self.tag("i", klass=f"vsc-icon {icon}"):
             pass
 
     def label(self, handle):
-        with self.tag("label", ("for", handle)):
+        with self.tag("label", ("for", handle), klass="vsc-lab"):
             pass
 
     def reserve_colours(self, log):
@@ -516,4 +516,20 @@ class VisCoSo(object):
             with self.tag("body"):
                 self.add_problem(log)
 
+        return indent(self.doc.getvalue())
+
+    def generate_widget(self, log):
+        self.reserve_colours(log)
+        with self.tag(
+            "script",
+            src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML",
+            type="text/javascript",
+        ):
+            pass
+        with self.tag("script", type="text/x-mathjax-config"):
+            self.text("""MathJax.Hub.Config({TeX: {extensions: ["action.js"] }});""")
+        with self.tag("div"):
+            with self.tag("div"):
+                self.text("$$\\require{action}$$")  # make sure texttips are active
+            self.add_problem(log)
         return indent(self.doc.getvalue())
