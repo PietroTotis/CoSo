@@ -18,9 +18,6 @@ class Lexer(object):
         "property": "PROP",
         "in": "IN",
         "universe": "UNIVERSE",
-        "sum": "SUM",
-        "min": "MIN",
-        "max": "MAX",
         "part": "PART",
         "repeated": "REPEAT",
     }
@@ -47,11 +44,6 @@ class Lexer(object):
     t_NOT = r"\¬"
     t_ignore_COMMENT = r"%.*"
     t_ignore_WHITES = r"\ +|\t|\n"
-
-    # def t_SLASH(self, t):
-    #     r"\|"
-    #     t.value = "|"
-    #     return t
 
     def t_LABEL(self, t):
         r"[a-z][a-zA-Z\-\_0-9]*|[0-9]+\-[0-9\-]+"
@@ -129,26 +121,13 @@ class Parser(object):
     def p_statement(self, p):
         """statement : declare_set SEMI
         | arrangement SEMI
-        | aggcmp SEMI
         | pos_constraint SEMI
         | count_constraint SEMI
         """
 
-    def p_entity(self, p):
-        """entity : NUMBER
-        | LABEL
-        """
-        p[0] = p[1]
-
-    # def p_replace(self, p):
-    #     """replace : SLASH
-    #     | SLASH SLASH
-    #     """
-    #     p[0] = len(p) - 1
-
     def p_entity_list(self, p):
-        """entity_list : entity
-        | entity COMMA entity_list
+        """entity_list : LABEL
+        | LABEL COMMA entity_list
         """
         if len(p) > 2:
             p[0] = [p[1]] + p[3]
@@ -179,25 +158,26 @@ class Parser(object):
             # need more elegant way to pass number of lifted set
             p[0] = LiftedSet(self.problem.universe, CSize(p[3], Int.closed(1, Int.inf)))
 
-    def p_set(self, p):
-        """set : base_set
-        | PART
+    def p_set_atom(self, p):
+        """set_atom : base_set
         | LRPAR set RRPAR
-        | NOT set
-        | set INTER set
-        | set UNION set
         """
-
-        if len(p) == 2:
-            p[0] = p[1]
-        elif isinstance(p[1], str) and p[1] == "(":
+        if p[1] == "(":
             p[0] = p[2]
-        elif isinstance(p[1], str) and p[1] == "¬":
-            if isinstance(p[2], LiftedSet):
-                raise Exception("Cannot negate partition")
-            else:
-                p[0] = Not(p[2])
-        elif p[2] == "&":
+        else:
+            p[0] = p[1]
+
+    def p_set_not(self, p):
+        """set_not : NOT set_atom
+        | set_atom
+        """
+        p[0] = p[1]
+
+    def p_set_inter(self, p):
+        """set_inter : set_not
+        | set_not INTER set_atom
+        """
+        if len(p) > 2:
             if isinstance(p[1], LiftedSet):
                 d = self.problem.compute_dom(p[3])
                 p[1].ccs = [CCounting(d, Int.open(0, Int.inf))]
@@ -208,11 +188,33 @@ class Parser(object):
                 p[0] = p[1]
             else:
                 p[0] = And(p[1], p[3])
-        elif p[2] == "+":
+        else:
+            p[0] = p[1]
+
+    def p_set_union(self, p):
+        """set_union : set_inter
+        | set UNION set_inter
+        """
+        if len(p) > 2:
             if isinstance(p[1], LiftedSet):
                 raise Exception("Cannot or partition")
             else:
                 p[0] = Or(p[1], p[3])
+        else:
+            p[0] = p[1]
+
+    def p_set(self, p):
+        """set : set_union
+        | PART
+        """
+
+        if len(p) == 2:
+            p[0] = p[1]
+        else:
+            if isinstance(p[2], LiftedSet):
+                raise Exception("Cannot negate partition")
+            else:
+                p[0] = Not(p[2])
 
     def p_declare_set(self, p):
         """declare_set : PROP LABEL EQUALS LPAR entity_list RPAR
@@ -293,31 +295,9 @@ class Parser(object):
             raise EmptyException("No sets found")
         p[0] = s
 
-    def p_math_op(self, p):
-        """math_op : SUM
-        | MIN
-        | MAX
-        """
-        p[0] = p[1]
-
-    def p_aggcmp(self, p):
-        """aggcmp  : math_op LRPAR set RRPAR comp NUMBER"""
-        set = p[3]
-        comp = p[5]
-        n = p[6]
-        interval = self.problem.get_interval(comp, n)
-        if p[1] == "sum":
-            p[0] = AggFormula(set, sum, interval)
-        elif p[1] == "min":
-            p[0] = AggFormula(set, min, interval)
-        else:
-            p[0] = AggFormula(set, max, interval)
-        self.problem.add_agg_formula(p[0])
-
     def p_pos_constraint(self, p):
-        """pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS entity
+        """pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS set
         | LABEL LSPAR NUMBER RSPAR IN set
-        | LABEL LSPAR NUMBER RSPAR EQUALS set
         | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR
         """
         arrangement = p[1]
@@ -339,12 +319,6 @@ class Parser(object):
         pf = CPosition(arrangement, pos, df)
         self.problem.add_pos_formula(pf)
         p[0] = pf
-
-    # def p_size_constraint(self, p):
-    #     """size_constraint : SLASH set SLASH EQUALS NUMBER"""
-    #     set = p[2]
-    #     n = int(p[5])
-    #     self.sizes[set] = n
 
     def p_count_constraint(self, p):
         """count_constraint : COUNT set comp NUMBER

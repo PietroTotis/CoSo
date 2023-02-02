@@ -40,8 +40,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.f:
         if args.v:
-            coso(args.f, args.debug, args.v)
+            coso(file=args.f, debug=args.debug, visual=args.v)
         else:
-            coso(args.f, args.debug)
+            coso(file=args.f, debug=args.debug)
     else:
         parser.print_help()

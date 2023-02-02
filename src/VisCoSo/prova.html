@@ -29,12 +29,12 @@
   <body>
     <div class="accordion">
       <div class="inline-solution">
-        <i class="icon fa-solid fa-pen-to-square fa-lg"></i>
+        <i class="vsc-icon fa-solid fa-file-alt"></i>
         <h2 class="problem-lab">Problem</h2>
       </div>
       <div class="main-content" id="main-content">
         <div class="caption">
-          <i class="fa-solid fa-circle-info"></i>
+          <i class="vsc-icon fa-solid fa-info-circle"></i>
           <p class="caption-text">Root problem</p>
         </div>
         <div class="configuration">
@@ -42,37 +42,28 @@
             <input type="checkbox" class="control" id="handle1" name="collapse1" />
             <div class="handle">
               <div class="inline-solution">
-                <i class="fa-solid fa-shapes"></i>
+                <i class="vsc-icon fa-solid fa-shapes"></i>
                 <p class="inline-num">Universe</p>
               </div>
-              <label for="handle1"></label>
+              <label for="handle1" class="vsc-lab"></label>
             </div>
             <div class="collapsable configuration">
               <table class="histogram">
                 <tr>
-                  <td class="ylabel">f</td>
-                  <td class="hcell" style="background-color: #d08770">stuff∧f_0</td>
-                  <td class="hcell" style="background-color: #d08770">stuff∧f_1</td>
-                  <td class="hcell" style="background-color: #d08770">stuff∧f_2</td>
-                  <td class="hcell" style="background-color: #d08770">stuff∧f_3</td>
+                  <td class="ylabel">squares</td>
+                  <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                  <td class="hcell" style="background-color: #ebcb8b">b2</td>
                 </tr>
                 <tr>
-                  <td class="ylabel">¬f</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_0</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_1</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_2</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_3</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_4</td>
-                  <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_5</td>
+                  <td class="ylabel">(triangles) ∧ (¬green)</td>
+                  <td class="hcell" style="background-color: #5e81ac">r1</td>
+                  <td class="hcell" style="background-color: #5e81ac">b1</td>
                 </tr>
                 <tr>
-                  <td class="ylab"></td>
-                  <td class="xlab"></td>
-                  <td class="xlab"></td>
-                  <td class="xlab"></td>
-                  <td class="xlab"></td>
-                  <td class="xlab">5</td>
-                  <td class="xlab"></td>
+                  <td class="ylabel">green</td>
+                  <td class="hcell" style="background-color: #a3be8c">green</td>
+                  <td class="hcell" style="background-color: #a3be8c">green</td>
+                  <td class="hcell" style="background-color: #a3be8c">green</td>
                 </tr>
               </table>
               <div class="accordion">
@@ -81,35 +72,13 @@
                   <div class="inline-solution">
                     <p class="inline-num">CoLa</p>
                   </div>
-                  <label for="handle2"></label>
+                  <label for="handle2" class="vsc-lab"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property f = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3
-}; 
-property ¬f = {
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
+                  <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green, green}; 
+property squares = {r2, b2}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+property green = {green, green, green}; 
 </pre>
                 </div>
               </div>
@@ -119,63 +88,31 @@ property ¬f = {
             <input type="checkbox" class="control" id="handle3" name="collapse3" />
             <div class="handle">
               <div class="inline-solution">
-                <i class="fa-solid fa-cubes-stacked"></i>
+                <i class="vsc-icon fa-solid fa-sitemap"></i>
                 <p class="inline-num">Configuration</p>
               </div>
-              <label for="handle3"></label>
+              <label for="handle3" class="vsc-lab"></label>
             </div>
             <div class="collapsable configuration">
               <table class="histogram">
-                <tr slot>
-                  <table class="lifted-set">
-                    <tr>
-                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 1</td>
-                    </tr>
-                    <tr>
-                      <td>Size:</td>
-                      <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                    </tr>
-                  </table>
-                  <table class="lifted-set">
-                    <tr>
-                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 2</td>
-                    </tr>
-                    <tr>
-                      <td>Size:</td>
-                      <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                    </tr>
-                  </table>
-                  <table class="lifted-set">
-                    <tr>
-                      <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>Part 3</td>
-                    </tr>
-                    <tr>
-                      <td>Size:</td>
-                      <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                      <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                    </tr>
-                  </table>
-                </tr slot>
+                <tr>
+                  <td class="slot" style="background-color: transparent">1</td>
+                </tr>
+                <tr>
+                  <td class="slot" style="background-color: transparent">1</td>
+                  <td class="slot" style="background-color: transparent">2</td>
+                </tr>
+                <tr>
+                  <td class="slot" style="background-color: transparent">1</td>
+                  <td class="slot" style="background-color: transparent">2</td>
+                  <td class="slot" style="background-color: transparent">3</td>
+                </tr>
+                <tr>
+                  <td class="slot" style="background-color: transparent">1</td>
+                  <td class="slot" style="background-color: transparent">2</td>
+                  <td class="slot" style="background-color: transparent">3</td>
+                  <td class="slot" style="background-color: transparent">4</td>
+                </tr>
               </table>
               <div class="accordion">
                 <input type="checkbox" class="control" id="handle4" name="collapse4" />
@@ -183,10 +120,10 @@ property ¬f = {
                   <div class="inline-solution">
                     <p class="inline-num">CoLa</p>
                   </div>
-                  <label for="handle4"></label>
+                  <label for="handle4" class="vsc-lab"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>composition (size == 3) of entity stuff (seq)</pre>
+                  <pre>permutation (size in [1,4]) of entity universe (perm)</pre>
                 </div>
               </div>
             </div>
@@ -195,52 +132,37 @@ property ¬f = {
             <input type="checkbox" class="control" id="handle5" name="collapse5" />
             <div class="handle">
               <div class="inline-solution">
-                <i class="fa-solid fa-ban"></i>
+                <i class="vsc-icon fa-solid fa-ban"></i>
                 <p class="inline-num">Constraints</p>
               </div>
-              <label for="handle5"></label>
+              <label for="handle5" class="vsc-lab"></label>
             </div>
             <div class="collapsable configuration">
               <table class="histogram">
                 <tr>
-                  <td class="slot">1</td>
+                  <td class="slot">2</td>
                   <td>
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="vsc-icon fa-solid fa-arrow-left"></i>
                   </td>
-                  <td class="hcell" style="background-color: #81a1c1"></td>
-                  <td class="ylabel">part. of stuff: size == 3</td>
+                  <td class="hcell" style="background-color: #a3be8c"></td>
+                  <td class="ylabel">green</td>
                 </tr>
               </table>
               <table class="histogram">
                 <tr>
                   <td>
-                    <i class="fa-solid fa-cubes-stacked"></i>
+                    <i class="vsc-icon fa-solid fa-sitemap"></i>
                   </td>
                   <td>
-                    <i class="fa-solid fa-arrow-right"></i>
+                    <i class="vsc-icon fa-solid fa-arrow-right"></i>
                   </td>
-                  <td class="slot" style="; border-color: #4c566a"></td>
-                  <td class="slot" style="; border-color: #4c566a"></td>
-                  <td>
-                    <i class="fa-solid fa-arrow-left"></i>
-                  </td>
-                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                </tr>
-                <tr>
-                  <td>
-                    <i class="fa-solid fa-cubes-stacked"></i>
-                  </td>
-                  <td>
-                    <i class="fa-solid fa-arrow-right"></i>
-                  </td>
-                  <td class="slot" style="; border-color: #4c566a"></td>
-                  <td>
-                    <i class="fa-solid fa-arrow-left"></i>
-                  </td>
-                  <td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td>
-                  <td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td>
+                  <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                  <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                  <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                  <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                  <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                  <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                  <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
                 </tr>
               </table>
               <div class="accordion">
@@ -249,12 +171,11 @@ property ¬f = {
                   <div class="inline-solution">
                     <p class="inline-num">CoLa</p>
                   </div>
-                  <label for="handle6"></label>
+                  <label for="handle6" class="vsc-lab"></label>
                 </div>
                 <div class="collapsable">
-                  <pre>Position 1: part. of stuff: size == 3; 
-Nr. size == 3 = 2; 
-Nr. (Nr. f = 2) = 1; 
+                  <pre>Position 2: green; 
+Nr. squares in [2, 7]; 
 </pre>
                 </div>
               </div>
@@ -263,8 +184,8 @@ Nr. (Nr. f = 2) = 1;
         </div>
         <input type="checkbox" class="control" id="sol_1" name="sol_1" />
         <label for="sol_1" class="solution">
-          <i class="fa-solid fa-equals fa-sm"></i>
-          <p class="inline-num">2880</p>
+          <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+          <p class="inline-num">20</p>
         </label>
         <div class="collapsable Zerosubproblems">
           <div class="content-line"></div>
@@ -273,54 +194,45 @@ Nr. (Nr. f = 2) = 1;
               <input type="checkbox" class="control" id="handle7" name="collapse7" />
               <div class="handle">
                 <div class="inline-solution">
-                  <i class="fa-solid fa-equals fa-sm"></i>
-                  <p class="inline-num">2880</p>
+                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                  <p class="inline-num">0</p>
                 </div>
-                <label for="handle7"></label>
+                <label for="handle7" class="vsc-lab"></label>
               </div>
               <div class="collapsable">
                 <div class="content-line"></div>
                 <div class="vs-container">
                   <div class="caption">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <p class="caption-text">Configuration of size 3</p>
+                    <i class="vsc-icon fa-solid fa-info-circle"></i>
+                    <p class="caption-text">Configuration of size 1</p>
                   </div>
                   <div class="configuration">
                     <div class="accordion">
                       <input type="checkbox" class="control" id="handle8" name="collapse8" />
                       <div class="handle">
                         <div class="inline-solution">
-                          <i class="fa-solid fa-shapes"></i>
+                          <i class="vsc-icon fa-solid fa-shapes"></i>
                           <p class="inline-num">Universe</p>
                         </div>
-                        <label for="handle8"></label>
+                        <label for="handle8" class="vsc-lab"></label>
                       </div>
                       <div class="collapsable configuration">
                         <table class="histogram">
                           <tr>
-                            <td class="ylabel">f</td>
-                            <td class="hcell" style="background-color: #d08770">stuff∧f_0</td>
-                            <td class="hcell" style="background-color: #d08770">stuff∧f_1</td>
-                            <td class="hcell" style="background-color: #d08770">stuff∧f_2</td>
-                            <td class="hcell" style="background-color: #d08770">stuff∧f_3</td>
+                            <td class="ylabel">squares</td>
+                            <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                            <td class="hcell" style="background-color: #ebcb8b">b2</td>
                           </tr>
                           <tr>
-                            <td class="ylabel">¬f</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_0</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_1</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_2</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_3</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_4</td>
-                            <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_5</td>
+                            <td class="ylabel">(triangles) ∧ (¬green)</td>
+                            <td class="hcell" style="background-color: #5e81ac">r1</td>
+                            <td class="hcell" style="background-color: #5e81ac">b1</td>
                           </tr>
                           <tr>
-                            <td class="ylab"></td>
-                            <td class="xlab"></td>
-                            <td class="xlab"></td>
-                            <td class="xlab"></td>
-                            <td class="xlab"></td>
-                            <td class="xlab">5</td>
-                            <td class="xlab"></td>
+                            <td class="ylabel">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -329,35 +241,13 @@ Nr. (Nr. f = 2) = 1;
                             <div class="inline-solution">
                               <p class="inline-num">CoLa</p>
                             </div>
-                            <label for="handle9"></label>
+                            <label for="handle9" class="vsc-lab"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property f = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3
-}; 
-property ¬f = {
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
+                            <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green, green}; 
+property squares = {r2, b2}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+property green = {green, green, green}; 
 </pre>
                           </div>
                         </div>
@@ -367,63 +257,16 @@ property ¬f = {
                       <input type="checkbox" class="control" id="handle10" name="collapse10" />
                       <div class="handle">
                         <div class="inline-solution">
-                          <i class="fa-solid fa-cubes-stacked"></i>
+                          <i class="vsc-icon fa-solid fa-sitemap"></i>
                           <p class="inline-num">Configuration</p>
                         </div>
-                        <label for="handle10"></label>
+                        <label for="handle10" class="vsc-lab"></label>
                       </div>
                       <div class="collapsable configuration">
                         <table class="histogram">
-                          <tr slot>
-                            <table class="lifted-set">
-                              <tr>
-                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                              </tr>
-                              <tr>
-                                <td>Size:</td>
-                                <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                              </tr>
-                            </table>
-                            <table class="lifted-set">
-                              <tr>
-                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                              </tr>
-                              <tr>
-                                <td>Size:</td>
-                                <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                              </tr>
-                            </table>
-                            <table class="lifted-set">
-                              <tr>
-                                <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                              </tr>
-                              <tr>
-                                <td>Size:</td>
-                                <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                              </tr>
-                            </table>
-                          </tr slot>
+                          <tr>
+                            <td class="slot" style="background-color: transparent">1</td>
+                          </tr>
                         </table>
                         <div class="accordion">
                           <input type="checkbox" class="control" id="handle11" name="collapse11" />
@@ -431,12 +274,10 @@ property ¬f = {
                             <div class="inline-solution">
                               <p class="inline-num">CoLa</p>
                             </div>
-                            <label for="handle11"></label>
+                            <label for="handle11" class="vsc-lab"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>Obj 1:  part. of stuff: size in [1,8]; 
-Obj 2:  part. of stuff: size in [1,8]; 
-Obj 3:  part. of stuff: size in [1,8]; 
+                            <pre>Obj 1:  (squares) ∨ (triangles); 
 </pre>
                           </div>
                         </div>
@@ -446,52 +287,37 @@ Obj 3:  part. of stuff: size in [1,8];
                       <input type="checkbox" class="control" id="handle12" name="collapse12" />
                       <div class="handle">
                         <div class="inline-solution">
-                          <i class="fa-solid fa-ban"></i>
+                          <i class="vsc-icon fa-solid fa-ban"></i>
                           <p class="inline-num">Constraints</p>
                         </div>
-                        <label for="handle12"></label>
+                        <label for="handle12" class="vsc-lab"></label>
                       </div>
                       <div class="collapsable configuration">
                         <table class="histogram">
                           <tr>
-                            <td class="slot">1</td>
+                            <td class="slot">2</td>
                             <td>
-                              <i class="fa-solid fa-arrow-left"></i>
+                              <i class="vsc-icon fa-solid fa-arrow-left"></i>
                             </td>
-                            <td class="hcell" style="background-color: #81a1c1"></td>
-                            <td class="ylabel">part. of stuff: size == 3</td>
+                            <td class="hcell" style="background-color: #a3be8c"></td>
+                            <td class="ylabel">green</td>
                           </tr>
                         </table>
                         <table class="histogram">
                           <tr>
                             <td>
-                              <i class="fa-solid fa-cubes-stacked"></i>
+                              <i class="vsc-icon fa-solid fa-sitemap"></i>
                             </td>
                             <td>
-                              <i class="fa-solid fa-arrow-right"></i>
+                              <i class="vsc-icon fa-solid fa-arrow-right"></i>
                             </td>
-                            <td class="slot" style="; border-color: #4c566a"></td>
-                            <td class="slot" style="; border-color: #4c566a"></td>
-                            <td>
-                              <i class="fa-solid fa-arrow-left"></i>
-                            </td>
-                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <i class="fa-solid fa-cubes-stacked"></i>
-                            </td>
-                            <td>
-                              <i class="fa-solid fa-arrow-right"></i>
-                            </td>
-                            <td class="slot" style="; border-color: #4c566a"></td>
-                            <td>
-                              <i class="fa-solid fa-arrow-left"></i>
-                            </td>
-                            <td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td>
-                            <td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -500,12 +326,11 @@ Obj 3:  part. of stuff: size in [1,8];
                             <div class="inline-solution">
                               <p class="inline-num">CoLa</p>
                             </div>
-                            <label for="handle13"></label>
+                            <label for="handle13" class="vsc-lab"></label>
                           </div>
                           <div class="collapsable">
-                            <pre>Position 1: part. of stuff: size == 3; 
-Nr. size == 3 = 2; 
-Nr. (Nr. f = 2) = 1; 
+                            <pre>Position 2: green; 
+Nr. squares in [2, 7]; 
 </pre>
                           </div>
                         </div>
@@ -514,954 +339,1416 @@ Nr. (Nr. f = 2) = 1;
                   </div>
                   <input type="checkbox" class="control" id="sol_2" name="sol_2" />
                   <label for="sol_2" class="solution">
-                    <i class="fa-solid fa-equals fa-sm"></i>
-                    <p class="inline-num">2880</p>
+                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                    <p class="inline-num">0</p>
                   </label>
-                  <div class="collapsable Zerosubproblems">
+                  <div class="collapsable">
+                    <div class="content-line"></div>
+                    <div class="count-description">
+                      <i class="vsc-icon fa-solid fa-calculator"></i>
+                      <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                      <p class="inline-num">$$\texttip{ 0 }{ Cannot satisfy Nr. squares in [2, 7] :( }$$</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion">
+              <input type="checkbox" class="control" id="handle14" name="collapse14" />
+              <div class="handle">
+                <div class="inline-solution">
+                  <i class="vsc-icon fa-solid fa-plus"></i>
+                  <p class="inline-num">0</p>
+                </div>
+                <label for="handle14" class="vsc-lab"></label>
+              </div>
+              <div class="collapsable">
+                <div class="content-line"></div>
+                <div class="vs-container">
+                  <div class="caption">
+                    <i class="vsc-icon fa-solid fa-info-circle"></i>
+                    <p class="caption-text">Configuration of size 2</p>
+                  </div>
+                  <div class="configuration">
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle15" name="collapse15" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-shapes"></i>
+                          <p class="inline-num">Universe</p>
+                        </div>
+                        <label for="handle15" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="ylabel">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">(triangles) ∧ (¬green)</td>
+                            <td class="hcell" style="background-color: #5e81ac">r1</td>
+                            <td class="hcell" style="background-color: #5e81ac">b1</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">squares</td>
+                            <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                            <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle16" name="collapse16" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle16" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green, green}; 
+property green = {green, green, green}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+property squares = {r2, b2}; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle17" name="collapse17" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-sitemap"></i>
+                          <p class="inline-num">Configuration</p>
+                        </div>
+                        <label for="handle17" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot" style="background-color: transparent">1</td>
+                            <td class="slot" style="background-color: transparent">2</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle18" name="collapse18" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle18" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Obj 1:  (squares) ∨ (triangles); 
+Obj 2:  (squares) ∨ (triangles); 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle19" name="collapse19" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-ban"></i>
+                          <p class="inline-num">Constraints</p>
+                        </div>
+                        <label for="handle19" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot">2</td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-left"></i>
+                            </td>
+                            <td class="hcell" style="background-color: #a3be8c"></td>
+                            <td class="ylabel">green</td>
+                          </tr>
+                        </table>
+                        <table class="histogram">
+                          <tr>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-sitemap"></i>
+                            </td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                            </td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle20" name="collapse20" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle20" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Position 2: green; 
+Nr. squares in [2, 7]; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="checkbox" class="control" id="sol_3" name="sol_3" />
+                  <label for="sol_3" class="solution">
+                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                    <p class="inline-num">0</p>
+                  </label>
+                  <div class="collapsable">
+                    <div class="content-line"></div>
+                    <div class="count-description">
+                      <i class="vsc-icon fa-solid fa-calculator"></i>
+                      <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                      <p class="inline-num">$$\texttip{ 0 }{ No solution found }$$</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion">
+              <input type="checkbox" class="control" id="handle21" name="collapse21" />
+              <div class="handle">
+                <div class="inline-solution">
+                  <i class="vsc-icon fa-solid fa-plus"></i>
+                  <p class="inline-num">2</p>
+                </div>
+                <label for="handle21" class="vsc-lab"></label>
+              </div>
+              <div class="collapsable">
+                <div class="content-line"></div>
+                <div class="vs-container">
+                  <div class="caption">
+                    <i class="vsc-icon fa-solid fa-info-circle"></i>
+                    <p class="caption-text">Configuration of size 3</p>
+                  </div>
+                  <div class="configuration">
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle22" name="collapse22" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-shapes"></i>
+                          <p class="inline-num">Universe</p>
+                        </div>
+                        <label for="handle22" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="ylabel">(triangles) ∧ (¬green)</td>
+                            <td class="hcell" style="background-color: #5e81ac">r1</td>
+                            <td class="hcell" style="background-color: #5e81ac">b1</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">squares</td>
+                            <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                            <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle23" name="collapse23" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle23" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green, green}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+property squares = {r2, b2}; 
+property green = {green, green, green}; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle24" name="collapse24" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-sitemap"></i>
+                          <p class="inline-num">Configuration</p>
+                        </div>
+                        <label for="handle24" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot" style="background-color: transparent">1</td>
+                            <td class="slot" style="background-color: transparent">2</td>
+                            <td class="slot" style="background-color: transparent">3</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle25" name="collapse25" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle25" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Obj 1:  (squares) ∨ (triangles); 
+Obj 2:  (squares) ∨ (triangles); 
+Obj 3:  (squares) ∨ (triangles); 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle26" name="collapse26" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-ban"></i>
+                          <p class="inline-num">Constraints</p>
+                        </div>
+                        <label for="handle26" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot">2</td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-left"></i>
+                            </td>
+                            <td class="hcell" style="background-color: #a3be8c"></td>
+                            <td class="ylabel">green</td>
+                          </tr>
+                        </table>
+                        <table class="histogram">
+                          <tr>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-sitemap"></i>
+                            </td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                            </td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle27" name="collapse27" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle27" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Position 2: green; 
+Nr. squares in [2, 7]; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="checkbox" class="control" id="sol_4" name="sol_4" />
+                  <label for="sol_4" class="solution">
+                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                    <p class="inline-num">2</p>
+                  </label>
+                  <div class="collapsable subproblems">
                     <div class="content-line"></div>
                     <div class="accordions">
-                      <div class="accordion">
-                        <input type="checkbox" class="control" id="handle14" name="collapse14" />
-                        <div class="handle">
-                          <div class="inline-solution">
-                            <i class="fa-solid fa-equals fa-sm"></i>
-                            <p class="inline-num">720</p>
-                          </div>
-                          <label for="handle14"></label>
-                        </div>
-                        <div class="collapsable">
-                          <div class="content-line"></div>
-                          <div class="vs-container">
-                            <div class="caption">
-                              <i class="fa-solid fa-circle-info"></i>
-                              <p class="caption-text">Constraint combination nr. 2</p>
-                            </div>
-                            <div class="configuration">
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle15" name="collapse15" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-shapes"></i>
-                                    <p class="inline-num">Universe</p>
-                                  </div>
-                                  <label for="handle15"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr>
-                                      <td class="ylabel">stuff</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_4</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_5</td>
-                                    </tr>
-                                    <tr>
-                                      <td class="ylab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">5</td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">10</td>
-                                    </tr>
-                                  </table>
-                                  <div class="accordion">
-                                    <input type="checkbox" class="control" id="handle16" name="collapse16" />
-                                    <div class="handle">
-                                      <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
-                                      </div>
-                                      <label for="handle16"></label>
-                                    </div>
-                                    <div class="collapsable">
-                                      <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-</pre>
-                                    </div>
-                                  </div>
-                                </div>
+                      <div class="shatter">
+                        <div class="row">
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle28" name="collapse28" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                <p class="inline-num">1</p>
                               </div>
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle17" name="collapse17" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-cubes-stacked"></i>
-                                    <p class="inline-num">Configuration</p>
-                                  </div>
-                                  <label for="handle17"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr slot>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td><td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell" style="border-color: #d08770"><i class="fa-solid fa-x"></i></td></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="border-color: #4c566a">
-                                            <i class="fa-solid fa-x"></i>
-                                          </td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell" style="border-color: #d08770"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td></td>
-                                        </tr>
-                                      </table>
-                                    </tr slot>
-                                  </table>
-                                  <div class="accordion">
-                                    <input type="checkbox" class="control" id="handle18" name="collapse18" />
-                                    <div class="handle">
-                                      <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
-                                      </div>
-                                      <label for="handle18"></label>
-                                    </div>
-                                    <div class="collapsable">
-                                      <pre>Obj 1:  part. of stuff: size == 3
-	 counting: Nr. f = 2; 
-Obj 2:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4); 
-Obj 3:  part. of stuff: size in [1,3) | (3,8]
-	 counting: Nr. f in [0,2) | (2,9); 
-</pre>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              <label for="handle28" class="vsc-lab"></label>
                             </div>
-                            <input type="checkbox" class="control" id="sol_3" name="sol_3" />
-                            <label for="sol_3" class="solution">
-                              <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">720</p>
-                            </label>
-                            <div class="collapsable Zerosubproblems">
+                            <div class="collapsable">
                               <div class="content-line"></div>
-                              <div class="accordions">
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle19" name="collapse19" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-equals fa-sm"></i>
-                                      <p class="inline-num">720</p>
-                                    </div>
-                                    <label for="handle19"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="vs-container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Fixing histograms, combination nr. 1</p>
-                                      </div>
-                                      <div class="configuration">
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle20" name="collapse20" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-shapes"></i>
-                                              <p class="inline-num">Universe</p>
-                                            </div>
-                                            <label for="handle20"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr>
-                                                <td class="ylabel">¬f</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_0</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_1</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_2</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_3</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_4</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_5</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylabel">f</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_0</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_1</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_2</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_3</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab">5</td>
-                                                <td class="xlab"></td>
-                                              </tr>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle21" name="collapse21" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle21"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property ¬f = {
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property f = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3
-}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle22" name="collapse22" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-cubes-stacked"></i>
-                                              <p class="inline-num">Configuration</p>
-                                            </div>
-                                            <label for="handle22"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr slot>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td><td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="border-color: #4c566a">
-                                                      <i class="fa-solid fa-x"></i>
-                                                    </td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                              </tr slot>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle23" name="collapse23" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle23"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>Obj 1:  part. of stuff: size == 3
-	 counting: Nr. f = 2
-	 histogram:{f: 2, ¬f: 1}; 
-Obj 2:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4)
-	 histogram:{f: 1, ¬f: 2}; 
-Obj 3:  part. of stuff: size in [1,3) | (3,8]
-	 counting: Nr. f in [0,2) | (2,9)
-	 histogram:{f: 1, ¬f: 3}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <input type="checkbox" class="control" id="sol_4" name="sol_4" />
-                                      <label for="sol_4" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">720</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\texttip{ \binom{ 4 }{ 2 } }{ Choose 2 out of 4 f } \cdot \texttip{ \binom{ 6 }{ 1 } }{ Choose 1 out of 6 ¬f } \cdot \texttip{ \binom{ 2 }{ 1 } }{ Choose 1 out of 2 f } \cdot \texttip{ \binom{ 5 }{ 2 } }{ Choose 2 out of 5 ¬f } \cdot \texttip{ \binom{ 1 }{ 1 } }{ Choose 1 out of 1 f } \cdot \texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 ¬f }$$</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                              <div class="vs-container">
+                                <div class="caption">
+                                  <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                  <p class="caption-text">Left split: case 1 green are s.t. [Nr. squares = 0, Nr. green = 1, Nr. ¬green = 0]</p>
                                 </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="accordion">
-                        <input type="checkbox" class="control" id="handle24" name="collapse24" />
-                        <div class="handle">
-                          <div class="inline-solution">
-                            <i class="fa-solid fa-plus"></i>
-                            <p class="inline-num">720</p>
-                          </div>
-                          <label for="handle24"></label>
-                        </div>
-                        <div class="collapsable">
-                          <div class="content-line"></div>
-                          <div class="vs-container">
-                            <div class="caption">
-                              <i class="fa-solid fa-circle-info"></i>
-                              <p class="caption-text">Constraint combination nr. 3</p>
-                            </div>
-                            <div class="configuration">
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle25" name="collapse25" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-shapes"></i>
-                                    <p class="inline-num">Universe</p>
-                                  </div>
-                                  <label for="handle25"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr>
-                                      <td class="ylabel">stuff</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_4</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_5</td>
-                                    </tr>
-                                    <tr>
-                                      <td class="ylab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">5</td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">10</td>
-                                    </tr>
-                                  </table>
+                                <div class="configuration">
                                   <div class="accordion">
-                                    <input type="checkbox" class="control" id="handle26" name="collapse26" />
+                                    <input type="checkbox" class="control" id="handle29" name="collapse29" />
                                     <div class="handle">
                                       <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
+                                        <i class="vsc-icon fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Universe</p>
                                       </div>
-                                      <label for="handle26"></label>
+                                      <label for="handle29" class="vsc-lab"></label>
                                     </div>
-                                    <div class="collapsable">
-                                      <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="ylabel">squares</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">(triangles) ∧ (¬green)</td>
+                                          <td class="hcell" style="background-color: #5e81ac">r1</td>
+                                          <td class="hcell" style="background-color: #5e81ac">b1</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle30" name="collapse30" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle30" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>universe green = {green, green, green}; 
+property squares = {r2, b2}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
 </pre>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle27" name="collapse27" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-cubes-stacked"></i>
-                                    <p class="inline-num">Configuration</p>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle31" name="collapse31" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                        <p class="inline-num">Configuration</p>
+                                      </div>
+                                      <label for="handle31" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="slot" style="background-color: #a3be8c">1</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle32" name="collapse32" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle32" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Obj 1:  green; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <label for="handle27"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr slot>
-                                      <table class="lifted-set">
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle33" name="collapse33" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle33" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram"></table>
+                                      <table class="histogram">
                                         <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell" style="border-color: #d08770"><i class="fa-solid fa-x"></i></td></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td><td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="border-color: #4c566a">
-                                            <i class="fa-solid fa-x"></i>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
                                           </td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="border-color: #ebcb8b">
+                                            <i class="vsc-icon fa-solid fa-x"></i>
+                                          </td>
                                         </tr>
                                         <tr>
-                                          <td>f<td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell" style="border-color: #d08770"><i class="fa-solid fa-x"></i></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell-maybe" style="border-color: #d08770"></td></td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="border-color: #d08770">
+                                            <i class="vsc-icon fa-solid fa-x"></i>
+                                          </td>
                                         </tr>
                                       </table>
-                                    </tr slot>
-                                  </table>
-                                  <div class="accordion">
-                                    <input type="checkbox" class="control" id="handle28" name="collapse28" />
-                                    <div class="handle">
-                                      <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
-                                      </div>
-                                      <label for="handle28"></label>
-                                    </div>
-                                    <div class="collapsable">
-                                      <pre>Obj 1:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4); 
-Obj 2:  part. of stuff: size == 3
-	 counting: Nr. f = 2; 
-Obj 3:  part. of stuff: size in [1,3) | (3,8]
-	 counting: Nr. f in [0,2) | (2,9); 
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle34" name="collapse34" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle34" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Nr. squares = 0; 
+Nr. green = 1; 
+Nr. ¬green = 0; 
 </pre>
+                                        </div>
+                                      </div>
                                     </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_5" name="sol_5" />
+                                <label for="sol_5" class="solution">
+                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                  <p class="inline-num">1</p>
+                                </label>
+                                <div class="collapsable">
+                                  <div class="content-line"></div>
+                                  <div class="count-description">
+                                    <i class="vsc-icon fa-solid fa-calculator"></i>
+                                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                    <p class="inline-num">$$\frac{\texttip{ \binom{ 0 }{ 0 } }{ Choose 0 of 0 (distinguishable) empty for 1 object(s) } \cdot \texttip{ 1! }{ Permutations of 1 green }}{\texttip{ 1! }{ Extra permutations of (indist.) green }}$$</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                            <input type="checkbox" class="control" id="sol_5" name="sol_5" />
-                            <label for="sol_5" class="solution">
-                              <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">720</p>
-                            </label>
-                            <div class="collapsable Zerosubproblems">
+                          </div>
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle35" name="collapse35" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="vsc-icon fa-solid fa-times"></i>
+                                <p class="inline-num">2</p>
+                              </div>
+                              <label for="handle35" class="vsc-lab"></label>
+                            </div>
+                            <div class="collapsable">
                               <div class="content-line"></div>
-                              <div class="accordions">
-                                <div class="accordion">
-                                  <input type="checkbox" class="control" id="handle29" name="collapse29" />
-                                  <div class="handle">
-                                    <div class="inline-solution">
-                                      <i class="fa-solid fa-equals fa-sm"></i>
-                                      <p class="inline-num">720</p>
-                                    </div>
-                                    <label for="handle29"></label>
-                                  </div>
-                                  <div class="collapsable">
-                                    <div class="content-line"></div>
-                                    <div class="vs-container">
-                                      <div class="caption">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <p class="caption-text">Fixing histograms, combination nr. 1</p>
-                                      </div>
-                                      <div class="configuration">
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle30" name="collapse30" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-shapes"></i>
-                                              <p class="inline-num">Universe</p>
-                                            </div>
-                                            <label for="handle30"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr>
-                                                <td class="ylabel">¬f</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_0</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_1</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_2</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_3</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_4</td>
-                                                <td class="hcell" style="background-color: #8fbcbb">stuff∧¬f_5</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylabel">f</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_0</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_1</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_2</td>
-                                                <td class="hcell" style="background-color: #d08770">stuff∧f_3</td>
-                                              </tr>
-                                              <tr>
-                                                <td class="ylab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab"></td>
-                                                <td class="xlab">5</td>
-                                                <td class="xlab"></td>
-                                              </tr>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle31" name="collapse31" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle31"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property ¬f = {
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
-property f = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3
-}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="accordion">
-                                          <input type="checkbox" class="control" id="handle32" name="collapse32" />
-                                          <div class="handle">
-                                            <div class="inline-solution">
-                                              <i class="fa-solid fa-cubes-stacked"></i>
-                                              <p class="inline-num">Configuration</p>
-                                            </div>
-                                            <label for="handle32"></label>
-                                          </div>
-                                          <div class="collapsable configuration">
-                                            <table class="histogram">
-                                              <tr slot>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td><td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                                <table class="lifted-set">
-                                                  <tr>
-                                                    <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>Size:</td>
-                                                    <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell" style="border-color: #4c566a">
-                                                      <i class="fa-solid fa-x"></i>
-                                                    </td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                    <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td>¬f<td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td><td class="constr-cell" style="background-color: #8fbcbb; border-color: #8fbcbb"></td></td>
-                                                  </tr>
-                                                </table>
-                                              </tr slot>
-                                            </table>
-                                            <div class="accordion">
-                                              <input type="checkbox" class="control" id="handle33" name="collapse33" />
-                                              <div class="handle">
-                                                <div class="inline-solution">
-                                                  <p class="inline-num">CoLa</p>
-                                                </div>
-                                                <label for="handle33"></label>
-                                              </div>
-                                              <div class="collapsable">
-                                                <pre>Obj 1:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4)
-	 histogram:{f: 1, ¬f: 2}; 
-Obj 2:  part. of stuff: size == 3
-	 counting: Nr. f = 2
-	 histogram:{f: 2, ¬f: 1}; 
-Obj 3:  part. of stuff: size in [1,3) | (3,8]
-	 counting: Nr. f in [0,2) | (2,9)
-	 histogram:{f: 1, ¬f: 3}; 
-</pre>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <input type="checkbox" class="control" id="sol_6" name="sol_6" />
-                                      <label for="sol_6" class="solution">
-                                        <i class="fa-solid fa-equals fa-sm"></i>
-                                        <p class="inline-num">720</p>
-                                      </label>
-                                      <div class="collapsable">
-                                        <div class="content-line"></div>
-                                        <div class="count-description">
-                                          <i class="fa-solid fa-calculator"></i>
-                                          <i class="fa-solid fa-equals fa-sm"></i>
-                                          <p class="inline-num">$$\texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 f } \cdot \texttip{ \binom{ 6 }{ 2 } }{ Choose 2 out of 6 ¬f } \cdot \texttip{ \binom{ 3 }{ 2 } }{ Choose 2 out of 3 f } \cdot \texttip{ \binom{ 4 }{ 1 } }{ Choose 1 out of 4 ¬f } \cdot \texttip{ \binom{ 1 }{ 1 } }{ Choose 1 out of 1 f } \cdot \texttip{ \binom{ 3 }{ 3 } }{ Choose 3 out of 3 ¬f }$$</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                              <div class="vs-container">
+                                <div class="caption">
+                                  <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                  <p class="caption-text">Right split removing 1 green</p>
                                 </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="accordion">
-                        <input type="checkbox" class="control" id="handle34" name="collapse34" />
-                        <div class="handle">
-                          <div class="inline-solution">
-                            <i class="fa-solid fa-plus"></i>
-                            <p class="inline-num">0</p>
-                          </div>
-                          <label for="handle34"></label>
-                        </div>
-                        <div class="collapsable">
-                          <div class="content-line"></div>
-                          <div class="vs-container">
-                            <div class="caption">
-                              <i class="fa-solid fa-circle-info"></i>
-                              <p class="caption-text">Constraint combination nr. 4</p>
-                            </div>
-                            <div class="configuration">
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle35" name="collapse35" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-shapes"></i>
-                                    <p class="inline-num">Universe</p>
-                                  </div>
-                                  <label for="handle35"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr>
-                                      <td class="ylabel">stuff</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_0</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_1</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_2</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_3</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_4</td>
-                                      <td class="hcell" style="background-color: #a3be8c">stuff∧¬f_5</td>
-                                    </tr>
-                                    <tr>
-                                      <td class="ylab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">5</td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab"></td>
-                                      <td class="xlab">10</td>
-                                    </tr>
-                                  </table>
+                                <div class="configuration">
                                   <div class="accordion">
                                     <input type="checkbox" class="control" id="handle36" name="collapse36" />
                                     <div class="handle">
                                       <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
+                                        <i class="vsc-icon fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Universe</p>
                                       </div>
-                                      <label for="handle36"></label>
+                                      <label for="handle36" class="vsc-lab"></label>
                                     </div>
-                                    <div class="collapsable">
-                                      <pre>universe stuff = {
-	stuff∧f_0,
-	stuff∧f_1,
-	stuff∧f_2,
-	stuff∧f_3,
-	stuff∧¬f_0,
-	stuff∧¬f_1,
-	stuff∧¬f_2,
-	stuff∧¬f_3,
-	stuff∧¬f_4,
-	stuff∧¬f_5
-}; 
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="ylabel">squares</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">triangles</td>
+                                          <td class="hcell" style="background-color: #4c566a">r1</td>
+                                          <td class="hcell" style="background-color: #4c566a">b1</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab">5</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle37" name="collapse37" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle37" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green}; 
+property squares = {r2, b2}; 
+property triangles = {r1, b1, green, green, green}; 
 </pre>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                              <div class="accordion">
-                                <input type="checkbox" class="control" id="handle37" name="collapse37" />
-                                <div class="handle">
-                                  <div class="inline-solution">
-                                    <i class="fa-solid fa-cubes-stacked"></i>
-                                    <p class="inline-num">Configuration</p>
-                                  </div>
-                                  <label for="handle37"></label>
-                                </div>
-                                <div class="collapsable configuration">
-                                  <table class="histogram">
-                                    <tr slot>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="4" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell-maybe" style="border-color: #d08770"></td><td class="constr-cell" style="border-color: #d08770"><i class="fa-solid fa-x"></i></td></td>
-                                        </tr>
-                                      </table>
-                                      <table class="lifted-set">
-                                        <tr>
-                                          <td colspan="9" style="text-align: center"><i class="fa-solid fa-object-group"></i>part. of stuff</td>
-                                        </tr>
-                                        <tr>
-                                          <td>Size:</td>
-                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell" style="border-color: #4c566a">
-                                            <i class="fa-solid fa-x"></i>
-                                          </td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
-                                        </tr>
-                                        <tr>
-                                          <td>f<td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td><td class="constr-cell" style="background-color: #d08770; border-color: #d08770"></td></td>
-                                        </tr>
-                                      </table>
-                                    </tr slot>
-                                  </table>
                                   <div class="accordion">
                                     <input type="checkbox" class="control" id="handle38" name="collapse38" />
                                     <div class="handle">
                                       <div class="inline-solution">
-                                        <p class="inline-num">CoLa</p>
+                                        <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                        <p class="inline-num">Configuration</p>
                                       </div>
-                                      <label for="handle38"></label>
+                                      <label for="handle38" class="vsc-lab"></label>
                                     </div>
-                                    <div class="collapsable">
-                                      <pre>Obj 1:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4)
-	 histogram:{f: -1, ¬f: -1}; 
-Obj 2:  part. of stuff: size == 3
-	 counting: Nr. f in [0,2) | (2,4); 
-Obj 3:  part. of stuff: size in [1,3) | (3,8]
-	 counting: Nr. f = 2; 
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="slot" style="background-color: transparent">1</td>
+                                          <td class="slot" style="background-color: transparent">2</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle39" name="collapse39" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle39" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Obj 1:  (squares) ∨ (triangles); 
+Obj 2:  (squares) ∨ (triangles); 
 </pre>
+                                        </div>
+                                      </div>
                                     </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle40" name="collapse40" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle40" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram"></table>
+                                      <table class="histogram">
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                          <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle41" name="collapse41" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle41" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Nr. squares = 2; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_6" name="sol_6" />
+                                <label for="sol_6" class="solution">
+                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                  <p class="inline-num">2</p>
+                                </label>
+                                <div class="collapsable">
+                                  <div class="content-line"></div>
+                                  <div class="count-description">
+                                    <i class="vsc-icon fa-solid fa-calculator"></i>
+                                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                    <p class="inline-num">$$\texttip{ \texttip{ 1 }{ Exchangeable choices } \cdot 2! }{ Nr. orders for all objects }$$</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                            <input type="checkbox" class="control" id="sol_7" name="sol_7" />
-                            <label for="sol_7" class="solution">
-                              <i class="fa-solid fa-equals fa-sm"></i>
-                              <p class="inline-num">0</p>
-                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion">
+              <input type="checkbox" class="control" id="handle42" name="collapse42" />
+              <div class="handle">
+                <div class="inline-solution">
+                  <i class="vsc-icon fa-solid fa-plus"></i>
+                  <p class="inline-num">18</p>
+                </div>
+                <label for="handle42" class="vsc-lab"></label>
+              </div>
+              <div class="collapsable">
+                <div class="content-line"></div>
+                <div class="vs-container">
+                  <div class="caption">
+                    <i class="vsc-icon fa-solid fa-info-circle"></i>
+                    <p class="caption-text">Configuration of size 4</p>
+                  </div>
+                  <div class="configuration">
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle43" name="collapse43" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-shapes"></i>
+                          <p class="inline-num">Universe</p>
+                        </div>
+                        <label for="handle43" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="ylabel">(triangles) ∧ (¬green)</td>
+                            <td class="hcell" style="background-color: #5e81ac">r1</td>
+                            <td class="hcell" style="background-color: #5e81ac">b1</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">squares</td>
+                            <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                            <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                          </tr>
+                          <tr>
+                            <td class="ylabel">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                            <td class="hcell" style="background-color: #a3be8c">green</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle44" name="collapse44" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle44" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green, green}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+property squares = {r2, b2}; 
+property green = {green, green, green}; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle45" name="collapse45" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-sitemap"></i>
+                          <p class="inline-num">Configuration</p>
+                        </div>
+                        <label for="handle45" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot" style="background-color: transparent">1</td>
+                            <td class="slot" style="background-color: transparent">2</td>
+                            <td class="slot" style="background-color: transparent">3</td>
+                            <td class="slot" style="background-color: transparent">4</td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle46" name="collapse46" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle46" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Obj 1:  (squares) ∨ (triangles); 
+Obj 2:  (squares) ∨ (triangles); 
+Obj 3:  (squares) ∨ (triangles); 
+Obj 4:  (squares) ∨ (triangles); 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion">
+                      <input type="checkbox" class="control" id="handle47" name="collapse47" />
+                      <div class="handle">
+                        <div class="inline-solution">
+                          <i class="vsc-icon fa-solid fa-ban"></i>
+                          <p class="inline-num">Constraints</p>
+                        </div>
+                        <label for="handle47" class="vsc-lab"></label>
+                      </div>
+                      <div class="collapsable configuration">
+                        <table class="histogram">
+                          <tr>
+                            <td class="slot">2</td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-left"></i>
+                            </td>
+                            <td class="hcell" style="background-color: #a3be8c"></td>
+                            <td class="ylabel">green</td>
+                          </tr>
+                        </table>
+                        <table class="histogram">
+                          <tr>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-sitemap"></i>
+                            </td>
+                            <td>
+                              <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                            </td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                            <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                          </tr>
+                        </table>
+                        <div class="accordion">
+                          <input type="checkbox" class="control" id="handle48" name="collapse48" />
+                          <div class="handle">
+                            <div class="inline-solution">
+                              <p class="inline-num">CoLa</p>
+                            </div>
+                            <label for="handle48" class="vsc-lab"></label>
+                          </div>
+                          <div class="collapsable">
+                            <pre>Position 2: green; 
+Nr. squares in [2, 7]; 
+</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="checkbox" class="control" id="sol_7" name="sol_7" />
+                  <label for="sol_7" class="solution">
+                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                    <p class="inline-num">18</p>
+                  </label>
+                  <div class="collapsable subproblems">
+                    <div class="content-line"></div>
+                    <div class="accordions">
+                      <div class="shatter">
+                        <div class="row">
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle49" name="collapse49" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                <p class="inline-num">1</p>
+                              </div>
+                              <label for="handle49" class="vsc-lab"></label>
+                            </div>
                             <div class="collapsable">
                               <div class="content-line"></div>
-                              <div class="count-description">
-                                <i class="fa-solid fa-calculator"></i>
-                                <i class="fa-solid fa-equals fa-sm"></i>
-                                <p class="inline-num">$$\texttip{ 0 }{ No solution found }$$</p>
+                              <div class="vs-container">
+                                <div class="caption">
+                                  <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                  <p class="caption-text">Left split: case 1 green are s.t. [Nr. squares = 0, Nr. green = 1, Nr. ¬green = 0]</p>
+                                </div>
+                                <div class="configuration">
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle50" name="collapse50" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Universe</p>
+                                      </div>
+                                      <label for="handle50" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="ylabel">squares</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">(triangles) ∧ (¬green)</td>
+                                          <td class="hcell" style="background-color: #5e81ac">r1</td>
+                                          <td class="hcell" style="background-color: #5e81ac">b1</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                          <td class="hcell" style="background-color: #a3be8c">green</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle51" name="collapse51" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle51" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>universe green = {green, green, green}; 
+property squares = {r2, b2}; 
+property (triangles) ∧ (¬green) = {r1, b1}; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle52" name="collapse52" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                        <p class="inline-num">Configuration</p>
+                                      </div>
+                                      <label for="handle52" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="slot" style="background-color: #a3be8c">1</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle53" name="collapse53" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle53" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Obj 1:  green; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle54" name="collapse54" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle54" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram"></table>
+                                      <table class="histogram">
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="border-color: #ebcb8b">
+                                            <i class="vsc-icon fa-solid fa-x"></i>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="background-color: #a3be8c; border-color: #a3be8c"></td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="border-color: #d08770">
+                                            <i class="vsc-icon fa-solid fa-x"></i>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle55" name="collapse55" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle55" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Nr. squares = 0; 
+Nr. green = 1; 
+Nr. ¬green = 0; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_8" name="sol_8" />
+                                <label for="sol_8" class="solution">
+                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                  <p class="inline-num">1</p>
+                                </label>
+                                <div class="collapsable">
+                                  <div class="content-line"></div>
+                                  <div class="count-description">
+                                    <i class="vsc-icon fa-solid fa-calculator"></i>
+                                    <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                    <p class="inline-num">$$\frac{\texttip{ \binom{ 0 }{ 0 } }{ Choose 0 of 0 (distinguishable) empty for 1 object(s) } \cdot \texttip{ 1! }{ Permutations of 1 green }}{\texttip{ 1! }{ Extra permutations of (indist.) green }}$$</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="accordion">
+                            <input type="checkbox" class="control" id="handle56" name="collapse56" />
+                            <div class="handle">
+                              <div class="inline-solution">
+                                <i class="vsc-icon fa-solid fa-times"></i>
+                                <p class="inline-num">18</p>
+                              </div>
+                              <label for="handle56" class="vsc-lab"></label>
+                            </div>
+                            <div class="collapsable">
+                              <div class="content-line"></div>
+                              <div class="vs-container">
+                                <div class="caption">
+                                  <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                  <p class="caption-text">Right split removing 1 green</p>
+                                </div>
+                                <div class="configuration">
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle57" name="collapse57" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-shapes"></i>
+                                        <p class="inline-num">Universe</p>
+                                      </div>
+                                      <label for="handle57" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="ylabel">squares</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                                          <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylabel">triangles</td>
+                                          <td class="hcell" style="background-color: #4c566a">r1</td>
+                                          <td class="hcell" style="background-color: #4c566a">b1</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                          <td class="hcell" style="background-color: #4c566a">green</td>
+                                        </tr>
+                                        <tr>
+                                          <td class="ylab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab"></td>
+                                          <td class="xlab">5</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle58" name="collapse58" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle58" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green}; 
+property squares = {r2, b2}; 
+property triangles = {r1, b1, green, green, green}; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle59" name="collapse59" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                        <p class="inline-num">Configuration</p>
+                                      </div>
+                                      <label for="handle59" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram">
+                                        <tr>
+                                          <td class="slot" style="background-color: transparent">1</td>
+                                          <td class="slot" style="background-color: transparent">2</td>
+                                          <td class="slot" style="background-color: transparent">3</td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle60" name="collapse60" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle60" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Obj 1:  (squares) ∨ (triangles); 
+Obj 2:  (squares) ∨ (triangles); 
+Obj 3:  (squares) ∨ (triangles); 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion">
+                                    <input type="checkbox" class="control" id="handle61" name="collapse61" />
+                                    <div class="handle">
+                                      <div class="inline-solution">
+                                        <i class="vsc-icon fa-solid fa-ban"></i>
+                                        <p class="inline-num">Constraints</p>
+                                      </div>
+                                      <label for="handle61" class="vsc-lab"></label>
+                                    </div>
+                                    <div class="collapsable configuration">
+                                      <table class="histogram"></table>
+                                      <table class="histogram">
+                                        <tr>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                          </td>
+                                          <td>
+                                            <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                          </td>
+                                          <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                          <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #ebcb8b"></td>
+                                        </tr>
+                                      </table>
+                                      <div class="accordion">
+                                        <input type="checkbox" class="control" id="handle62" name="collapse62" />
+                                        <div class="handle">
+                                          <div class="inline-solution">
+                                            <p class="inline-num">CoLa</p>
+                                          </div>
+                                          <label for="handle62" class="vsc-lab"></label>
+                                        </div>
+                                        <div class="collapsable">
+                                          <pre>Nr. squares in [2, 3]; 
+</pre>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <input type="checkbox" class="control" id="sol_9" name="sol_9" />
+                                <label for="sol_9" class="solution">
+                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                  <p class="inline-num">18</p>
+                                </label>
+                                <div class="collapsable subproblems">
+                                  <div class="content-line"></div>
+                                  <div class="accordions">
+                                    <div class="shatter">
+                                      <div class="row">
+                                        <div class="accordion">
+                                          <input type="checkbox" class="control" id="handle63" name="collapse63" />
+                                          <div class="handle">
+                                            <div class="inline-solution">
+                                              <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                              <p class="inline-num">2</p>
+                                            </div>
+                                            <label for="handle63" class="vsc-lab"></label>
+                                          </div>
+                                          <div class="collapsable">
+                                            <div class="content-line"></div>
+                                            <div class="vs-container">
+                                              <div class="caption">
+                                                <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                                <p class="caption-text">Left split: case 2 squares are s.t. [Nr. squares = 2]</p>
+                                              </div>
+                                              <div class="configuration">
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle64" name="collapse64" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="vsc-icon fa-solid fa-shapes"></i>
+                                                      <p class="inline-num">Universe</p>
+                                                    </div>
+                                                    <label for="handle64" class="vsc-lab"></label>
+                                                  </div>
+                                                  <div class="collapsable configuration">
+                                                    <table class="histogram">
+                                                      <tr>
+                                                        <td class="ylabel">squares</td>
+                                                        <td class="hcell" style="background-color: #ebcb8b">r2</td>
+                                                        <td class="hcell" style="background-color: #ebcb8b">b2</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <td class="ylabel">triangles</td>
+                                                        <td class="hcell" style="background-color: #4c566a">r1</td>
+                                                        <td class="hcell" style="background-color: #4c566a">b1</td>
+                                                        <td class="hcell" style="background-color: #4c566a">green</td>
+                                                        <td class="hcell" style="background-color: #4c566a">green</td>
+                                                        <td class="hcell" style="background-color: #4c566a">green</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <td class="ylab"></td>
+                                                        <td class="xlab"></td>
+                                                        <td class="xlab"></td>
+                                                        <td class="xlab"></td>
+                                                        <td class="xlab"></td>
+                                                        <td class="xlab">5</td>
+                                                      </tr>
+                                                    </table>
+                                                    <div class="accordion">
+                                                      <input type="checkbox" class="control" id="handle65" name="collapse65" />
+                                                      <div class="handle">
+                                                        <div class="inline-solution">
+                                                          <p class="inline-num">CoLa</p>
+                                                        </div>
+                                                        <label for="handle65" class="vsc-lab"></label>
+                                                      </div>
+                                                      <div class="collapsable">
+                                                        <pre>universe squares = {r2, b2}; 
+property triangles = {r1, b1, green, green, green}; 
+</pre>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle66" name="collapse66" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                                      <p class="inline-num">Configuration</p>
+                                                    </div>
+                                                    <label for="handle66" class="vsc-lab"></label>
+                                                  </div>
+                                                  <div class="collapsable configuration">
+                                                    <table class="histogram">
+                                                      <tr>
+                                                        <td class="slot" style="background-color: #ebcb8b">1</td>
+                                                        <td class="slot" style="background-color: #ebcb8b">2</td>
+                                                      </tr>
+                                                    </table>
+                                                    <div class="accordion">
+                                                      <input type="checkbox" class="control" id="handle67" name="collapse67" />
+                                                      <div class="handle">
+                                                        <div class="inline-solution">
+                                                          <p class="inline-num">CoLa</p>
+                                                        </div>
+                                                        <label for="handle67" class="vsc-lab"></label>
+                                                      </div>
+                                                      <div class="collapsable">
+                                                        <pre>Obj 1:  squares; 
+Obj 2:  squares; 
+</pre>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle68" name="collapse68" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="vsc-icon fa-solid fa-ban"></i>
+                                                      <p class="inline-num">Constraints</p>
+                                                    </div>
+                                                    <label for="handle68" class="vsc-lab"></label>
+                                                  </div>
+                                                  <div class="collapsable configuration">
+                                                    <table class="histogram"></table>
+                                                    <table class="histogram">
+                                                      <tr>
+                                                        <td>
+                                                          <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                                        </td>
+                                                        <td>
+                                                          <i class="vsc-icon fa-solid fa-arrow-right"></i>
+                                                        </td>
+                                                        <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                                        <td class="constr-cell" style="background-color: #ebcb8b; border-color: #ebcb8b"></td>
+                                                      </tr>
+                                                    </table>
+                                                    <div class="accordion">
+                                                      <input type="checkbox" class="control" id="handle69" name="collapse69" />
+                                                      <div class="handle">
+                                                        <div class="inline-solution">
+                                                          <p class="inline-num">CoLa</p>
+                                                        </div>
+                                                        <label for="handle69" class="vsc-lab"></label>
+                                                      </div>
+                                                      <div class="collapsable">
+                                                        <pre>Nr. squares = 2; 
+</pre>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <input type="checkbox" class="control" id="sol_10" name="sol_10" />
+                                              <label for="sol_10" class="solution">
+                                                <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                                <p class="inline-num">2</p>
+                                              </label>
+                                              <div class="collapsable">
+                                                <div class="content-line"></div>
+                                                <div class="count-description">
+                                                  <i class="vsc-icon fa-solid fa-calculator"></i>
+                                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                                  <p class="inline-num">$$\texttip{ 2! }{ Nr. orders for all objects }$$</p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div class="accordion">
+                                          <input type="checkbox" class="control" id="handle70" name="collapse70" />
+                                          <div class="handle">
+                                            <div class="inline-solution">
+                                              <i class="vsc-icon fa-solid fa-times"></i>
+                                              <p class="inline-num">3</p>
+                                            </div>
+                                            <label for="handle70" class="vsc-lab"></label>
+                                          </div>
+                                          <div class="collapsable">
+                                            <div class="content-line"></div>
+                                            <div class="vs-container">
+                                              <div class="caption">
+                                                <i class="vsc-icon fa-solid fa-info-circle"></i>
+                                                <p class="caption-text">Right split removing 2 squares</p>
+                                              </div>
+                                              <div class="configuration">
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle71" name="collapse71" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="vsc-icon fa-solid fa-shapes"></i>
+                                                      <p class="inline-num">Universe</p>
+                                                    </div>
+                                                    <label for="handle71" class="vsc-lab"></label>
+                                                  </div>
+                                                  <div class="collapsable configuration">
+                                                    <table class="histogram">
+                                                      <tr>
+                                                        <td class="ylabel">(squares) ∨ (triangles)</td>
+                                                        <td class="hcell" style="background-color: #88c0d0">r1</td>
+                                                        <td class="hcell" style="background-color: #88c0d0">b1</td>
+                                                        <td class="hcell" style="background-color: #88c0d0">green</td>
+                                                        <td class="hcell" style="background-color: #88c0d0">green</td>
+                                                      </tr>
+                                                    </table>
+                                                    <div class="accordion">
+                                                      <input type="checkbox" class="control" id="handle72" name="collapse72" />
+                                                      <div class="handle">
+                                                        <div class="inline-solution">
+                                                          <p class="inline-num">CoLa</p>
+                                                        </div>
+                                                        <label for="handle72" class="vsc-lab"></label>
+                                                      </div>
+                                                      <div class="collapsable">
+                                                        <pre>universe (squares) ∨ (triangles) = {r1, b1, green, green}; 
+</pre>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div class="accordion">
+                                                  <input type="checkbox" class="control" id="handle73" name="collapse73" />
+                                                  <div class="handle">
+                                                    <div class="inline-solution">
+                                                      <i class="vsc-icon fa-solid fa-sitemap"></i>
+                                                      <p class="inline-num">Configuration</p>
+                                                    </div>
+                                                    <label for="handle73" class="vsc-lab"></label>
+                                                  </div>
+                                                  <div class="collapsable configuration">
+                                                    <table class="histogram">
+                                                      <tr>
+                                                        <td class="slot" style="background-color: #88c0d0">1</td>
+                                                      </tr>
+                                                    </table>
+                                                    <div class="accordion">
+                                                      <input type="checkbox" class="control" id="handle74" name="collapse74" />
+                                                      <div class="handle">
+                                                        <div class="inline-solution">
+                                                          <p class="inline-num">CoLa</p>
+                                                        </div>
+                                                        <label for="handle74" class="vsc-lab"></label>
+                                                      </div>
+                                                      <div class="collapsable">
+                                                        <pre>Obj 1:  (squares) ∨ (triangles); 
+</pre>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <input type="checkbox" class="control" id="sol_11" name="sol_11" />
+                                              <label for="sol_11" class="solution">
+                                                <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                                <p class="inline-num">3</p>
+                                              </label>
+                                              <div class="collapsable">
+                                                <div class="content-line"></div>
+                                                <div class="count-description">
+                                                  <i class="vsc-icon fa-solid fa-calculator"></i>
+                                                  <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
+                                                  <p class="inline-num">$$\frac{\texttip{ \binom{ 2 }{ 0 } }{ Choose 0 of 2 (distinguishable) ??? for 1 object(s) } \cdot \texttip{ 1! }{ Permutations of 1 (squares) ∨ (triangles) }}{\texttip{ 1! }{ Extra permutations of (indist.) ??? }} + \frac{\texttip{ \binom{ 2 }{ 1 } }{ Choose 1 of 2 (distinguishable) ??? for 1 object(s) } \cdot \texttip{ 1! }{ Permutations of 1 (squares) ∨ (triangles) }}{\texttip{ 0! }{ Extra permutations of (indist.) ??? }}$$</p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>

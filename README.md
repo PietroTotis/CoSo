@@ -1,7 +1,7 @@
 # CoSo
 This repository contains the code associated to the paper [Lifted Reasoning for Combinatorical Counting](https://jair.org/index.php/jair/article/view/14062). CoSo is a lifted solver for combinatorics problems expressed in CoLa. Lifted reasoning is a form of automated reasoning which is based on the manipulation of groups of objects and their sizes to answer counting-related queries. CoSo can thus answer efficiently to problems expressed in CoLa such as:
 
-> A kit of toy shapes contains five triangles and two squares. One triangle and one square are red.Another triangle and the other square are blue and the remaining triangles are green. In how manydifferent rows of four objects can the shapes be arranged if the two squares are included and thesecond object is green?
+> A kit of toy shapes contains five triangles and two squares. One triangle and one square are red. Another triangle and the other square are blue, and the remaining triangles are green. In how many different rows of four objects can the shapes be arranged if the two squares are included and the second object is green?
 
 > Given the same set of shapes, in how many ways can the objects be divided into three(non-empty) groups such that the green objects all belong to the same group?
 
