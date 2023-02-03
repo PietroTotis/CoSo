@@ -1,5 +1,5 @@
 import portion as Int
-from util import *
+from .util import *
 
 
 class Configuration(object):

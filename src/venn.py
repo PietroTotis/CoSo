@@ -1,7 +1,7 @@
-from util import *
 from portion.dict import IntervalDict
-from level_1 import SetFormula
 
+from .level_1 import SetFormula
+from .util import *
 
 class Union(object):
     def __init__(self, formula, size=None, subsets=[]):

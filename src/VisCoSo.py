@@ -2,12 +2,12 @@ import os
 import html
 import random
 import portion as P
-
-from level_1 import Multiset
-from level_2 import LiftedSet
-from configuration import CSize
 from yattag import Doc, indent
-from util import *
+
+from .level_1 import Multiset
+from .level_2 import LiftedSet
+from .configuration import CSize
+from .util import *
 
 HEADER = os.path.join(ROOT_DIR, "src", "VisCoSo", "header.html")
 

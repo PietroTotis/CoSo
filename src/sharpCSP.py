@@ -2,12 +2,11 @@ import portion as Int
 import math
 import itertools
 
-
-from configuration import *
-from count import *
-from level_1 import *
-from level_2 import *
-from logger import ProblemLog
+from .configuration import *
+from .count import *
+from .level_1 import *
+from .level_2 import *
+from .logger import ProblemLog
 
 
 class Unsatisfiable(Exception):

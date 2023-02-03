@@ -3,11 +3,10 @@ import os
 import pandas
 import matplotlib
 import matplotlib.pyplot as plt
-import scienceplots
 
 plt.style.use("science")
 
-from util import ROOT_DIR
+from .util import ROOT_DIR
 
 OUT_DIR = os.path.join(ROOT_DIR, "tests", "results")
 BENCHMARKS = os.path.join(ROOT_DIR, "tests", "benchmarks", "synthetic")

@@ -1,10 +1,10 @@
 import portion as P
 
-from configuration import *
-from count import Zero, Solution
-from sharpCSP import SharpCSP
-from level_2 import LiftedSet
-from logger import ProblemLog
+from .configuration import *
+from .count import Zero, Solution
+from .sharpCSP import SharpCSP
+from .level_2 import LiftedSet
+from .logger import ProblemLog
 
 
 class Solver(object):

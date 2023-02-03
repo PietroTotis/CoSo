@@ -1,8 +1,9 @@
 import portion as Int
-from solver import Solver
-from level_1 import SetFormula, Universe
-from configuration import CSize
-from util import *
+
+from .solver import Solver
+from .level_1 import SetFormula, Universe
+from .configuration import CSize
+from .util import *
 
 
 class EmptyException(Exception):

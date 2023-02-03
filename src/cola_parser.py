@@ -1,12 +1,12 @@
 import portion as Int
-from problem import *
-from venn import *
-from configuration import *
-from level_1 import *
-from level_2 import *
-
 import ply.lex as lex
 import ply.yacc as yacc
+
+from .problem import Problem
+from .venn import Venn
+from .configuration import *
+from .level_1 import *
+from .level_2 import *
 
 
 class Lexer(object):

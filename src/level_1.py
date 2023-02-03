@@ -1,6 +1,7 @@
 import portion as P
-from configuration import Variable
-from util import *
+
+from .configuration import Variable
+from .util import *
 
 
 class Multiset(object):

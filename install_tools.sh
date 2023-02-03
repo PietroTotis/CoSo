@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# install environment and python dependencies
-echo "Installing python environment and packages"
-python3.8 -m venv pyenv
-source ./pyenv/bin/activate
-pip3 install -q -r requirements.txt
-
 mkdir tools
 echo "Installing tools to run the experiments"
 # install sharpSAT

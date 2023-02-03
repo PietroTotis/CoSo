@@ -1,8 +1,7 @@
-import sys
 import argparse
-from pathlib import Path
-from cola_parser import Parser
-from problem import EmptyException
+
+from src.cola_parser import Parser
+from src.problem import EmptyException
 
 
 def coso(debug=False, file=None, cola=None, visual=None):
@@ -31,17 +30,17 @@ def viscoso(file=None, cola=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", help="Run solver on file F")
+    parser.add_argument("filename", help="Run solver on CoLa file")
     parser.add_argument(
         "-v",
-        help="Generate a visual representation of CoSo reasoning to an html file V",
+        help="Generate a visual representation of CoSo reasoning to an html file",
     )
     parser.add_argument("--debug", action="store_true", help="Print log")
     args = parser.parse_args()
-    if args.f:
+    if args.filename:
         if args.v:
-            coso(file=args.f, debug=args.debug, visual=args.v)
+            coso(file=args.filename, debug=args.debug, visual=args.v)
         else:
-            coso(file=args.f, debug=args.debug)
+            coso(file=args.filename, debug=args.debug)
     else:
         parser.print_help()

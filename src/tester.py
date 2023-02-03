@@ -11,11 +11,11 @@ import portion as P
 from multiprocessing import Process, Value
 from subprocess import Popen, PIPE, TimeoutExpired
 from statistics import mean
-from parser import EmptyException, Parser
-from count import Count
-from configuration import CCounting, CSize
 
-from util import *
+from .parser import EmptyException, Parser
+from .count import Count
+from .configuration import CCounting, CSize
+from .util import *
 
 TIMEOUT = 300
 random.seed(1234)

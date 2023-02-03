@@ -3,9 +3,9 @@ import traitlets
 import ipywidgets as widgets
 from IPython.display import display
 
-from util import *
-from cola_parser import Parser
-from problem import EmptyException
+from .cola_parser import Parser
+from .problem import EmptyException
+from .util import *
 
 
 def viscoso():

@@ -1,9 +1,9 @@
 import itertools
-from VisCoSo import VisCoSo
-from level_1 import Multiset
-from level_2 import LiftedSet
-from configuration import CCounting
-from util import *
+from .VisCoSo import VisCoSo
+from .level_1 import Multiset
+from .level_2 import LiftedSet
+from .configuration import CCounting
+from .util import *
 
 
 class ActionLog(object):
