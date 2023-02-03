@@ -12,6 +12,7 @@ tests/examples
 tests/results
 src/data.out
 .ipynb_checkpoints/
+.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
