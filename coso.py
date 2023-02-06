@@ -1,4 +1,6 @@
+import os
 import argparse
+import webbrowser
 
 from src.cola_parser import Parser
 from src.problem import EmptyException
@@ -14,6 +16,7 @@ def coso(debug=False, file=None, cola=None, visual=None):
         if visual is not None:
             with open(visual, "w") as out:
                 out.write(sol.log.to_viscoso())
+                webbrowser.open(visual, new=2)
     except EmptyException:
         print("Could not find a problem :(")
 
@@ -33,6 +36,8 @@ if __name__ == "__main__":
     parser.add_argument("filename", help="Run solver on CoLa file")
     parser.add_argument(
         "-v",
+        nargs='?',
+        const=os.path.join("src", "VisCoSo", "viscoso.html"),
         help="Generate a visual representation of CoSo reasoning to an html file",
     )
     parser.add_argument("--debug", action="store_true", help="Print log")

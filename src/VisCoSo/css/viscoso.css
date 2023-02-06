@@ -152,6 +152,10 @@ h2 {
   transition: transform 0.5s ease-in-out;
   transform: rotate(90deg);
   transform-origin: middle middle;
+  border: 2px solid var(--middle);
+  border-radius: 60px;
+  padding: 0.1em 0.1em;
+  background-color: var(--light);
 }
 
 .accordion>input[type="checkbox"]:checked~.handle label:before {

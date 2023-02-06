@@ -7,6 +7,7 @@ echo "Downloading and compiling sharpSAT"
 wget -q --show-progress https://github.com/marcthurley/sharpSAT/archive/v12.08.1.zip 
 unzip -q v12.08.1.zip 
 mv  sharpSAT-12.08.1 tools/sharpSAT
+mv  v12.08.1.zip  tools/v12.08.1.zip
 cd tools/sharpSAT/Release
 make
 cd ../../
