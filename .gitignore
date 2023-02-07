@@ -13,6 +13,8 @@ tests/results
 src/data.out
 .ipynb_checkpoints/
 .log
+build/
+coso.egg-info/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

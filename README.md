@@ -1,5 +1,21 @@
+# About 
+This repository contains the code associated to the paper [Lifted Reasoning for Combinatorical Counting](https://jair.org/index.php/jair/article/view/14062). 
+
+## Installation 
+
+``install.sh`` installs the python environment with all the requirements listed in ``requirements.txt``.
+
+``install-tools.sh`` installs optional third-party tools used in the experiments of the paper, but they are not a necessary requirement to run CoSo.
+
+## Run
+
+Activate the python environment pyenv and run
+``python coso.py [filename]``, where ``filename`` is a file containing a CoLa problem (see below).
+
+Add the option ``-v`` to generate a visual representation of the reasoning in CoSo. You can specify a filename (.html) if you want to save the output in a custom location.
+
 # CoSo
-This repository contains the code associated to the paper [Lifted Reasoning for Combinatorical Counting](https://jair.org/index.php/jair/article/view/14062). CoSo is a lifted solver for combinatorics problems expressed in CoLa. Lifted reasoning is a form of automated reasoning which is based on the manipulation of groups of objects and their sizes to answer counting-related queries. CoSo can thus answer efficiently to problems expressed in CoLa such as:
+CoSo is a lifted solver for combinatorics problems expressed in CoLa. Lifted reasoning is a form of automated reasoning which is based on the manipulation of groups of objects and their sizes to answer counting-related queries. CoSo can thus answer efficiently to problems expressed in CoLa such as:
 
 > A kit of toy shapes contains five triangles and two squares. One triangle and one square are red. Another triangle and the other square are blue, and the remaining triangles are green. In how many different rows of four objects can the shapes be arranged if the two squares are included and the second object is green?
 
