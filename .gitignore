@@ -15,6 +15,7 @@ src/data.out
 .log
 build/
 coso.egg-info/
+dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -11,7 +11,7 @@ setup(
     url='https://github.com/PietroTotis/CoSo',
     author='Pietro Totis',
     author_email='pietro.totis@kuleuven.be',
-    license='GPL',
+    license='GNU General Public License (GPL)',
     packages=['src'],
     install_requires=["portion==2.1.1",
                       "clingo==5.5.1",
@@ -24,7 +24,7 @@ setup(
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "License :: OSI Approved :: GPL",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
     ],
     keywords="combinatorics automated reasoning",
 )
