@@ -88,9 +88,9 @@ Size constraints define either the size of a configuration or a part (a subset i
 defines that only the rows of length 4 are valid. Any arithmetic comparison can be used: ``=,!=,<,<=,>,>=``.
 
 ### Positional Constraints.
-Positional constraints are expressed with ``name[i] in prop`` where ``name`` is the name of the configuration, ``i`` is the position, ``prop`` is a property for example:
+Positional constraints are expressed with ``name[i] = prop`` where ``name`` is the name of the configuration, ``i`` is the position, ``prop`` is a property for example:
 
-``row[2] in green;``
+``row[2] = green;``
 
 ### Counting Constraints.
 Counting constraints count either entities or parts that satisfy some property in the configuration. For example:

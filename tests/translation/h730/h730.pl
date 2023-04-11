@@ -6,6 +6,6 @@ labelled property tvs;
 labelled property defective;
 #defective = 3;
 #tvs&defective = 3;
-purchase in {| tvs};
+purchase in {tvs};
 #purchase = 5;
 #(defective & purchase) >= 2;

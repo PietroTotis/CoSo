@@ -1,4 +1,4 @@
-portion==2.1.1
+portion
 clingo==5.5.1
 psutil
 yattag
