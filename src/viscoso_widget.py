@@ -107,8 +107,7 @@ class Widget(object):
                 appendHtml(view.el, widget());
             }
             """
-            css_path = os.path.join(ROOT_DIR, "src", "VisCoSo", "css", "viscoso.css")
-            _css = open(css_path, "r").read()
+            _css = open(CSS_VISCOSO, "r").read()
             value = traitlets.Unicode(html).tag(sync=True)
 
         vscw = VisCoSoWidget()

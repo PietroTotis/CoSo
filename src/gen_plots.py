@@ -4,7 +4,7 @@ import pandas
 import matplotlib
 import matplotlib.pyplot as plt
 
-plt.style.use("science")
+# plt.style.use("science")
 
 from .util import ROOT_DIR
 

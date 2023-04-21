@@ -508,11 +508,15 @@ class VisCoSo(object):
         h_content = h.read()
         h_content = html.unescape(h_content)
 
+        css = open(CSS_VISCOSO, "r")
+        css_content = css.read()
         self.reserve_colours(log)
 
         self.doc.asis("<!DOCTYPE html>")
         with self.tag("html"):
             self.doc.asis(h_content)
+            with self.tag("style"):
+                self.text(css_content)
             with self.tag("body"):
                 self.add_problem(log)
 

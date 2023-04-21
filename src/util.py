@@ -5,6 +5,7 @@ from portion.dict import IntervalDict
 from typing import Counter
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+CSS_VISCOSO = os.path.join(ROOT_DIR, "src", "VisCoSo", "viscoso.css")
 
 
 ######################

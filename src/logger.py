@@ -1,5 +1,5 @@
 import itertools
-from .VisCoSo import VisCoSo
+from .viscoso import VisCoSo
 from .level_1 import Multiset
 from .level_2 import LiftedSet
 from .configuration import CCounting

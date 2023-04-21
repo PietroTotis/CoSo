@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSS
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="stylesheet" href="css/viscoso.css">
+    <link rel="stylesheet" href="viscoso.css">
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Favicon
@@ -26,6 +26,417 @@
     MathJax.Hub.Config({TeX: {extensions: ["action.js"] }});
   </script>
   </head>
+  <style>/* :root {
+  --dark: #445C4C;
+  --mdark: #508068;
+  --middle: #8AB6A9;
+  --mlight: #BFC9CA;
+  --light: #D6E2E0;
+} */
+@import url("https://use.fontawesome.com/releases/v5.13.0/css/all.css");
+
+.fa-solid {
+  font-family: "Font Awesome 5 Free";
+  font: 900 normal normal 14px/1 "Font Awesome 5 Free";
+}
+
+:root {
+  --dark: #4c566a;
+  --middle: #d8dee9;
+  --mlight: #e5e9f0;
+  --light: #EEEEEE;
+  /* --light: #eceff4; */
+  --red: #bf616a;
+  --orange: #d08770;
+  --yellow: #ebcb8b;
+  --green: #a3be8c;
+  --violet: #b48ead;
+  --blue: #5e81ac;
+  --lightblue: #81a1c1;
+  --cyan: #88c0d0;
+  --lightgreen: #8fbcbb;
+}
+
+input[type="checkbox"] {
+  display: none;
+}
+
+.main-content {
+  padding: 15px;
+}
+
+.collapsable {
+  /* overflow-y: hidden; */
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 0px;
+  max-height: 0px;
+  max-width: 0px;
+  transition-property: max-width, max-height;
+  transition-duration: 0.5s, 0.5s;
+  transition-delay: 0.5s, 0s;
+  display: flex;
+  overflow: hidden;
+}
+
+input[type="checkbox"]:checked~.collapsable {
+  max-width: 1920px;
+  max-height: 15000px;
+  transition-property: max-height, max-width;
+  transition-duration: 1s, 1s;
+  transition-delay: 0.5s, 0s;
+  border-top: 0;
+}
+
+.collapsable.subproblems {
+  /* flex-direction : column; */
+  align-items: stretch;
+  /* height: 100px; */
+}
+
+.accordions {
+  display: flex;
+  flex-direction: column;
+}
+
+.accordion label {
+  display: inline-flex;
+  /* height: fit-content; */
+  width: fit-content;
+  vertical-align: middle;
+}
+
+/*
+  Styling
+  */
+body {
+  /* font: 16px/1.5em "Overpass", "Open Sans", Helvetica, sans-serif; */
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  font-weight: 300;
+}
+
+h2 {
+  font-family: 'Roboto', sans-serif;
+  margin-top: 9px;
+}
+
+.accordion {
+  border-radius: 5px;
+  margin-bottom: 1em;
+  margin: 10px 20px 20px 10px;
+  width: fit-content;
+  border-radius: 5px;
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.25);
+  background: var(--light);
+  display: flex;
+  flex-direction: column;
+  justify-content: baseline;
+}
+
+.configuration .accordion {
+  box-shadow: none;
+  margin: 0px;
+}
+
+.accordion&gt;input[type="checkbox"]:checked~.accordion {
+  border-top: 0;
+  /* background: #508068; */
+}
+
+.accordion .handle {
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
+  /* line-height: 1em; */
+  background-color: transparent;
+  display: flex;
+  height: fit-content;
+  align-items: center;
+  justify-content: center;
+}
+
+.accordion label {
+  color: #333;
+  cursor: pointer;
+  padding: 5px;
+  width: fit-content;
+  height: fit-content;
+}
+
+
+.accordion&gt;input[type="checkbox"]:checked~.solution label:before {
+  /* content: "\f078"; */
+  transform: rotate(270deg);
+}
+
+.accordion .handle label:before {
+  font-family: 'fontawesome';
+  content: "\f054";
+  margin-right: 15px;
+  font-size: .85em;
+  -webkit-transition: -webkit-transform 0.5s ease-in-out;
+  -ms-transition: -ms-transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
+  transform: rotate(90deg);
+  transform-origin: middle middle;
+  border: 2px solid var(--middle);
+  border-radius: 60px;
+  padding: 0.1em 0.1em;
+  background-color: var(--light);
+}
+
+.accordion&gt;input[type="checkbox"]:checked~.handle label:before {
+  /* content: "\f078"; */
+  transform: rotate(270deg);
+}
+
+.vs-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.solution {
+  background-color: var(--mlight);
+  border-radius: 5px;
+  color: #333;
+  border: none;
+  font-size: 1em;
+  margin-bottom: 5px;
+  box-shadow: 0 1px 2px #445C4C;
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.solution:active {
+  background-color: var(--mlight);
+  box-shadow: 0 0 2px var(--dark);
+  transform: translateY(2px);
+}
+
+.inline-solution {
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: transparent;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 90%;
+  height: 100%;
+  display: flex;
+  /* Flex Container */
+  align-items: center;
+}
+
+.problem-lab {
+  margin-left: 10px;
+}
+
+.inline-num {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: larger;
+  margin: 5px 5px 5px 5px;
+}
+
+.content-line {
+  /* height: 95%; */
+  margin-bottom: 5%;
+  margin-right: 10px;
+  border-left: 2px solid var(--middle);
+}
+
+.cola {
+  /* font-family: "Monaco", monospace; */
+  font-family: 'Roboto Mono', monospace;
+  padding: 2%;
+  margin-top: 0%;
+  max-width: 300px;
+}
+
+
+#main-content {
+  max-width: fit-content;
+  max-height: fit-content;
+}
+
+#input-problem {
+  width: 95%;
+  min-height: 150px;
+  height: fit-content;
+  padding: 0% 2% 0% 3%;
+  box-sizing: border-box;
+  border: 2px solid var(--middle);
+  border-radius: 4px;
+  background-color: var(--light);
+  resize: none;
+  margin-bottom: 5%;
+  overflow: auto;
+}
+
+#input-problem:focus {
+  outline: none !important;
+  border: 1px solid var(--middle);
+  box-shadow: 0 0 3px var(--middle);
+}
+
+.count-description {
+  display: flex;
+  height: fit-content;
+  align-items: center;
+  justify-content: center;
+  /* max-width: 300px; */
+}
+
+.caption {
+  display: flex;
+  height: fit-content;
+  align-items: center;
+  justify-content: center;
+  /* max-width: 300px; */
+}
+
+.caption,
+.vsc-icon {
+  margin: 5px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.caption-text {
+  font-style: italic;
+  margin-left: 10px;
+  margin-right: 10px;
+  color: #333;
+  display: flex;
+  /* Flex Container */
+  align-items: center;
+  vertical-align: middle;
+  /* margin: 5px 10px 0px 5px; */
+}
+
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.row .accordion {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+
+
+.configuration {
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
+  margin-bottom: 2%;
+}
+
+pre {
+  white-space: pre-wrap;
+}
+
+
+/* histograms */
+
+.histogram {
+  border-collapse: separate;
+  border-spacing: 3px;
+  margin: 10px 10px 0px 10px;
+  width: fit-content;
+}
+
+.ylabel {
+  padding-right: 5px;
+  text-align: right;
+}
+
+.hcell {
+  font-size: 0;
+  text-align: center;
+  width: 15px;
+  transition: 0.5s;
+}
+
+.hcell:hover {
+  font-size: 1em;
+}
+
+.xlab {
+  height: 15px;
+  overflow: hidden;
+  border-top: solid 1px;
+}
+
+.constr-cell {
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  font-size: 0.7em;
+  border: solid;
+}
+
+.constr-cell-maybe {
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  font-size: 0.7em;
+  border: dashed;
+}
+
+.constr-cell i {
+  margin: 0;
+}
+
+/* Configuration */
+
+.slot {
+  border-left: solid var(--dark);
+  border-right: solid var(--dark);
+  border-bottom: solid var(--dark);
+  text-align: center;
+  width: fit-content;
+  min-width: 25px;
+  height: 20px;
+}
+
+
+.slot-maybe {
+  border-left: dashed var(--dark);
+  border-right: dashed var(--dark);
+  border-bottom: dashed var(--dark);
+  text-align: center;
+  width: fit-content;
+  min-width: 25px;
+  height: 20px;
+}
+
+.ls-element {
+  width: 15px;
+  height: 15px;
+}
+
+
+.lifted-set {
+  width: fit-content;
+}
+
+
+.vsc-lab {
+  margin: 0;
+}</style>
   <body>
     <div class="accordion">
       <div class="inline-solution">
@@ -51,13 +462,13 @@
               <table class="histogram">
                 <tr>
                   <td class="ylabel">squares</td>
-                  <td class="hcell" style="background-color: #88c0d0">r2</td>
-                  <td class="hcell" style="background-color: #88c0d0">b2</td>
+                  <td class="hcell" style="background-color: #4c566a">r2</td>
+                  <td class="hcell" style="background-color: #4c566a">b2</td>
                 </tr>
                 <tr>
                   <td class="ylabel">(triangles) ∧ (¬green)</td>
-                  <td class="hcell" style="background-color: #81a1c1">r1</td>
-                  <td class="hcell" style="background-color: #81a1c1">b1</td>
+                  <td class="hcell" style="background-color: #88c0d0">r1</td>
+                  <td class="hcell" style="background-color: #88c0d0">b1</td>
                 </tr>
                 <tr>
                   <td class="ylabel">green</td>
@@ -156,13 +567,13 @@ property green = {green, green, green};
                   <td>
                     <i class="vsc-icon fa-solid fa-arrow-right"></i>
                   </td>
-                  <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                  <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                  <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                  <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                  <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                  <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                  <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                  <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                  <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                  <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                  <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                  <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                  <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                 </tr>
               </table>
               <div class="accordion">
@@ -220,13 +631,13 @@ Nr. squares in [2, 7];
                         <table class="histogram">
                           <tr>
                             <td class="ylabel">squares</td>
-                            <td class="hcell" style="background-color: #88c0d0">r2</td>
-                            <td class="hcell" style="background-color: #88c0d0">b2</td>
+                            <td class="hcell" style="background-color: #4c566a">r2</td>
+                            <td class="hcell" style="background-color: #4c566a">b2</td>
                           </tr>
                           <tr>
                             <td class="ylabel">(triangles) ∧ (¬green)</td>
-                            <td class="hcell" style="background-color: #81a1c1">r1</td>
-                            <td class="hcell" style="background-color: #81a1c1">b1</td>
+                            <td class="hcell" style="background-color: #88c0d0">r1</td>
+                            <td class="hcell" style="background-color: #88c0d0">b1</td>
                           </tr>
                           <tr>
                             <td class="ylabel">green</td>
@@ -311,13 +722,13 @@ property green = {green, green, green};
                             <td>
                               <i class="vsc-icon fa-solid fa-arrow-right"></i>
                             </td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -389,13 +800,13 @@ Nr. squares in [2, 7];
                           </tr>
                           <tr>
                             <td class="ylabel">(triangles) ∧ (¬green)</td>
-                            <td class="hcell" style="background-color: #81a1c1">r1</td>
-                            <td class="hcell" style="background-color: #81a1c1">b1</td>
+                            <td class="hcell" style="background-color: #88c0d0">r1</td>
+                            <td class="hcell" style="background-color: #88c0d0">b1</td>
                           </tr>
                           <tr>
                             <td class="ylabel">squares</td>
-                            <td class="hcell" style="background-color: #88c0d0">r2</td>
-                            <td class="hcell" style="background-color: #88c0d0">b2</td>
+                            <td class="hcell" style="background-color: #4c566a">r2</td>
+                            <td class="hcell" style="background-color: #4c566a">b2</td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -476,13 +887,13 @@ Obj 2:  (squares) ∨ (triangles);
                             <td>
                               <i class="vsc-icon fa-solid fa-arrow-right"></i>
                             </td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -548,13 +959,13 @@ Nr. squares in [2, 7];
                         <table class="histogram">
                           <tr>
                             <td class="ylabel">(triangles) ∧ (¬green)</td>
-                            <td class="hcell" style="background-color: #81a1c1">r1</td>
-                            <td class="hcell" style="background-color: #81a1c1">b1</td>
+                            <td class="hcell" style="background-color: #88c0d0">r1</td>
+                            <td class="hcell" style="background-color: #88c0d0">b1</td>
                           </tr>
                           <tr>
                             <td class="ylabel">squares</td>
-                            <td class="hcell" style="background-color: #88c0d0">r2</td>
-                            <td class="hcell" style="background-color: #88c0d0">b2</td>
+                            <td class="hcell" style="background-color: #4c566a">r2</td>
+                            <td class="hcell" style="background-color: #4c566a">b2</td>
                           </tr>
                           <tr>
                             <td class="ylabel">green</td>
@@ -643,13 +1054,13 @@ Obj 3:  (squares) ∨ (triangles);
                             <td>
                               <i class="vsc-icon fa-solid fa-arrow-right"></i>
                             </td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -709,13 +1120,13 @@ Nr. squares in [2, 7];
                                       <table class="histogram">
                                         <tr>
                                           <td class="ylabel">squares</td>
-                                          <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                          <td class="hcell" style="background-color: #88c0d0">b2</td>
+                                          <td class="hcell" style="background-color: #4c566a">r2</td>
+                                          <td class="hcell" style="background-color: #4c566a">b2</td>
                                         </tr>
                                         <tr>
                                           <td class="ylabel">(triangles) ∧ (¬green)</td>
-                                          <td class="hcell" style="background-color: #81a1c1">r1</td>
-                                          <td class="hcell" style="background-color: #81a1c1">b1</td>
+                                          <td class="hcell" style="background-color: #88c0d0">r1</td>
+                                          <td class="hcell" style="background-color: #88c0d0">b1</td>
                                         </tr>
                                         <tr>
                                           <td class="ylabel">green</td>
@@ -790,7 +1201,7 @@ property (triangles) ∧ (¬green) = {r1, b1};
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="border-color: #88c0d0">
+                                          <td class="constr-cell" style="border-color: #4c566a">
                                             <i class="vsc-icon fa-solid fa-x"></i>
                                           </td>
                                         </tr>
@@ -810,7 +1221,7 @@ property (triangles) ∧ (¬green) = {r1, b1};
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="border-color: #8fbcbb">
+                                          <td class="constr-cell" style="border-color: #ebcb8b">
                                             <i class="vsc-icon fa-solid fa-x"></i>
                                           </td>
                                         </tr>
@@ -879,16 +1290,16 @@ Nr. ¬green = 0;
                                       <table class="histogram">
                                         <tr>
                                           <td class="ylabel">squares</td>
-                                          <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                          <td class="hcell" style="background-color: #88c0d0">b2</td>
+                                          <td class="hcell" style="background-color: #4c566a">r2</td>
+                                          <td class="hcell" style="background-color: #4c566a">b2</td>
                                         </tr>
                                         <tr>
                                           <td class="ylabel">triangles</td>
-                                          <td class="hcell" style="background-color: #b48ead">r1</td>
-                                          <td class="hcell" style="background-color: #b48ead">b1</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
+                                          <td class="hcell" style="background-color: #d08770">r1</td>
+                                          <td class="hcell" style="background-color: #d08770">b1</td>
+                                          <td class="hcell" style="background-color: #d08770">green</td>
+                                          <td class="hcell" style="background-color: #d08770">green</td>
+                                          <td class="hcell" style="background-color: #d08770">green</td>
                                         </tr>
                                         <tr>
                                           <td class="ylab"></td>
@@ -967,8 +1378,8 @@ Obj 2:  (squares) ∨ (triangles);
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                                          <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
                                         </tr>
                                       </table>
                                       <div class="accordion">
@@ -1040,13 +1451,13 @@ Obj 2:  (squares) ∨ (triangles);
                         <table class="histogram">
                           <tr>
                             <td class="ylabel">(triangles) ∧ (¬green)</td>
-                            <td class="hcell" style="background-color: #81a1c1">r1</td>
-                            <td class="hcell" style="background-color: #81a1c1">b1</td>
+                            <td class="hcell" style="background-color: #88c0d0">r1</td>
+                            <td class="hcell" style="background-color: #88c0d0">b1</td>
                           </tr>
                           <tr>
                             <td class="ylabel">squares</td>
-                            <td class="hcell" style="background-color: #88c0d0">r2</td>
-                            <td class="hcell" style="background-color: #88c0d0">b2</td>
+                            <td class="hcell" style="background-color: #4c566a">r2</td>
+                            <td class="hcell" style="background-color: #4c566a">b2</td>
                           </tr>
                           <tr>
                             <td class="ylabel">green</td>
@@ -1137,13 +1548,13 @@ Obj 4:  (squares) ∨ (triangles);
                             <td>
                               <i class="vsc-icon fa-solid fa-arrow-right"></i>
                             </td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
-                            <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
+                            <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                           </tr>
                         </table>
                         <div class="accordion">
@@ -1203,13 +1614,13 @@ Nr. squares in [2, 7];
                                       <table class="histogram">
                                         <tr>
                                           <td class="ylabel">squares</td>
-                                          <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                          <td class="hcell" style="background-color: #88c0d0">b2</td>
+                                          <td class="hcell" style="background-color: #4c566a">r2</td>
+                                          <td class="hcell" style="background-color: #4c566a">b2</td>
                                         </tr>
                                         <tr>
                                           <td class="ylabel">(triangles) ∧ (¬green)</td>
-                                          <td class="hcell" style="background-color: #81a1c1">r1</td>
-                                          <td class="hcell" style="background-color: #81a1c1">b1</td>
+                                          <td class="hcell" style="background-color: #88c0d0">r1</td>
+                                          <td class="hcell" style="background-color: #88c0d0">b1</td>
                                         </tr>
                                         <tr>
                                           <td class="ylabel">green</td>
@@ -1284,7 +1695,7 @@ property (triangles) ∧ (¬green) = {r1, b1};
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="border-color: #88c0d0">
+                                          <td class="constr-cell" style="border-color: #4c566a">
                                             <i class="vsc-icon fa-solid fa-x"></i>
                                           </td>
                                         </tr>
@@ -1304,7 +1715,7 @@ property (triangles) ∧ (¬green) = {r1, b1};
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="border-color: #8fbcbb">
+                                          <td class="constr-cell" style="border-color: #ebcb8b">
                                             <i class="vsc-icon fa-solid fa-x"></i>
                                           </td>
                                         </tr>
@@ -1372,25 +1783,20 @@ Nr. ¬green = 0;
                                     <div class="collapsable configuration">
                                       <table class="histogram">
                                         <tr>
+                                          <td class="ylabel">¬(squares) ∨ (triangles)</td>
+                                          <td class="hcell" style="background-color: #bf616a">green</td>
+                                        </tr>
+                                        <tr>
                                           <td class="ylabel">squares</td>
-                                          <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                          <td class="hcell" style="background-color: #88c0d0">b2</td>
+                                          <td class="hcell" style="background-color: #4c566a">r2</td>
+                                          <td class="hcell" style="background-color: #4c566a">b2</td>
                                         </tr>
                                         <tr>
-                                          <td class="ylabel">triangles</td>
-                                          <td class="hcell" style="background-color: #b48ead">r1</td>
-                                          <td class="hcell" style="background-color: #b48ead">b1</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
-                                          <td class="hcell" style="background-color: #b48ead">green</td>
-                                        </tr>
-                                        <tr>
-                                          <td class="ylab"></td>
-                                          <td class="xlab"></td>
-                                          <td class="xlab"></td>
-                                          <td class="xlab"></td>
-                                          <td class="xlab"></td>
-                                          <td class="xlab">5</td>
+                                          <td class="ylabel">((squares) ∨ (triangles)) ∧ (triangles)</td>
+                                          <td class="hcell" style="background-color: #5e81ac">r1</td>
+                                          <td class="hcell" style="background-color: #5e81ac">b1</td>
+                                          <td class="hcell" style="background-color: #5e81ac">green</td>
+                                          <td class="hcell" style="background-color: #5e81ac">green</td>
                                         </tr>
                                       </table>
                                       <div class="accordion">
@@ -1403,8 +1809,9 @@ Nr. ¬green = 0;
                                         </div>
                                         <div class="collapsable">
                                           <pre>universe (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green}; 
+property ¬(squares) ∨ (triangles) = {green}; 
 property squares = {r2, b2}; 
-property triangles = {r1, b1, green, green, green}; 
+property ((squares) ∨ (triangles)) ∧ (triangles) = {r1, b1, green, green}; 
 </pre>
                                         </div>
                                       </div>
@@ -1463,9 +1870,9 @@ Obj 3:  (squares) ∨ (triangles);
                                           <td>
                                             <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                           </td>
-                                          <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                                          <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                                          <td class="constr-cell-maybe" style="border-color: #88c0d0"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell" style="background-color: #4c566a; border-color: #4c566a"></td>
+                                          <td class="constr-cell-maybe" style="border-color: #4c566a"></td>
                                         </tr>
                                       </table>
                                       <div class="accordion">
@@ -1508,7 +1915,7 @@ Obj 3:  (squares) ∨ (triangles);
                                             <div class="vs-container">
                                               <div class="caption">
                                                 <i class="vsc-icon fa-solid fa-info-circle"></i>
-                                                <p class="caption-text">Left split: case 2 squares are s.t. [Nr. squares = 2]</p>
+                                                <p class="caption-text">Left split: case 2 squares are s.t. [Nr. (squares) ∨ (triangles) = 2]</p>
                                               </div>
                                               <div class="configuration">
                                                 <div class="accordion">
@@ -1523,17 +1930,17 @@ Obj 3:  (squares) ∨ (triangles);
                                                   <div class="collapsable configuration">
                                                     <table class="histogram">
                                                       <tr>
-                                                        <td class="ylabel">squares</td>
-                                                        <td class="hcell" style="background-color: #88c0d0">r2</td>
-                                                        <td class="hcell" style="background-color: #88c0d0">b2</td>
-                                                      </tr>
-                                                      <tr>
-                                                        <td class="ylabel">triangles</td>
+                                                        <td class="ylabel">(squares) ∨ (triangles)</td>
+                                                        <td class="hcell" style="background-color: #b48ead">r2</td>
+                                                        <td class="hcell" style="background-color: #b48ead">b2</td>
                                                         <td class="hcell" style="background-color: #b48ead">r1</td>
                                                         <td class="hcell" style="background-color: #b48ead">b1</td>
                                                         <td class="hcell" style="background-color: #b48ead">green</td>
                                                         <td class="hcell" style="background-color: #b48ead">green</td>
-                                                        <td class="hcell" style="background-color: #b48ead">green</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <td class="ylabel">¬(squares) ∨ (triangles)</td>
+                                                        <td class="hcell" style="background-color: #bf616a">green</td>
                                                       </tr>
                                                       <tr>
                                                         <td class="ylab"></td>
@@ -1542,6 +1949,7 @@ Obj 3:  (squares) ∨ (triangles);
                                                         <td class="xlab"></td>
                                                         <td class="xlab"></td>
                                                         <td class="xlab">5</td>
+                                                        <td class="xlab"></td>
                                                       </tr>
                                                     </table>
                                                     <div class="accordion">
@@ -1554,7 +1962,8 @@ Obj 3:  (squares) ∨ (triangles);
                                                       </div>
                                                       <div class="collapsable">
                                                         <pre>universe squares = {r2, b2}; 
-property triangles = {r1, b1, green, green, green}; 
+property (squares) ∨ (triangles) = {r2, b2, r1, b1, green, green}; 
+property ¬(squares) ∨ (triangles) = {green}; 
 </pre>
                                                       </div>
                                                     </div>
@@ -1572,8 +1981,8 @@ property triangles = {r1, b1, green, green, green};
                                                   <div class="collapsable configuration">
                                                     <table class="histogram">
                                                       <tr>
-                                                        <td class="slot" style="background-color: #88c0d0">1</td>
-                                                        <td class="slot" style="background-color: #88c0d0">2</td>
+                                                        <td class="slot" style="background-color: #4c566a">1</td>
+                                                        <td class="slot" style="background-color: #4c566a">2</td>
                                                       </tr>
                                                     </table>
                                                     <div class="accordion">
@@ -1611,8 +2020,8 @@ Obj 2:  squares;
                                                         <td>
                                                           <i class="vsc-icon fa-solid fa-arrow-right"></i>
                                                         </td>
-                                                        <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
-                                                        <td class="constr-cell" style="background-color: #88c0d0; border-color: #88c0d0"></td>
+                                                        <td class="constr-cell" style="background-color: #b48ead; border-color: #b48ead"></td>
+                                                        <td class="constr-cell" style="background-color: #b48ead; border-color: #b48ead"></td>
                                                       </tr>
                                                     </table>
                                                     <div class="accordion">
@@ -1624,7 +2033,7 @@ Obj 2:  squares;
                                                         <label for="handle69" class="vsc-lab"></label>
                                                       </div>
                                                       <div class="collapsable">
-                                                        <pre>Nr. squares = 2; 
+                                                        <pre>Nr. (squares) ∨ (triangles) = 2; 
 </pre>
                                                       </div>
                                                     </div>
@@ -1641,7 +2050,7 @@ Obj 2:  squares;
                                                 <div class="count-description">
                                                   <i class="vsc-icon fa-solid fa-calculator"></i>
                                                   <i class="vsc-icon fa-solid fa-equals fa-sm"></i>
-                                                  <p class="inline-num">$$\texttip{ 2! }{ Nr. orders for all objects }$$</p>
+                                                  <p class="inline-num">$$\texttip{ \texttip{ 1 }{ Exchangeable choices } \cdot 2! }{ Nr. orders for all objects }$$</p>
                                                 </div>
                                               </div>
                                             </div>
@@ -1677,10 +2086,10 @@ Obj 2:  squares;
                                                     <table class="histogram">
                                                       <tr>
                                                         <td class="ylabel">(squares) ∨ (triangles)</td>
-                                                        <td class="hcell" style="background-color: #5e81ac">r1</td>
-                                                        <td class="hcell" style="background-color: #5e81ac">b1</td>
-                                                        <td class="hcell" style="background-color: #5e81ac">green</td>
-                                                        <td class="hcell" style="background-color: #5e81ac">green</td>
+                                                        <td class="hcell" style="background-color: #81a1c1">r1</td>
+                                                        <td class="hcell" style="background-color: #81a1c1">b1</td>
+                                                        <td class="hcell" style="background-color: #81a1c1">green</td>
+                                                        <td class="hcell" style="background-color: #81a1c1">green</td>
                                                       </tr>
                                                     </table>
                                                     <div class="accordion">
@@ -1710,7 +2119,7 @@ Obj 2:  squares;
                                                   <div class="collapsable configuration">
                                                     <table class="histogram">
                                                       <tr>
-                                                        <td class="slot" style="background-color: #5e81ac">1</td>
+                                                        <td class="slot" style="background-color: #81a1c1">1</td>
                                                       </tr>
                                                     </table>
                                                     <div class="accordion">
