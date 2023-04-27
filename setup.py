@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name='coso',
-    version='1.0.4',    
+    version='1.0.6',    
     url='https://github.com/PietroTotis/CoSo',
     author='Pietro Totis',
     author_email='pietro.totis@kuleuven.be',
@@ -16,11 +16,13 @@ setup(
     packages=['coso'],
     package_dir={'coso':'src'},
     package_data={"src": ["VisCoSo/*"]},
+    include_package_data=True,
     install_requires=["portion",
                       "clingo==5.5.1",
                       "psutil",
                       "yattag",
-                      "ply"],    
+                      "ply",
+                      "anywidget"],    
     description = ("A solver for combinatorics math word problems."),
     long_description=read('README.md'),
     classifiers=[

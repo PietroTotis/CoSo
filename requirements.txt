@@ -3,3 +3,4 @@ clingo==5.5.1
 psutil
 yattag
 ply
+anywidget
