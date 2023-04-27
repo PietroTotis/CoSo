@@ -1,22 +1,23 @@
 import anywidget
 import traitlets
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, clear_output
 
 from .cola_parser import Parser
 from .problem import EmptyException
 from .util import *
 
 
-def viscoso():
+def show_widget():
     Widget()
 
 
 class Widget(object):
     def __init__(self):
 
-        self.program = None
+        self.program = "A CoLa program"
         self.text_area = None
+        self.current_output = None
 
         text = widgets.HTML(
             """
@@ -34,10 +35,11 @@ class Widget(object):
     def input_layout(self):
 
         self.text_area = widgets.Textarea(
-            value="A CoLa program",
+            value=self.program,
             placeholder="Type a CoLa program",
             description="",
             disabled=False,
+            layout=widgets.Layout( height='200px', min_height='100px', width='50%')
         )
         msg = widgets.Label("Or write a CoLa program in the textbox:")
         ub = self.upload_button()
@@ -57,18 +59,24 @@ class Widget(object):
         output = widgets.Output()
 
         def on_button_solve(b):
-            if self.program is None:
-                self.program = self.text_area.value
+            self.program = self.text_area.value
+            if self.current_output is not None:
+                self.current_output.close()
+                # with self.current_output:
+                clear_output()
+                self.input_layout()
+                display(solve_button)
 
             parser = Parser(cola=self.program)
             try:
                 parser.parse()
                 sol = parser.problem.solve(debug=False)
                 self.viscoso_widget(sol)
+                self.current_output = output
+                display(output)
             except EmptyException:
                 with output:
                     print("Could not find a problem :(")
-                display(output)
 
         solve_button.on_click(on_button_solve)
 
