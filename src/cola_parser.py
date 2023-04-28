@@ -151,6 +151,7 @@ class Parser(object):
         """base_set : LABEL
         | LABEL LSPAR NUMBER RSPAR
         | UNIVERSE
+        | PART
         """
         if len(p) == 2:
             p[0] = p[1]
@@ -171,7 +172,13 @@ class Parser(object):
         """set_not : NOT set_atom
         | set_atom
         """
-        p[0] = p[1]
+        if len(p) > 2:
+            if isinstance(p[2], LiftedSet):
+                raise Exception("Cannot negate partition")
+            else:
+                p[0] = Not(p[2])
+        else:
+            p[0] = p[1]
 
     def p_set_inter(self, p):
         """set_inter : set_not
@@ -205,16 +212,8 @@ class Parser(object):
 
     def p_set(self, p):
         """set : set_union
-        | PART
         """
-
-        if len(p) == 2:
-            p[0] = p[1]
-        else:
-            if isinstance(p[2], LiftedSet):
-                raise Exception("Cannot negate partition")
-            else:
-                p[0] = Not(p[2])
+        p[0] = p[1]
 
     def p_declare_set(self, p):
         """declare_set : PROP LABEL EQUALS LPAR entity_list RPAR

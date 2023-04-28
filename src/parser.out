@@ -20,16 +20,16 @@ Rule 14    comp -> DIFF EQUALS
 Rule 15    base_set -> LABEL
 Rule 16    base_set -> LABEL LSPAR NUMBER RSPAR
 Rule 17    base_set -> UNIVERSE
-Rule 18    set_atom -> base_set
-Rule 19    set_atom -> LRPAR set RRPAR
-Rule 20    set_not -> NOT set_atom
-Rule 21    set_not -> set_atom
-Rule 22    set_inter -> set_not
-Rule 23    set_inter -> set_not INTER set_atom
-Rule 24    set_union -> set_inter
-Rule 25    set_union -> set UNION set_inter
-Rule 26    set -> set_union
-Rule 27    set -> PART
+Rule 18    base_set -> PART
+Rule 19    set_atom -> base_set
+Rule 20    set_atom -> LRPAR set RRPAR
+Rule 21    set_not -> NOT set_atom
+Rule 22    set_not -> set_atom
+Rule 23    set_inter -> set_not
+Rule 24    set_inter -> set_not INTER set_atom
+Rule 25    set_union -> set_inter
+Rule 26    set_union -> set UNION set_inter
+Rule 27    set -> set_union
 Rule 28    declare_set -> PROP LABEL EQUALS LPAR entity_list RPAR
 Rule 29    declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR
 Rule 30    declare_set -> PROP UNIVERSE EQUALS LPAR entity_list RPAR
@@ -56,41 +56,41 @@ DIFF                 : 14
 EQUALS               : 9 12 13 14 28 29 30 31 40 42
 GT                   : 11 12
 IN                   : 34 35 36 37 38 39 41
-INTER                : 23
+INTER                : 24
 LAB                  : 31 33
 LABEL                : 7 8 15 16 28 29 31 32 33 34 35 36 37 38 39 40 41 42
 LPAR                 : 28 29 30 31 34 35 38 38 39 42
-LRPAR                : 19 44
+LRPAR                : 20 44
 LSPAR                : 16 36 37 39 40 41 42
 LT                   : 10 13
-NOT                  : 20
+NOT                  : 21
 NUMBER               : 16 40 41 42 43 44
-PART                 : 27
+PART                 : 18
 PROP                 : 28 30 31 32 33
 REPEAT               : 34 36
 RPAR                 : 28 29 30 31 34 35 38 38 39 42
-RRPAR                : 19 44
+RRPAR                : 20 44
 RSPAR                : 16 36 37 39 40 41 42
 SEMI                 : 3 4 5 6
-UNION                : 25
+UNION                : 26
 UNIVERSE             : 17 29 30
 error                : 
 
 Nonterminals, with rules where they appear
 
 arrangement          : 4
-base_set             : 18
+base_set             : 19
 comp                 : 43 44
 count_constraint     : 6 44
 declare_set          : 3
 entity_list          : 8 28 29 30 31 42
 pos_constraint       : 5
 program              : 2 0
-set                  : 19 25 34 35 36 37 38 39 40 41 43
-set_atom             : 20 21 23
-set_inter            : 24 25
-set_not              : 22 23
-set_union            : 26
+set                  : 20 26 34 35 36 37 38 39 40 41 43
+set_atom             : 21 22 24
+set_inter            : 25 26
+set_not              : 23 24
+set_union            : 27
 statement            : 1 2
 
 Parsing method: LALR
@@ -256,32 +256,32 @@ state 11
 
     (43) count_constraint -> COUNT . set comp NUMBER
     (44) count_constraint -> COUNT . LRPAR count_constraint RRPAR comp NUMBER
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     LRPAR           shift and go to state 24
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    NOT             shift and go to state 29
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 23
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 12
 
@@ -394,7 +394,7 @@ state 22
 state 23
 
     (43) count_constraint -> COUNT set . comp NUMBER
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
     (9) comp -> . EQUALS
     (10) comp -> . LT
     (11) comp -> . GT
@@ -413,149 +413,136 @@ state 23
 state 24
 
     (44) count_constraint -> COUNT LRPAR . count_constraint RRPAR comp NUMBER
-    (19) set_atom -> LRPAR . set RRPAR
+    (20) set_atom -> LRPAR . set RRPAR
     (43) count_constraint -> . COUNT set comp NUMBER
     (44) count_constraint -> . COUNT LRPAR count_constraint RRPAR comp NUMBER
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     COUNT           shift and go to state 11
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     count_constraint               shift and go to state 48
     set                            shift and go to state 49
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 25
 
-    (26) set -> set_union .
+    (27) set -> set_union .
 
-    UNION           reduce using rule 26 (set -> set_union .)
-    EQUALS          reduce using rule 26 (set -> set_union .)
-    LT              reduce using rule 26 (set -> set_union .)
-    GT              reduce using rule 26 (set -> set_union .)
-    DIFF            reduce using rule 26 (set -> set_union .)
-    RRPAR           reduce using rule 26 (set -> set_union .)
-    RPAR            reduce using rule 26 (set -> set_union .)
-    RSPAR           reduce using rule 26 (set -> set_union .)
-    SEMI            reduce using rule 26 (set -> set_union .)
+    UNION           reduce using rule 27 (set -> set_union .)
+    EQUALS          reduce using rule 27 (set -> set_union .)
+    LT              reduce using rule 27 (set -> set_union .)
+    GT              reduce using rule 27 (set -> set_union .)
+    DIFF            reduce using rule 27 (set -> set_union .)
+    RRPAR           reduce using rule 27 (set -> set_union .)
+    RPAR            reduce using rule 27 (set -> set_union .)
+    RSPAR           reduce using rule 27 (set -> set_union .)
+    SEMI            reduce using rule 27 (set -> set_union .)
 
 
 state 26
 
-    (27) set -> PART .
+    (25) set_union -> set_inter .
 
-    UNION           reduce using rule 27 (set -> PART .)
-    EQUALS          reduce using rule 27 (set -> PART .)
-    LT              reduce using rule 27 (set -> PART .)
-    GT              reduce using rule 27 (set -> PART .)
-    DIFF            reduce using rule 27 (set -> PART .)
-    RRPAR           reduce using rule 27 (set -> PART .)
-    RPAR            reduce using rule 27 (set -> PART .)
-    RSPAR           reduce using rule 27 (set -> PART .)
-    SEMI            reduce using rule 27 (set -> PART .)
+    UNION           reduce using rule 25 (set_union -> set_inter .)
+    EQUALS          reduce using rule 25 (set_union -> set_inter .)
+    LT              reduce using rule 25 (set_union -> set_inter .)
+    GT              reduce using rule 25 (set_union -> set_inter .)
+    DIFF            reduce using rule 25 (set_union -> set_inter .)
+    RRPAR           reduce using rule 25 (set_union -> set_inter .)
+    RPAR            reduce using rule 25 (set_union -> set_inter .)
+    RSPAR           reduce using rule 25 (set_union -> set_inter .)
+    SEMI            reduce using rule 25 (set_union -> set_inter .)
 
 
 state 27
 
-    (24) set_union -> set_inter .
+    (23) set_inter -> set_not .
+    (24) set_inter -> set_not . INTER set_atom
 
-    UNION           reduce using rule 24 (set_union -> set_inter .)
-    EQUALS          reduce using rule 24 (set_union -> set_inter .)
-    LT              reduce using rule 24 (set_union -> set_inter .)
-    GT              reduce using rule 24 (set_union -> set_inter .)
-    DIFF            reduce using rule 24 (set_union -> set_inter .)
-    RRPAR           reduce using rule 24 (set_union -> set_inter .)
-    RPAR            reduce using rule 24 (set_union -> set_inter .)
-    RSPAR           reduce using rule 24 (set_union -> set_inter .)
-    SEMI            reduce using rule 24 (set_union -> set_inter .)
+    UNION           reduce using rule 23 (set_inter -> set_not .)
+    EQUALS          reduce using rule 23 (set_inter -> set_not .)
+    LT              reduce using rule 23 (set_inter -> set_not .)
+    GT              reduce using rule 23 (set_inter -> set_not .)
+    DIFF            reduce using rule 23 (set_inter -> set_not .)
+    RRPAR           reduce using rule 23 (set_inter -> set_not .)
+    RPAR            reduce using rule 23 (set_inter -> set_not .)
+    RSPAR           reduce using rule 23 (set_inter -> set_not .)
+    SEMI            reduce using rule 23 (set_inter -> set_not .)
+    INTER           shift and go to state 50
 
 
 state 28
 
-    (22) set_inter -> set_not .
-    (23) set_inter -> set_not . INTER set_atom
+    (22) set_not -> set_atom .
 
-    UNION           reduce using rule 22 (set_inter -> set_not .)
-    EQUALS          reduce using rule 22 (set_inter -> set_not .)
-    LT              reduce using rule 22 (set_inter -> set_not .)
-    GT              reduce using rule 22 (set_inter -> set_not .)
-    DIFF            reduce using rule 22 (set_inter -> set_not .)
-    RRPAR           reduce using rule 22 (set_inter -> set_not .)
-    RPAR            reduce using rule 22 (set_inter -> set_not .)
-    RSPAR           reduce using rule 22 (set_inter -> set_not .)
-    SEMI            reduce using rule 22 (set_inter -> set_not .)
-    INTER           shift and go to state 50
+    INTER           reduce using rule 22 (set_not -> set_atom .)
+    UNION           reduce using rule 22 (set_not -> set_atom .)
+    EQUALS          reduce using rule 22 (set_not -> set_atom .)
+    LT              reduce using rule 22 (set_not -> set_atom .)
+    GT              reduce using rule 22 (set_not -> set_atom .)
+    DIFF            reduce using rule 22 (set_not -> set_atom .)
+    RRPAR           reduce using rule 22 (set_not -> set_atom .)
+    RPAR            reduce using rule 22 (set_not -> set_atom .)
+    RSPAR           reduce using rule 22 (set_not -> set_atom .)
+    SEMI            reduce using rule 22 (set_not -> set_atom .)
 
 
 state 29
 
-    (21) set_not -> set_atom .
-
-    INTER           reduce using rule 21 (set_not -> set_atom .)
-    UNION           reduce using rule 21 (set_not -> set_atom .)
-    EQUALS          reduce using rule 21 (set_not -> set_atom .)
-    LT              reduce using rule 21 (set_not -> set_atom .)
-    GT              reduce using rule 21 (set_not -> set_atom .)
-    DIFF            reduce using rule 21 (set_not -> set_atom .)
-    RRPAR           reduce using rule 21 (set_not -> set_atom .)
-    RPAR            reduce using rule 21 (set_not -> set_atom .)
-    RSPAR           reduce using rule 21 (set_not -> set_atom .)
-    SEMI            reduce using rule 21 (set_not -> set_atom .)
-
-
-state 30
-
-    (20) set_not -> NOT . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (21) set_not -> NOT . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set_atom                       shift and go to state 51
-    base_set                       shift and go to state 31
+    base_set                       shift and go to state 30
+
+state 30
+
+    (19) set_atom -> base_set .
+
+    INTER           reduce using rule 19 (set_atom -> base_set .)
+    UNION           reduce using rule 19 (set_atom -> base_set .)
+    EQUALS          reduce using rule 19 (set_atom -> base_set .)
+    LT              reduce using rule 19 (set_atom -> base_set .)
+    GT              reduce using rule 19 (set_atom -> base_set .)
+    DIFF            reduce using rule 19 (set_atom -> base_set .)
+    RRPAR           reduce using rule 19 (set_atom -> base_set .)
+    RPAR            reduce using rule 19 (set_atom -> base_set .)
+    RSPAR           reduce using rule 19 (set_atom -> base_set .)
+    SEMI            reduce using rule 19 (set_atom -> base_set .)
+
 
 state 31
-
-    (18) set_atom -> base_set .
-
-    INTER           reduce using rule 18 (set_atom -> base_set .)
-    UNION           reduce using rule 18 (set_atom -> base_set .)
-    EQUALS          reduce using rule 18 (set_atom -> base_set .)
-    LT              reduce using rule 18 (set_atom -> base_set .)
-    GT              reduce using rule 18 (set_atom -> base_set .)
-    DIFF            reduce using rule 18 (set_atom -> base_set .)
-    RRPAR           reduce using rule 18 (set_atom -> base_set .)
-    RPAR            reduce using rule 18 (set_atom -> base_set .)
-    RSPAR           reduce using rule 18 (set_atom -> base_set .)
-    SEMI            reduce using rule 18 (set_atom -> base_set .)
-
-
-state 32
 
     (15) base_set -> LABEL .
     (16) base_set -> LABEL . LSPAR NUMBER RSPAR
@@ -573,7 +560,7 @@ state 32
     LSPAR           shift and go to state 52
 
 
-state 33
+state 32
 
     (17) base_set -> UNIVERSE .
 
@@ -587,6 +574,22 @@ state 33
     RPAR            reduce using rule 17 (base_set -> UNIVERSE .)
     RSPAR           reduce using rule 17 (base_set -> UNIVERSE .)
     SEMI            reduce using rule 17 (base_set -> UNIVERSE .)
+
+
+state 33
+
+    (18) base_set -> PART .
+
+    INTER           reduce using rule 18 (base_set -> PART .)
+    UNION           reduce using rule 18 (base_set -> PART .)
+    EQUALS          reduce using rule 18 (base_set -> PART .)
+    LT              reduce using rule 18 (base_set -> PART .)
+    GT              reduce using rule 18 (base_set -> PART .)
+    DIFF            reduce using rule 18 (base_set -> PART .)
+    RRPAR           reduce using rule 18 (base_set -> PART .)
+    RPAR            reduce using rule 18 (base_set -> PART .)
+    RSPAR           reduce using rule 18 (base_set -> PART .)
+    SEMI            reduce using rule 18 (base_set -> PART .)
 
 
 state 34
@@ -608,68 +611,68 @@ state 36
     (34) arrangement -> LABEL IN LPAR . REPEAT set RPAR
     (35) arrangement -> LABEL IN LPAR . set RPAR
     (38) arrangement -> LABEL IN LPAR . LPAR set RPAR RPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     REPEAT          shift and go to state 56
     LPAR            shift and go to state 55
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 57
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 37
 
     (36) arrangement -> LABEL IN LSPAR . REPEAT set RSPAR
     (37) arrangement -> LABEL IN LSPAR . set RSPAR
     (39) arrangement -> LABEL IN LSPAR . LPAR set RPAR RSPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     REPEAT          shift and go to state 58
     LPAR            shift and go to state 60
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 59
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 38
 
@@ -705,26 +708,28 @@ state 41
 
 state 42
 
-    (25) set_union -> set UNION . set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (26) set_union -> set UNION . set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set_inter                      shift and go to state 65
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 43
 
@@ -760,33 +765,33 @@ state 46
 
 state 47
 
-    (19) set_atom -> LRPAR . set RRPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (20) set_atom -> LRPAR . set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 49
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 48
 
@@ -797,8 +802,8 @@ state 48
 
 state 49
 
-    (19) set_atom -> LRPAR set . RRPAR
-    (25) set_union -> set . UNION set_inter
+    (20) set_atom -> LRPAR set . RRPAR
+    (26) set_union -> set . UNION set_inter
 
     RRPAR           shift and go to state 70
     UNION           shift and go to state 42
@@ -806,34 +811,36 @@ state 49
 
 state 50
 
-    (23) set_inter -> set_not INTER . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (24) set_inter -> set_not INTER . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set_atom                       shift and go to state 71
-    base_set                       shift and go to state 31
+    base_set                       shift and go to state 30
 
 state 51
 
-    (20) set_not -> NOT set_atom .
+    (21) set_not -> NOT set_atom .
 
-    INTER           reduce using rule 20 (set_not -> NOT set_atom .)
-    UNION           reduce using rule 20 (set_not -> NOT set_atom .)
-    EQUALS          reduce using rule 20 (set_not -> NOT set_atom .)
-    LT              reduce using rule 20 (set_not -> NOT set_atom .)
-    GT              reduce using rule 20 (set_not -> NOT set_atom .)
-    DIFF            reduce using rule 20 (set_not -> NOT set_atom .)
-    RRPAR           reduce using rule 20 (set_not -> NOT set_atom .)
-    RPAR            reduce using rule 20 (set_not -> NOT set_atom .)
-    RSPAR           reduce using rule 20 (set_not -> NOT set_atom .)
-    SEMI            reduce using rule 20 (set_not -> NOT set_atom .)
+    INTER           reduce using rule 21 (set_not -> NOT set_atom .)
+    UNION           reduce using rule 21 (set_not -> NOT set_atom .)
+    EQUALS          reduce using rule 21 (set_not -> NOT set_atom .)
+    LT              reduce using rule 21 (set_not -> NOT set_atom .)
+    GT              reduce using rule 21 (set_not -> NOT set_atom .)
+    DIFF            reduce using rule 21 (set_not -> NOT set_atom .)
+    RRPAR           reduce using rule 21 (set_not -> NOT set_atom .)
+    RPAR            reduce using rule 21 (set_not -> NOT set_atom .)
+    RSPAR           reduce using rule 21 (set_not -> NOT set_atom .)
+    SEMI            reduce using rule 21 (set_not -> NOT set_atom .)
 
 
 state 52
@@ -866,67 +873,67 @@ state 54
 state 55
 
     (38) arrangement -> LABEL IN LPAR LPAR . set RPAR RPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 76
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 56
 
     (34) arrangement -> LABEL IN LPAR REPEAT . set RPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 77
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 57
 
     (35) arrangement -> LABEL IN LPAR set . RPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RPAR            shift and go to state 78
     UNION           shift and go to state 42
@@ -935,37 +942,37 @@ state 57
 state 58
 
     (36) arrangement -> LABEL IN LSPAR REPEAT . set RSPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 79
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 59
 
     (37) arrangement -> LABEL IN LSPAR set . RSPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RSPAR           shift and go to state 80
     UNION           shift and go to state 42
@@ -974,32 +981,32 @@ state 59
 state 60
 
     (39) arrangement -> LABEL IN LSPAR LPAR . set RPAR RSPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 81
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 61
 
@@ -1038,17 +1045,17 @@ state 64
 
 state 65
 
-    (25) set_union -> set UNION set_inter .
+    (26) set_union -> set UNION set_inter .
 
-    UNION           reduce using rule 25 (set_union -> set UNION set_inter .)
-    EQUALS          reduce using rule 25 (set_union -> set UNION set_inter .)
-    LT              reduce using rule 25 (set_union -> set UNION set_inter .)
-    GT              reduce using rule 25 (set_union -> set UNION set_inter .)
-    DIFF            reduce using rule 25 (set_union -> set UNION set_inter .)
-    RRPAR           reduce using rule 25 (set_union -> set UNION set_inter .)
-    RPAR            reduce using rule 25 (set_union -> set UNION set_inter .)
-    RSPAR           reduce using rule 25 (set_union -> set UNION set_inter .)
-    SEMI            reduce using rule 25 (set_union -> set UNION set_inter .)
+    UNION           reduce using rule 26 (set_union -> set UNION set_inter .)
+    EQUALS          reduce using rule 26 (set_union -> set UNION set_inter .)
+    LT              reduce using rule 26 (set_union -> set UNION set_inter .)
+    GT              reduce using rule 26 (set_union -> set UNION set_inter .)
+    DIFF            reduce using rule 26 (set_union -> set UNION set_inter .)
+    RRPAR           reduce using rule 26 (set_union -> set UNION set_inter .)
+    RPAR            reduce using rule 26 (set_union -> set UNION set_inter .)
+    RSPAR           reduce using rule 26 (set_union -> set UNION set_inter .)
+    SEMI            reduce using rule 26 (set_union -> set UNION set_inter .)
 
 
 state 66
@@ -1091,33 +1098,33 @@ state 69
 
 state 70
 
-    (19) set_atom -> LRPAR set RRPAR .
+    (20) set_atom -> LRPAR set RRPAR .
 
-    INTER           reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    UNION           reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    EQUALS          reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    LT              reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    GT              reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    DIFF            reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    RRPAR           reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    RPAR            reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    RSPAR           reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
-    SEMI            reduce using rule 19 (set_atom -> LRPAR set RRPAR .)
+    INTER           reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    UNION           reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    EQUALS          reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    LT              reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    GT              reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    DIFF            reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    RRPAR           reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    RPAR            reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    RSPAR           reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
+    SEMI            reduce using rule 20 (set_atom -> LRPAR set RRPAR .)
 
 
 state 71
 
-    (23) set_inter -> set_not INTER set_atom .
+    (24) set_inter -> set_not INTER set_atom .
 
-    UNION           reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    EQUALS          reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    LT              reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    GT              reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    DIFF            reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    RRPAR           reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    RPAR            reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    RSPAR           reduce using rule 23 (set_inter -> set_not INTER set_atom .)
-    SEMI            reduce using rule 23 (set_inter -> set_not INTER set_atom .)
+    UNION           reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    EQUALS          reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    LT              reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    GT              reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    DIFF            reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    RRPAR           reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    RPAR            reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    RSPAR           reduce using rule 24 (set_inter -> set_not INTER set_atom .)
+    SEMI            reduce using rule 24 (set_inter -> set_not INTER set_atom .)
 
 
 state 72
@@ -1153,7 +1160,7 @@ state 75
 state 76
 
     (38) arrangement -> LABEL IN LPAR LPAR set . RPAR RPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RPAR            shift and go to state 91
     UNION           shift and go to state 42
@@ -1162,7 +1169,7 @@ state 76
 state 77
 
     (34) arrangement -> LABEL IN LPAR REPEAT set . RPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RPAR            shift and go to state 92
     UNION           shift and go to state 42
@@ -1178,7 +1185,7 @@ state 78
 state 79
 
     (36) arrangement -> LABEL IN LSPAR REPEAT set . RSPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RSPAR           shift and go to state 93
     UNION           shift and go to state 42
@@ -1194,7 +1201,7 @@ state 80
 state 81
 
     (39) arrangement -> LABEL IN LSPAR LPAR set . RPAR RSPAR
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     RPAR            shift and go to state 94
     UNION           shift and go to state 42
@@ -1204,63 +1211,63 @@ state 82
 
     (40) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . set
     (42) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS . LPAR entity_list RPAR
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
     LPAR            shift and go to state 96
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 95
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 83
 
     (41) pos_constraint -> LABEL LSPAR NUMBER RSPAR IN . set
-    (26) set -> . set_union
-    (27) set -> . PART
-    (24) set_union -> . set_inter
-    (25) set_union -> . set UNION set_inter
-    (22) set_inter -> . set_not
-    (23) set_inter -> . set_not INTER set_atom
-    (20) set_not -> . NOT set_atom
-    (21) set_not -> . set_atom
-    (18) set_atom -> . base_set
-    (19) set_atom -> . LRPAR set RRPAR
+    (27) set -> . set_union
+    (25) set_union -> . set_inter
+    (26) set_union -> . set UNION set_inter
+    (23) set_inter -> . set_not
+    (24) set_inter -> . set_not INTER set_atom
+    (21) set_not -> . NOT set_atom
+    (22) set_not -> . set_atom
+    (19) set_atom -> . base_set
+    (20) set_atom -> . LRPAR set RRPAR
     (15) base_set -> . LABEL
     (16) base_set -> . LABEL LSPAR NUMBER RSPAR
     (17) base_set -> . UNIVERSE
+    (18) base_set -> . PART
 
-    PART            shift and go to state 26
-    NOT             shift and go to state 30
+    NOT             shift and go to state 29
     LRPAR           shift and go to state 47
-    LABEL           shift and go to state 32
-    UNIVERSE        shift and go to state 33
+    LABEL           shift and go to state 31
+    UNIVERSE        shift and go to state 32
+    PART            shift and go to state 33
 
     set                            shift and go to state 97
     set_union                      shift and go to state 25
-    set_inter                      shift and go to state 27
-    set_not                        shift and go to state 28
-    set_atom                       shift and go to state 29
-    base_set                       shift and go to state 31
+    set_inter                      shift and go to state 26
+    set_not                        shift and go to state 27
+    set_atom                       shift and go to state 28
+    base_set                       shift and go to state 30
 
 state 84
 
@@ -1357,7 +1364,7 @@ state 94
 state 95
 
     (40) pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set .
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     SEMI            reduce using rule 40 (pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set .)
     UNION           shift and go to state 42
@@ -1376,7 +1383,7 @@ state 96
 state 97
 
     (41) pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set .
-    (25) set_union -> set . UNION set_inter
+    (26) set_union -> set . UNION set_inter
 
     SEMI            reduce using rule 41 (pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set .)
     UNION           shift and go to state 42

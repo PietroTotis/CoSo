@@ -15,7 +15,8 @@ def show_widget():
 class Widget(object):
     def __init__(self):
 
-        self.program = "A CoLa program"
+        self.program = None
+        self.uploaded = False
         self.text_area = None
         self.current_output = None
 
@@ -35,7 +36,7 @@ class Widget(object):
     def input_layout(self):
 
         self.text_area = widgets.Textarea(
-            value=self.program,
+            value=None,
             placeholder="Type a CoLa program",
             description="",
             disabled=False,
@@ -59,7 +60,9 @@ class Widget(object):
         output = widgets.Output()
 
         def on_button_solve(b):
-            self.program = self.text_area.value
+            
+            if not self.uploaded:
+                self.program = self.text_area.value
             if self.current_output is not None:
                 self.current_output.close()
                 # with self.current_output:
@@ -89,6 +92,7 @@ class Widget(object):
         row = widgets.Box([msg, upload_button])
 
         def read_file(inputs):
+            self.uploaded = True
             self.program = str(inputs["new"][0]["content"], "utf8")
 
         upload_button.observe(read_file, names="value")

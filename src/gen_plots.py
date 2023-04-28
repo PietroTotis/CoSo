@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 from .util import ROOT_DIR
 
-OUT_DIR = os.path.join(ROOT_DIR, "tests", "results")
-BENCHMARKS = os.path.join(ROOT_DIR, "tests", "benchmarks", "synthetic")
-COSO_STATS_BENCH = os.path.join(OUT_DIR, "subs_results_benchmarks.csv")
-COSO_STATS_EX = os.path.join(OUT_DIR, "subs_results_examples.csv")
+OUT_DIR = ROOT_DIR / "tests" / "results"
+BENCHMARKS = ROOT_DIR / "tests" / "benchmarks" / "synthetic"
+COSO_STATS_BENCH = OUT_DIR / "subs_results_benchmarks.csv"
+COSO_STATS_EX = OUT_DIR / "subs_results_examples.csv"
 WIDTH = 430
 PGF = False
 

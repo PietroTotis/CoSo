@@ -9,7 +9,7 @@ from .level_2 import LiftedSet
 from .configuration import CSize
 from .util import *
 
-HEADER = os.path.join(ROOT_DIR, "src", "VisCoSo", "header.html")
+HEADER = ROOT_DIR / "src" / "VisCoSo" / "header.html"
 
 # Icons CSS
 

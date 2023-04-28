@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'COMMA COUNT DIFF EQUALS GT IN INTER LAB LABEL LPAR LRPAR LSPAR LT NOT NUMBER PART PROP REPEAT RPAR RRPAR RSPAR SEMI UNION UNIVERSEprogram : statement\n        | statement program\n        statement : declare_set SEMI\n        | arrangement SEMI\n        | pos_constraint SEMI\n        | count_constraint SEMI\n        entity_list : LABEL\n        | LABEL COMMA entity_list\n        comp : EQUALS\n        | LT\n        | GT\n        | GT EQUALS\n        | LT EQUALS\n        | DIFF EQUALS\n        base_set : LABEL\n        | LABEL LSPAR NUMBER RSPAR\n        | UNIVERSE\n        set_atom : base_set\n        | LRPAR set RRPAR\n        set_not : NOT set_atom\n        | set_atom\n        set_inter : set_not\n        | set_not INTER set_atom\n        set_union : set_inter\n        | set UNION set_inter\n        set : set_union\n        | PART\n        declare_set : PROP LABEL EQUALS LPAR entity_list RPAR\n        | UNIVERSE LABEL EQUALS LPAR entity_list RPAR\n        | PROP UNIVERSE EQUALS LPAR entity_list RPAR\n        | LAB PROP LABEL EQUALS LPAR entity_list RPAR\n        | PROP LABEL\n        | LAB PROP LABEL\n        arrangement : LABEL IN LPAR REPEAT set RPAR\n        | LABEL IN LPAR set RPAR\n        | LABEL IN LSPAR REPEAT set RSPAR\n        | LABEL IN LSPAR set RSPAR\n        | LABEL IN LPAR LPAR set RPAR RPAR\n        | LABEL IN LSPAR LPAR set RPAR RSPAR\n        pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS set\n        | LABEL LSPAR NUMBER RSPAR IN set\n        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR\n        count_constraint : COUNT set comp NUMBER\n        | COUNT LRPAR count_constraint RRPAR comp NUMBER\n        '
+_lr_signature = 'COMMA COUNT DIFF EQUALS GT IN INTER LAB LABEL LPAR LRPAR LSPAR LT NOT NUMBER PART PROP REPEAT RPAR RRPAR RSPAR SEMI UNION UNIVERSEprogram : statement\n        | statement program\n        statement : declare_set SEMI\n        | arrangement SEMI\n        | pos_constraint SEMI\n        | count_constraint SEMI\n        entity_list : LABEL\n        | LABEL COMMA entity_list\n        comp : EQUALS\n        | LT\n        | GT\n        | GT EQUALS\n        | LT EQUALS\n        | DIFF EQUALS\n        base_set : LABEL\n        | LABEL LSPAR NUMBER RSPAR\n        | UNIVERSE\n        | PART\n        set_atom : base_set\n        | LRPAR set RRPAR\n        set_not : NOT set_atom\n        | set_atom\n        set_inter : set_not\n        | set_not INTER set_atom\n        set_union : set_inter\n        | set UNION set_inter\n        set : set_union\n        declare_set : PROP LABEL EQUALS LPAR entity_list RPAR\n        | UNIVERSE LABEL EQUALS LPAR entity_list RPAR\n        | PROP UNIVERSE EQUALS LPAR entity_list RPAR\n        | LAB PROP LABEL EQUALS LPAR entity_list RPAR\n        | PROP LABEL\n        | LAB PROP LABEL\n        arrangement : LABEL IN LPAR REPEAT set RPAR\n        | LABEL IN LPAR set RPAR\n        | LABEL IN LSPAR REPEAT set RSPAR\n        | LABEL IN LSPAR set RSPAR\n        | LABEL IN LPAR LPAR set RPAR RPAR\n        | LABEL IN LSPAR LPAR set RPAR RSPAR\n        pos_constraint : LABEL LSPAR NUMBER RSPAR EQUALS set\n        | LABEL LSPAR NUMBER RSPAR IN set\n        | LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR\n        count_constraint : COUNT set comp NUMBER\n        | COUNT LRPAR count_constraint RRPAR comp NUMBER\n        '
     
-_lr_action_items = {'PROP':([0,2,10,13,14,15,16,],[7,7,22,-3,-4,-5,-6,]),'UNIVERSE':([0,2,7,11,13,14,15,16,24,30,36,37,42,47,50,55,56,58,60,82,83,],[9,9,18,33,-3,-4,-5,-6,33,33,33,33,33,33,33,33,33,33,33,33,33,]),'LAB':([0,2,13,14,15,16,],[10,10,-3,-4,-5,-6,]),'LABEL':([0,2,7,9,11,13,14,15,16,22,24,30,36,37,42,47,50,53,54,55,56,58,60,62,82,83,85,88,96,],[8,8,17,21,32,-3,-4,-5,-6,40,32,32,32,32,32,32,32,73,73,32,32,32,32,73,32,32,73,73,73,]),'COUNT':([0,2,13,14,15,16,24,],[11,11,-3,-4,-5,-6,11,]),'$end':([1,2,12,13,14,15,16,],[0,-1,-2,-3,-4,-5,-6,]),'SEMI':([3,4,5,6,17,25,26,27,28,29,31,32,33,40,51,64,65,70,71,78,80,87,89,90,92,93,95,97,98,100,102,103,105,106,],[13,14,15,16,-32,-26,-27,-24,-22,-21,-18,-15,-17,-33,-20,-43,-25,-19,-23,-35,-37,-16,-28,-30,-34,-36,-40,-41,-29,-44,-38,-39,-31,-42,]),'IN':([8,61,],[19,83,]),'LSPAR':([8,19,32,],[20,37,52,]),'LRPAR':([11,24,30,36,37,42,47,50,55,56,58,60,82,83,],[24,47,47,47,47,47,47,47,47,47,47,47,47,47,]),'PART':([11,24,36,37,47,55,56,58,60,82,83,],[26,26,26,26,26,26,26,26,26,26,26,]),'NOT':([11,24,36,37,42,47,55,56,58,60,82,83,],[30,30,30,30,30,30,30,30,30,30,30,30,]),'EQUALS':([17,18,21,23,25,26,27,28,29,31,32,33,40,44,45,46,51,61,65,69,70,71,87,],[34,35,39,43,-26,-27,-24,-22,-21,-18,-15,-17,63,66,67,68,-20,82,-25,43,-19,-23,-16,]),'LPAR':([19,34,35,36,37,39,63,82,],[36,53,54,55,60,62,85,96,]),'NUMBER':([20,41,43,44,45,52,66,67,68,86,],[38,64,-9,-10,-11,72,-13,-12,-14,100,]),'UNION':([23,25,26,27,28,29,31,32,33,49,51,57,59,65,70,71,76,77,79,81,87,95,97,],[42,-26,-27,-24,-22,-21,-18,-15,-17,42,-20,42,42,-25,-19,-23,42,42,42,42,-16,42,42,]),'LT':([23,25,26,27,28,29,31,32,33,51,65,69,70,71,87,],[44,-26,-27,-24,-22,-21,-18,-15,-17,-20,-25,44,-19,-23,-16,]),'GT':([23,25,26,27,28,29,31,32,33,51,65,69,70,71,87,],[45,-26,-27,-24,-22,-21,-18,-15,-17,-20,-25,45,-19,-23,-16,]),'DIFF':([23,25,26,27,28,29,31,32,33,51,65,69,70,71,87,],[46,-26,-27,-24,-22,-21,-18,-15,-17,-20,-25,46,-19,-23,-16,]),'RRPAR':([25,26,27,28,29,31,32,33,48,49,51,64,65,70,71,87,100,],[-26,-27,-24,-22,-21,-18,-15,-17,69,70,-20,-43,-25,-19,-23,-16,-44,]),'RPAR':([25,26,27,28,29,31,32,33,51,57,65,70,71,73,74,75,76,77,81,84,87,91,99,101,104,],[-26,-27,-24,-22,-21,-18,-15,-17,-20,78,-25,-19,-23,-7,89,90,91,92,94,98,-16,102,105,-8,106,]),'RSPAR':([25,26,27,28,29,31,32,33,38,51,59,65,70,71,72,79,87,94,],[-26,-27,-24,-22,-21,-18,-15,-17,61,-20,80,-25,-19,-23,87,93,-16,103,]),'INTER':([28,29,31,32,33,51,70,87,],[50,-21,-18,-15,-17,-20,-19,-16,]),'REPEAT':([36,37,],[56,58,]),'COMMA':([73,],[88,]),}
+_lr_action_items = {'PROP':([0,2,10,13,14,15,16,],[7,7,22,-3,-4,-5,-6,]),'UNIVERSE':([0,2,7,11,13,14,15,16,24,29,36,37,42,47,50,55,56,58,60,82,83,],[9,9,18,32,-3,-4,-5,-6,32,32,32,32,32,32,32,32,32,32,32,32,32,]),'LAB':([0,2,13,14,15,16,],[10,10,-3,-4,-5,-6,]),'LABEL':([0,2,7,9,11,13,14,15,16,22,24,29,36,37,42,47,50,53,54,55,56,58,60,62,82,83,85,88,96,],[8,8,17,21,31,-3,-4,-5,-6,40,31,31,31,31,31,31,31,73,73,31,31,31,31,73,31,31,73,73,73,]),'COUNT':([0,2,13,14,15,16,24,],[11,11,-3,-4,-5,-6,11,]),'$end':([1,2,12,13,14,15,16,],[0,-1,-2,-3,-4,-5,-6,]),'SEMI':([3,4,5,6,17,25,26,27,28,30,31,32,33,40,51,64,65,70,71,78,80,87,89,90,92,93,95,97,98,100,102,103,105,106,],[13,14,15,16,-32,-27,-25,-23,-22,-19,-15,-17,-18,-33,-21,-43,-26,-20,-24,-35,-37,-16,-28,-30,-34,-36,-40,-41,-29,-44,-38,-39,-31,-42,]),'IN':([8,61,],[19,83,]),'LSPAR':([8,19,31,],[20,37,52,]),'LRPAR':([11,24,29,36,37,42,47,50,55,56,58,60,82,83,],[24,47,47,47,47,47,47,47,47,47,47,47,47,47,]),'NOT':([11,24,36,37,42,47,55,56,58,60,82,83,],[29,29,29,29,29,29,29,29,29,29,29,29,]),'PART':([11,24,29,36,37,42,47,50,55,56,58,60,82,83,],[33,33,33,33,33,33,33,33,33,33,33,33,33,33,]),'EQUALS':([17,18,21,23,25,26,27,28,30,31,32,33,40,44,45,46,51,61,65,69,70,71,87,],[34,35,39,43,-27,-25,-23,-22,-19,-15,-17,-18,63,66,67,68,-21,82,-26,43,-20,-24,-16,]),'LPAR':([19,34,35,36,37,39,63,82,],[36,53,54,55,60,62,85,96,]),'NUMBER':([20,41,43,44,45,52,66,67,68,86,],[38,64,-9,-10,-11,72,-13,-12,-14,100,]),'UNION':([23,25,26,27,28,30,31,32,33,49,51,57,59,65,70,71,76,77,79,81,87,95,97,],[42,-27,-25,-23,-22,-19,-15,-17,-18,42,-21,42,42,-26,-20,-24,42,42,42,42,-16,42,42,]),'LT':([23,25,26,27,28,30,31,32,33,51,65,69,70,71,87,],[44,-27,-25,-23,-22,-19,-15,-17,-18,-21,-26,44,-20,-24,-16,]),'GT':([23,25,26,27,28,30,31,32,33,51,65,69,70,71,87,],[45,-27,-25,-23,-22,-19,-15,-17,-18,-21,-26,45,-20,-24,-16,]),'DIFF':([23,25,26,27,28,30,31,32,33,51,65,69,70,71,87,],[46,-27,-25,-23,-22,-19,-15,-17,-18,-21,-26,46,-20,-24,-16,]),'RRPAR':([25,26,27,28,30,31,32,33,48,49,51,64,65,70,71,87,100,],[-27,-25,-23,-22,-19,-15,-17,-18,69,70,-21,-43,-26,-20,-24,-16,-44,]),'RPAR':([25,26,27,28,30,31,32,33,51,57,65,70,71,73,74,75,76,77,81,84,87,91,99,101,104,],[-27,-25,-23,-22,-19,-15,-17,-18,-21,78,-26,-20,-24,-7,89,90,91,92,94,98,-16,102,105,-8,106,]),'RSPAR':([25,26,27,28,30,31,32,33,38,51,59,65,70,71,72,79,87,94,],[-27,-25,-23,-22,-19,-15,-17,-18,61,-21,80,-26,-20,-24,87,93,-16,103,]),'INTER':([27,28,30,31,32,33,51,70,87,],[50,-22,-19,-15,-17,-18,-21,-20,-16,]),'REPEAT':([36,37,],[56,58,]),'COMMA':([73,],[88,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'program':([0,2,],[1,12,]),'statement':([0,2,],[2,2,]),'declare_set':([0,2,],[3,3,]),'arrangement':([0,2,],[4,4,]),'pos_constraint':([0,2,],[5,5,]),'count_constraint':([0,2,24,],[6,6,48,]),'set':([11,24,36,37,47,55,56,58,60,82,83,],[23,49,57,59,49,76,77,79,81,95,97,]),'set_union':([11,24,36,37,47,55,56,58,60,82,83,],[25,25,25,25,25,25,25,25,25,25,25,]),'set_inter':([11,24,36,37,42,47,55,56,58,60,82,83,],[27,27,27,27,65,27,27,27,27,27,27,27,]),'set_not':([11,24,36,37,42,47,55,56,58,60,82,83,],[28,28,28,28,28,28,28,28,28,28,28,28,]),'set_atom':([11,24,30,36,37,42,47,50,55,56,58,60,82,83,],[29,29,51,29,29,29,29,71,29,29,29,29,29,29,]),'base_set':([11,24,30,36,37,42,47,50,55,56,58,60,82,83,],[31,31,31,31,31,31,31,31,31,31,31,31,31,31,]),'comp':([23,69,],[41,86,]),'entity_list':([53,54,62,85,88,96,],[74,75,84,99,101,104,]),}
+_lr_goto_items = {'program':([0,2,],[1,12,]),'statement':([0,2,],[2,2,]),'declare_set':([0,2,],[3,3,]),'arrangement':([0,2,],[4,4,]),'pos_constraint':([0,2,],[5,5,]),'count_constraint':([0,2,24,],[6,6,48,]),'set':([11,24,36,37,47,55,56,58,60,82,83,],[23,49,57,59,49,76,77,79,81,95,97,]),'set_union':([11,24,36,37,47,55,56,58,60,82,83,],[25,25,25,25,25,25,25,25,25,25,25,]),'set_inter':([11,24,36,37,42,47,55,56,58,60,82,83,],[26,26,26,26,65,26,26,26,26,26,26,26,]),'set_not':([11,24,36,37,42,47,55,56,58,60,82,83,],[27,27,27,27,27,27,27,27,27,27,27,27,]),'set_atom':([11,24,29,36,37,42,47,50,55,56,58,60,82,83,],[28,28,51,28,28,28,28,71,28,28,28,28,28,28,]),'base_set':([11,24,29,36,37,42,47,50,55,56,58,60,82,83,],[30,30,30,30,30,30,30,30,30,30,30,30,30,30,]),'comp':([23,69,],[41,86,]),'entity_list':([53,54,62,85,88,96,],[74,75,84,99,101,104,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,48 +27,48 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> program","S'",1,None,None,None),
-  ('program -> statement','program',1,'p_program','cola_parser.py',125),
-  ('program -> statement program','program',2,'p_program','cola_parser.py',126),
-  ('statement -> declare_set SEMI','statement',2,'p_statement','cola_parser.py',130),
-  ('statement -> arrangement SEMI','statement',2,'p_statement','cola_parser.py',131),
-  ('statement -> pos_constraint SEMI','statement',2,'p_statement','cola_parser.py',132),
-  ('statement -> count_constraint SEMI','statement',2,'p_statement','cola_parser.py',133),
-  ('entity_list -> LABEL','entity_list',1,'p_entity_list','cola_parser.py',149),
-  ('entity_list -> LABEL COMMA entity_list','entity_list',3,'p_entity_list','cola_parser.py',150),
-  ('comp -> EQUALS','comp',1,'p_comp','cola_parser.py',158),
-  ('comp -> LT','comp',1,'p_comp','cola_parser.py',159),
-  ('comp -> GT','comp',1,'p_comp','cola_parser.py',160),
-  ('comp -> GT EQUALS','comp',2,'p_comp','cola_parser.py',161),
-  ('comp -> LT EQUALS','comp',2,'p_comp','cola_parser.py',162),
-  ('comp -> DIFF EQUALS','comp',2,'p_comp','cola_parser.py',163),
-  ('base_set -> LABEL','base_set',1,'p_base_set','cola_parser.py',171),
-  ('base_set -> LABEL LSPAR NUMBER RSPAR','base_set',4,'p_base_set','cola_parser.py',172),
-  ('base_set -> UNIVERSE','base_set',1,'p_base_set','cola_parser.py',173),
-  ('set_atom -> base_set','set_atom',1,'p_set_atom','cola_parser.py',182),
-  ('set_atom -> LRPAR set RRPAR','set_atom',3,'p_set_atom','cola_parser.py',183),
-  ('set_not -> NOT set_atom','set_not',2,'p_set_not','cola_parser.py',191),
-  ('set_not -> set_atom','set_not',1,'p_set_not','cola_parser.py',192),
-  ('set_inter -> set_not','set_inter',1,'p_set_inter','cola_parser.py',197),
-  ('set_inter -> set_not INTER set_atom','set_inter',3,'p_set_inter','cola_parser.py',198),
-  ('set_union -> set_inter','set_union',1,'p_set_union','cola_parser.py',215),
-  ('set_union -> set UNION set_inter','set_union',3,'p_set_union','cola_parser.py',216),
-  ('set -> set_union','set',1,'p_set','cola_parser.py',227),
-  ('set -> PART','set',1,'p_set','cola_parser.py',228),
-  ('declare_set -> PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',263),
-  ('declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',264),
-  ('declare_set -> PROP UNIVERSE EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',265),
-  ('declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',7,'p_declare_set','cola_parser.py',266),
-  ('declare_set -> PROP LABEL','declare_set',2,'p_declare_set','cola_parser.py',267),
-  ('declare_set -> LAB PROP LABEL','declare_set',3,'p_declare_set','cola_parser.py',268),
-  ('arrangement -> LABEL IN LPAR REPEAT set RPAR','arrangement',6,'p_arrangement','cola_parser.py',292),
-  ('arrangement -> LABEL IN LPAR set RPAR','arrangement',5,'p_arrangement','cola_parser.py',293),
-  ('arrangement -> LABEL IN LSPAR REPEAT set RSPAR','arrangement',6,'p_arrangement','cola_parser.py',294),
-  ('arrangement -> LABEL IN LSPAR set RSPAR','arrangement',5,'p_arrangement','cola_parser.py',295),
-  ('arrangement -> LABEL IN LPAR LPAR set RPAR RPAR','arrangement',7,'p_arrangement','cola_parser.py',296),
-  ('arrangement -> LABEL IN LSPAR LPAR set RPAR RSPAR','arrangement',7,'p_arrangement','cola_parser.py',297),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set','pos_constraint',6,'p_pos_constraint','cola_parser.py',363),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set','pos_constraint',6,'p_pos_constraint','cola_parser.py',364),
-  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR','pos_constraint',8,'p_pos_constraint','cola_parser.py',365),
-  ('count_constraint -> COUNT set comp NUMBER','count_constraint',4,'p_count_constraint','cola_parser.py',394),
-  ('count_constraint -> COUNT LRPAR count_constraint RRPAR comp NUMBER','count_constraint',6,'p_count_constraint','cola_parser.py',395),
+  ('program -> statement','program',1,'p_program','cola_parser.py',117),
+  ('program -> statement program','program',2,'p_program','cola_parser.py',118),
+  ('statement -> declare_set SEMI','statement',2,'p_statement','cola_parser.py',122),
+  ('statement -> arrangement SEMI','statement',2,'p_statement','cola_parser.py',123),
+  ('statement -> pos_constraint SEMI','statement',2,'p_statement','cola_parser.py',124),
+  ('statement -> count_constraint SEMI','statement',2,'p_statement','cola_parser.py',125),
+  ('entity_list -> LABEL','entity_list',1,'p_entity_list','cola_parser.py',129),
+  ('entity_list -> LABEL COMMA entity_list','entity_list',3,'p_entity_list','cola_parser.py',130),
+  ('comp -> EQUALS','comp',1,'p_comp','cola_parser.py',138),
+  ('comp -> LT','comp',1,'p_comp','cola_parser.py',139),
+  ('comp -> GT','comp',1,'p_comp','cola_parser.py',140),
+  ('comp -> GT EQUALS','comp',2,'p_comp','cola_parser.py',141),
+  ('comp -> LT EQUALS','comp',2,'p_comp','cola_parser.py',142),
+  ('comp -> DIFF EQUALS','comp',2,'p_comp','cola_parser.py',143),
+  ('base_set -> LABEL','base_set',1,'p_base_set','cola_parser.py',151),
+  ('base_set -> LABEL LSPAR NUMBER RSPAR','base_set',4,'p_base_set','cola_parser.py',152),
+  ('base_set -> UNIVERSE','base_set',1,'p_base_set','cola_parser.py',153),
+  ('base_set -> PART','base_set',1,'p_base_set','cola_parser.py',154),
+  ('set_atom -> base_set','set_atom',1,'p_set_atom','cola_parser.py',163),
+  ('set_atom -> LRPAR set RRPAR','set_atom',3,'p_set_atom','cola_parser.py',164),
+  ('set_not -> NOT set_atom','set_not',2,'p_set_not','cola_parser.py',172),
+  ('set_not -> set_atom','set_not',1,'p_set_not','cola_parser.py',173),
+  ('set_inter -> set_not','set_inter',1,'p_set_inter','cola_parser.py',184),
+  ('set_inter -> set_not INTER set_atom','set_inter',3,'p_set_inter','cola_parser.py',185),
+  ('set_union -> set_inter','set_union',1,'p_set_union','cola_parser.py',202),
+  ('set_union -> set UNION set_inter','set_union',3,'p_set_union','cola_parser.py',203),
+  ('set -> set_union','set',1,'p_set','cola_parser.py',214),
+  ('declare_set -> PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',219),
+  ('declare_set -> UNIVERSE LABEL EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',220),
+  ('declare_set -> PROP UNIVERSE EQUALS LPAR entity_list RPAR','declare_set',6,'p_declare_set','cola_parser.py',221),
+  ('declare_set -> LAB PROP LABEL EQUALS LPAR entity_list RPAR','declare_set',7,'p_declare_set','cola_parser.py',222),
+  ('declare_set -> PROP LABEL','declare_set',2,'p_declare_set','cola_parser.py',223),
+  ('declare_set -> LAB PROP LABEL','declare_set',3,'p_declare_set','cola_parser.py',224),
+  ('arrangement -> LABEL IN LPAR REPEAT set RPAR','arrangement',6,'p_arrangement','cola_parser.py',248),
+  ('arrangement -> LABEL IN LPAR set RPAR','arrangement',5,'p_arrangement','cola_parser.py',249),
+  ('arrangement -> LABEL IN LSPAR REPEAT set RSPAR','arrangement',6,'p_arrangement','cola_parser.py',250),
+  ('arrangement -> LABEL IN LSPAR set RSPAR','arrangement',5,'p_arrangement','cola_parser.py',251),
+  ('arrangement -> LABEL IN LPAR LPAR set RPAR RPAR','arrangement',7,'p_arrangement','cola_parser.py',252),
+  ('arrangement -> LABEL IN LSPAR LPAR set RPAR RSPAR','arrangement',7,'p_arrangement','cola_parser.py',253),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS set','pos_constraint',6,'p_pos_constraint','cola_parser.py',298),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR IN set','pos_constraint',6,'p_pos_constraint','cola_parser.py',299),
+  ('pos_constraint -> LABEL LSPAR NUMBER RSPAR EQUALS LPAR entity_list RPAR','pos_constraint',8,'p_pos_constraint','cola_parser.py',300),
+  ('count_constraint -> COUNT set comp NUMBER','count_constraint',4,'p_count_constraint','cola_parser.py',323),
+  ('count_constraint -> COUNT LRPAR count_constraint RRPAR comp NUMBER','count_constraint',6,'p_count_constraint','cola_parser.py',324),
 ]

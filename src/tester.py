@@ -21,14 +21,14 @@ TIMEOUT = 300
 random.seed(1234)
 
 ops = [">", "<", "<=", ">=", "!=", "="]
-TOOLS = os.path.join(ROOT_DIR, "tools")
-TESTS = os.path.join(ROOT_DIR, "tests")
-BENCHMARKS = os.path.join(TESTS, "benchmarks")
-BENCHMARKS_SYNTH = os.path.join(BENCHMARKS, "synthetic")
-RESULTS = os.path.join(TESTS, "results")
-ASP_TOOLS = os.path.join(TOOLS, "ASP_tools")
-SHARP_SAT = os.path.join(TOOLS, "sharpSAT", "build", "Release", "sharpSAT")
-CONJURE = os.path.join(TOOLS, "conjure")
+TOOLS = ROOT_DIR / "tools"
+TESTS = ROOT_DIR / "tests"
+BENCHMARKS = TESTS / "benchmarks"
+BENCHMARKS_SYNTH = BENCHMARKS / "synthetic"
+RESULTS = TESTS / "results"
+ASP_TOOLS = TOOLS / "ASP_tools"
+SHARP_SAT = TOOLS / "sharpSAT" / "build" / "Release" / "sharpSAT"
+CONJURE = TOOLS / "conjure"
 
 
 #################
