@@ -2,6 +2,8 @@ property squares;
 #squares = 2;
 property triangles;
 #triangles = 5;
+#¬triangles = 2;
+#(¬triangles)&squares = 2;
 property red;
 #red = 2;
 #red&squares = 1;

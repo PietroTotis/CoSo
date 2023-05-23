@@ -1,0 +1,8 @@
+property squares;
+#squares = 2;
+labelled property red;
+#red = 5;
+#squares&red = 2;
+
+perm in [universe];
+#perm = 4;
