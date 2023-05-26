@@ -111,7 +111,7 @@ class ProblemLog(object):
 
     def add_split_left(self, subproblem, shatter_id):
         self.shatter_subproblems[shatter_id] = (subproblem, [])
-        if self.debug and subproblem.solution is not None:
+        if self.debug and subproblem.count is not None:
             print(f"{subproblem.indent}========")
             print(f"{subproblem.indent}({subproblem.id}) Solution: {subproblem.count}")
 
