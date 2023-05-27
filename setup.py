@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name='coso',
-    version='1.0.7',    
+    version='1.1.0',    
     url='https://github.com/PietroTotis/CoSo',
     author='Pietro Totis',
     author_email='pietro.totis@kuleuven.be',

@@ -357,7 +357,6 @@ class Venn(object):
         # add sets not explicitly mentioned
         for aset in self.base_sets:
             self.universe += self.create_venn_area(Union(aset))
-        
 
     def area2formula(self, area):
         """

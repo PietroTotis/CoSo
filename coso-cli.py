@@ -1,5 +1,6 @@
 import os
 import argparse
+import tempfile
 
 from src.launcher import run_coso, run_viscoso
 
@@ -9,7 +10,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-v",
         nargs='?',
-        const=os.path.join("src", "VisCoSo", "viscoso.html"),
+        const="tmp",
         help="Generate a visual representation of CoSo reasoning to an html file",
     )
     parser.add_argument("--debug", action="store_true", help="Print log")

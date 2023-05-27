@@ -1,20 +1,25 @@
-property squares;
-#squares = 2;
-property triangles;
-#triangles = 5;
-#¬triangles = 2;
-#(¬triangles)&squares = 2;
 property red;
-#red = 2;
-#red&squares = 1;
-#red&triangles = 1;
-property blue;
-#blue&squares = 1;
-#blue&triangles = 1;
+#red=2;
+property blue;  
+#blue=2;
 property green;
-#green&triangles = 3;
+#green=3;
 
-perm in [universe];
-#perm = 4;
-perm[2] = green;
-#squares&perm =2;
+property triangle; 
+#triangle=5;
+property square;
+#square=2;
+
+#square&red=1; 
+#square&blue=1; 
+#triangle&red=1;
+#triangle&blue=1;  
+#triangle&green=3;
+
+
+row in [triangle+square];
+#row = 4;
+
+row[2] = green;
+
+#(row & square) = 2;
