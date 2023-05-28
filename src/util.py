@@ -6,12 +6,13 @@ from pathlib import Path
 from portion.dict import IntervalDict
 from typing import Counter
 
-
-ROOT_DIR = Path(__file__).parent.parent
-if (ROOT_DIR / "src").exists():
-    VISCOSO_DIR = ROOT_DIR / "src" / "VisCoSo" 
-else:
+cwd = Path(__file__).parent
+if cwd.name == "coso":
+    ROOT_DIR = cwd
     VISCOSO_DIR = ROOT_DIR / "VisCoSo" 
+else:
+    ROOT_DIR = cwd.parent
+    VISCOSO_DIR = ROOT_DIR / "src" / "VisCoSo" 
 
 CSS_VISCOSO = VISCOSO_DIR / "viscoso.css"
 
