@@ -7,11 +7,14 @@ from portion.dict import IntervalDict
 from typing import Counter
 
 
-# ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
-# CSS_VISCOSO = os.path.join(ROOT_DIR, "src", "VisCoSo", "viscoso.css")
 ROOT_DIR = Path(__file__).parent.parent
-VISCOSO_DIR = ROOT_DIR / "src" / "VisCoSo" 
+if (ROOT_DIR / "src").exists():
+    VISCOSO_DIR = ROOT_DIR / "src" / "VisCoSo" 
+else:
+    VISCOSO_DIR = ROOT_DIR / "VisCoSo" 
+
 CSS_VISCOSO = VISCOSO_DIR / "viscoso.css"
+
 
 ######################
 ## Interval methods ##
