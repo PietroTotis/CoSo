@@ -111,7 +111,7 @@ class Parser(object):
             cola = self.cola
         self.parser.parse(cola)
         if self.problem.configuration is None:
-            raise EmptyException("No configuration specified")
+            raise Exception("No configuration specified")
 
     def p_program(self, p):
         """program : statement
